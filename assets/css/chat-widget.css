@@ -1,0 +1,379 @@
+/**
+ * AI Agent Chat Widget Styles
+ */
+
+:root {
+    --aiagent-primary: #0073aa;
+    --aiagent-text: #1e1e1e;
+    --aiagent-text-light: #666;
+    --aiagent-bg: #fff;
+    --aiagent-bg-light: #f5f5f5;
+    --aiagent-border: #e0e0e0;
+    --aiagent-shadow: 0 5px 40px rgba(0,0,0,0.16);
+    --aiagent-radius: 16px;
+}
+
+/* Floating Widget Container */
+.aiagent-widget {
+    position: fixed;
+    z-index: 999999;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.aiagent-position-bottom-right {
+    bottom: 20px;
+    right: 20px;
+}
+
+.aiagent-position-bottom-left {
+    bottom: 20px;
+    left: 20px;
+}
+
+/* Toggle Button */
+.aiagent-toggle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--aiagent-primary);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--aiagent-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.aiagent-position-bottom-left .aiagent-toggle {
+    right: auto;
+    left: 0;
+}
+
+.aiagent-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 50px rgba(0,0,0,0.2);
+}
+
+.aiagent-toggle svg {
+    width: 28px;
+    height: 28px;
+    color: #fff;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.aiagent-toggle .aiagent-icon-close {
+    position: absolute;
+    opacity: 0;
+    transform: rotate(-90deg);
+}
+
+.aiagent-widget.open .aiagent-toggle .aiagent-icon-chat {
+    opacity: 0;
+    transform: rotate(90deg);
+}
+
+.aiagent-widget.open .aiagent-toggle .aiagent-icon-close {
+    opacity: 1;
+    transform: rotate(0);
+}
+
+/* Chat Window */
+.aiagent-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 380px;
+    max-width: calc(100vw - 40px);
+    height: 550px;
+    max-height: calc(100vh - 120px);
+    background: var(--aiagent-bg);
+    border-radius: var(--aiagent-radius);
+    box-shadow: var(--aiagent-shadow);
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.aiagent-position-bottom-left .aiagent-window {
+    right: auto;
+    left: 0;
+}
+
+.aiagent-widget.open .aiagent-window {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+/* Header */
+.aiagent-header {
+    background: var(--aiagent-primary);
+    color: #fff;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.aiagent-header-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.aiagent-avatar {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aiagent-avatar svg {
+    width: 24px;
+    height: 24px;
+}
+
+.aiagent-name {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.aiagent-status {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.aiagent-new-chat {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.aiagent-new-chat:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.aiagent-new-chat svg {
+    width: 20px;
+    height: 20px;
+    color: #fff;
+}
+
+/* Messages Area */
+.aiagent-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: var(--aiagent-bg-light);
+}
+
+.aiagent-message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    animation: aiagent-message-in 0.3s ease;
+}
+
+@keyframes aiagent-message-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.aiagent-message-user {
+    align-self: flex-end;
+    background: var(--aiagent-primary);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+.aiagent-message-ai {
+    align-self: flex-start;
+    background: var(--aiagent-bg);
+    color: var(--aiagent-text);
+    border: 1px solid var(--aiagent-border);
+    border-bottom-left-radius: 4px;
+}
+
+.aiagent-message-typing {
+    display: flex;
+    gap: 4px;
+    padding: 16px;
+}
+
+.aiagent-message-typing span {
+    width: 8px;
+    height: 8px;
+    background: var(--aiagent-primary);
+    border-radius: 50%;
+    animation: aiagent-typing 1.4s infinite ease-in-out;
+}
+
+.aiagent-message-typing span:nth-child(1) { animation-delay: -0.32s; }
+.aiagent-message-typing span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes aiagent-typing {
+    0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.4;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.aiagent-message-error {
+    background: #fee;
+    border-color: #fcc;
+    color: #c00;
+}
+
+/* Input Area */
+.aiagent-input-area {
+    padding: 16px 20px;
+    background: var(--aiagent-bg);
+    border-top: 1px solid var(--aiagent-border);
+}
+
+.aiagent-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.aiagent-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid var(--aiagent-border);
+    border-radius: 24px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.aiagent-input:focus {
+    border-color: var(--aiagent-primary);
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.aiagent-send {
+    width: 44px;
+    height: 44px;
+    background: var(--aiagent-primary);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background 0.2s;
+    flex-shrink: 0;
+}
+
+.aiagent-send:hover {
+    transform: scale(1.05);
+}
+
+.aiagent-send:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.aiagent-send svg {
+    width: 20px;
+    height: 20px;
+    color: #fff;
+    margin-left: 2px;
+}
+
+/* Powered By */
+.aiagent-powered {
+    text-align: center;
+    padding: 8px;
+    font-size: 11px;
+    color: var(--aiagent-text-light);
+    background: var(--aiagent-bg);
+}
+
+/* Inline Chat */
+.aiagent-inline-chat {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--aiagent-border);
+    border-radius: var(--aiagent-radius);
+    overflow: hidden;
+    background: var(--aiagent-bg);
+}
+
+.aiagent-inline-chat .aiagent-messages {
+    min-height: 300px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .aiagent-window {
+        width: calc(100vw - 20px);
+        height: calc(100vh - 100px);
+        bottom: 70px;
+        right: -10px;
+        border-radius: 12px;
+    }
+
+    .aiagent-position-bottom-left .aiagent-window {
+        left: -10px;
+    }
+
+    .aiagent-toggle {
+        width: 54px;
+        height: 54px;
+    }
+}
+
+/* Scrollbar */
+.aiagent-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.aiagent-messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.aiagent-messages::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.aiagent-messages::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
+

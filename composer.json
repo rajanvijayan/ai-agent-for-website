@@ -1,0 +1,25 @@
+{
+    "name": "developer/ai-agent-for-website",
+    "description": "AI-powered chat agent for WordPress websites",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.0",
+        "rajanvijayan/ai-engine": "dev-main"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/rajanvijayan/ai-engine"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "AIAgent\\": "includes/"
+        }
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true
+    }
+}
