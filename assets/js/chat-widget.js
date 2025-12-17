@@ -119,11 +119,81 @@
         addMessage(container, text, type) {
             const messageEl = document.createElement('div');
             messageEl.className = `aiagent-message aiagent-message-${type}`;
-            messageEl.textContent = text;
+            
+            // For AI messages, render markdown/HTML; for user messages, use plain text
+            if (type === 'ai' || type === 'error') {
+                messageEl.innerHTML = this.formatMessage(text);
+            } else {
+                messageEl.textContent = text;
+            }
+            
             container.appendChild(messageEl);
             
             // Scroll to bottom
             container.scrollTop = container.scrollHeight;
+        }
+
+        formatMessage(text) {
+            // Escape HTML first to prevent XSS
+            let formatted = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            
+            // Convert markdown to HTML
+            // Code blocks (```)
+            formatted = formatted.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+            
+            // Inline code (`)
+            formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+            
+            // Bold (**text** or __text__)
+            formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+            
+            // Italic (*text* or _text_)
+            formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            formatted = formatted.replace(/_([^_]+)_/g, '<em>$1</em>');
+            
+            // Links [text](url)
+            formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+            
+            // Unordered lists (- item or * item)
+            formatted = formatted.replace(/^[\-\*]\s+(.+)$/gm, '<li>$1</li>');
+            formatted = formatted.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+            
+            // Ordered lists (1. item)
+            formatted = formatted.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+            
+            // Wrap consecutive <li> tags in <ul> or <ol>
+            formatted = formatted.replace(/(<li>[\s\S]*?<\/li>)+/g, (match) => {
+                return '<ul>' + match + '</ul>';
+            });
+            
+            // Clean up duplicate ul tags
+            formatted = formatted.replace(/<ul><ul>/g, '<ul>');
+            formatted = formatted.replace(/<\/ul><\/ul>/g, '</ul>');
+            
+            // Headers (## text)
+            formatted = formatted.replace(/^###\s+(.+)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^##\s+(.+)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^#\s+(.+)$/gm, '<h3>$1</h3>');
+            
+            // Line breaks - convert double newlines to paragraphs
+            formatted = formatted.replace(/\n\n+/g, '</p><p>');
+            formatted = formatted.replace(/\n/g, '<br>');
+            
+            // Wrap in paragraph if not already wrapped
+            if (!formatted.startsWith('<')) {
+                formatted = '<p>' + formatted + '</p>';
+            }
+            
+            // Clean up empty paragraphs
+            formatted = formatted.replace(/<p><\/p>/g, '');
+            formatted = formatted.replace(/<p>(<[huo])/g, '$1');
+            formatted = formatted.replace(/(<\/[huo]l>|<\/h[34]>)<\/p>/g, '$1');
+            
+            return formatted;
         }
 
         showTyping(container) {
