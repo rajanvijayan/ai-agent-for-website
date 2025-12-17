@@ -15,6 +15,14 @@
             this.isTyping = false;
             this.hasMessages = false;
 
+            // Debug: Log current state
+            console.log('AI Agent Config:', {
+                requireUserInfo: aiagentConfig.requireUserInfo,
+                userId: this.userId,
+                userName: this.userName,
+                sessionId: this.sessionId
+            });
+
             if (this.widget) {
                 this.initFloatingWidget();
             }
@@ -46,8 +54,15 @@
         }
 
         checkUserInfo(container, messagesContainer) {
+            console.log('checkUserInfo:', {
+                requireUserInfo: aiagentConfig.requireUserInfo,
+                userId: this.userId,
+                showForm: aiagentConfig.requireUserInfo && !this.userId
+            });
+            
             // If user info is required and we don't have it, show the form
             if (aiagentConfig.requireUserInfo && !this.userId) {
+                console.log('Showing user form');
                 container.classList.add('show-user-form');
             } else if (messagesContainer.children.length === 0) {
                 // Add welcome message if we have user info or don't need it

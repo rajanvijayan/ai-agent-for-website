@@ -97,6 +97,34 @@ class AI_Agent_For_Website {
         if (version_compare($db_version, '1.1.0', '<')) {
             $this->create_tables();
         }
+        
+        // Ensure settings have all required keys
+        $this->maybe_upgrade_settings();
+    }
+
+    /**
+     * Upgrade settings to include new keys
+     */
+    private function maybe_upgrade_settings() {
+        $settings = get_option('aiagent_settings', []);
+        $updated = false;
+        
+        // Default values for new settings
+        $defaults = [
+            'avatar_url' => '',
+            'require_user_info' => true,
+        ];
+        
+        foreach ($defaults as $key => $default) {
+            if (!array_key_exists($key, $settings)) {
+                $settings[$key] = $default;
+                $updated = true;
+            }
+        }
+        
+        if ($updated) {
+            update_option('aiagent_settings', $settings);
+        }
     }
 
     /**
@@ -347,6 +375,9 @@ class AI_Agent_For_Website {
             true
         );
 
+        // Default to true if require_user_info is not set
+        $require_user_info = array_key_exists('require_user_info', $settings) ? $settings['require_user_info'] : true;
+        
         wp_localize_script('aiagent-chat', 'aiagentConfig', [
             'restUrl' => rest_url('ai-agent/v1/'),
             'nonce' => wp_create_nonce('wp_rest'),
@@ -355,7 +386,7 @@ class AI_Agent_For_Website {
             'position' => $settings['widget_position'] ?? 'bottom-right',
             'primaryColor' => $settings['primary_color'] ?? '#0073aa',
             'avatarUrl' => $settings['avatar_url'] ?? '',
-            'requireUserInfo' => !empty($settings['require_user_info']),
+            'requireUserInfo' => (bool) $require_user_info,
         ]);
     }
 
