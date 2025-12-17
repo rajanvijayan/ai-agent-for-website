@@ -153,6 +153,7 @@ class AI_Agent_For_Website {
             started_at datetime DEFAULT CURRENT_TIMESTAMP,
             ended_at datetime DEFAULT NULL,
             status varchar(20) DEFAULT 'active',
+            rating tinyint(1) DEFAULT NULL,
             PRIMARY KEY (id),
             KEY user_id (user_id),
             KEY session_id (session_id)

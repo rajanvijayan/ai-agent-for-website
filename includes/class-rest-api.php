@@ -107,6 +107,58 @@ class AIAGENT_REST_API {
                 ],
             ],
         ]);
+
+        // Rate conversation endpoint
+        register_rest_route($this->namespace, '/rate-conversation', [
+            'methods' => 'POST',
+            'callback' => [$this, 'handle_rate_conversation'],
+            'permission_callback' => '__return_true',
+            'args' => [
+                'session_id' => [
+                    'required' => true,
+                    'type' => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
+                'rating' => [
+                    'required' => true,
+                    'type' => 'integer',
+                    'sanitize_callback' => 'absint',
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Handle conversation rating
+     */
+    public function handle_rate_conversation($request) {
+        global $wpdb;
+        
+        $session_id = $request->get_param('session_id');
+        $rating = $request->get_param('rating');
+
+        // Validate rating (1-5)
+        if ($rating < 1 || $rating > 5) {
+            return new WP_Error('invalid_rating', __('Rating must be between 1 and 5.', 'ai-agent-for-website'), ['status' => 400]);
+        }
+
+        $conversations_table = $wpdb->prefix . 'aiagent_conversations';
+        
+        // Update the most recent conversation with this session
+        $updated = $wpdb->update(
+            $conversations_table,
+            [
+                'rating' => $rating,
+                'status' => 'ended',
+                'ended_at' => current_time('mysql'),
+            ],
+            ['session_id' => $session_id]
+        );
+
+        return rest_ensure_response([
+            'success' => true,
+            'message' => __('Thank you for your feedback!', 'ai-agent-for-website'),
+        ]);
     }
 
     /**

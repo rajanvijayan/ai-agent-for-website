@@ -84,6 +84,7 @@ class AIAGENT_Conversations_Manager {
                                 <th><?php _e('User', 'ai-agent-for-website'); ?></th>
                                 <th><?php _e('First Message', 'ai-agent-for-website'); ?></th>
                                 <th><?php _e('Messages', 'ai-agent-for-website'); ?></th>
+                                <th><?php _e('Rating', 'ai-agent-for-website'); ?></th>
                                 <th><?php _e('Started', 'ai-agent-for-website'); ?></th>
                                 <th><?php _e('Status', 'ai-agent-for-website'); ?></th>
                                 <th><?php _e('Actions', 'ai-agent-for-website'); ?></th>
@@ -109,6 +110,15 @@ class AIAGENT_Conversations_Manager {
                                         ?>
                                     </td>
                                     <td><?php echo esc_html($conv->message_count); ?></td>
+                                    <td>
+                                        <?php if ($conv->rating): ?>
+                                            <span class="aiagent-rating-display">
+                                                <?php echo str_repeat('★', $conv->rating) . str_repeat('☆', 5 - $conv->rating); ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span style="color: #999;">—</span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td>
                                         <?php 
                                         $started = strtotime($conv->started_at);
@@ -208,6 +218,19 @@ class AIAGENT_Conversations_Manager {
                     <tr>
                         <th><?php _e('Messages', 'ai-agent-for-website'); ?></th>
                         <td><?php echo count($messages); ?></td>
+                    </tr>
+                    <tr>
+                        <th><?php _e('Rating', 'ai-agent-for-website'); ?></th>
+                        <td>
+                            <?php if ($conversation->rating): ?>
+                                <span class="aiagent-rating-display" style="color: #ffc107; font-size: 18px;">
+                                    <?php echo str_repeat('★', $conversation->rating) . str_repeat('☆', 5 - $conversation->rating); ?>
+                                </span>
+                                <span style="color: #666; margin-left: 8px;">(<?php echo $conversation->rating; ?>/5)</span>
+                            <?php else: ?>
+                                <span style="color: #999;"><?php _e('Not rated', 'ai-agent-for-website'); ?></span>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                 </table>
             </div>

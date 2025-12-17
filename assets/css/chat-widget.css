@@ -467,9 +467,14 @@
     bottom: 0;
     background: var(--aiagent-bg);
     z-index: 10;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
+}
+
+.aiagent-widget.show-user-form .aiagent-user-form,
+.aiagent-inline-chat.show-user-form .aiagent-user-form {
+    display: flex !important;
 }
 
 .aiagent-user-form-inner {
@@ -553,12 +558,7 @@
 .aiagent-widget.show-user-form .aiagent-powered,
 .aiagent-inline-chat.show-user-form .aiagent-messages,
 .aiagent-inline-chat.show-user-form .aiagent-input-area {
-    display: none;
-}
-
-.aiagent-widget.show-user-form .aiagent-user-form,
-.aiagent-inline-chat.show-user-form .aiagent-user-form {
-    display: flex;
+    display: none !important;
 }
 
 /* Make window position relative for form overlay */
@@ -568,5 +568,129 @@
 
 .aiagent-inline-chat {
     position: relative;
+}
+
+/* Header actions container */
+.aiagent-header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Close chat button */
+.aiagent-close-chat {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.aiagent-close-chat:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.aiagent-close-chat svg {
+    width: 18px;
+    height: 18px;
+    color: #fff;
+}
+
+/* Rating Modal */
+.aiagent-rating-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--aiagent-bg);
+    z-index: 20;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.aiagent-widget.show-rating .aiagent-rating-modal,
+.aiagent-inline-chat.show-rating .aiagent-rating-modal {
+    display: flex !important;
+}
+
+.aiagent-widget.show-rating .aiagent-messages,
+.aiagent-widget.show-rating .aiagent-input-area,
+.aiagent-widget.show-rating .aiagent-powered,
+.aiagent-inline-chat.show-rating .aiagent-messages,
+.aiagent-inline-chat.show-rating .aiagent-input-area {
+    display: none !important;
+}
+
+.aiagent-rating-inner {
+    padding: 30px;
+    text-align: center;
+    max-width: 300px;
+}
+
+.aiagent-rating-inner h3 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--aiagent-text);
+}
+
+.aiagent-rating-inner p {
+    margin: 0 0 20px 0;
+    color: var(--aiagent-text-light);
+    font-size: 14px;
+}
+
+.aiagent-stars {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.aiagent-star {
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+    padding: 0;
+}
+
+.aiagent-star:hover,
+.aiagent-star.active {
+    color: #ffc107;
+    transform: scale(1.2);
+}
+
+.aiagent-star.selected {
+    color: #ffc107;
+}
+
+.aiagent-rating-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.aiagent-skip-rating {
+    background: none;
+    border: 1px solid var(--aiagent-border);
+    padding: 10px 24px;
+    border-radius: 20px;
+    color: var(--aiagent-text-light);
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.aiagent-skip-rating:hover {
+    background: var(--aiagent-bg-light);
+    color: var(--aiagent-text);
 }
 

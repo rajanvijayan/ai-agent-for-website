@@ -13,6 +13,7 @@
             this.userId = this.getUserId();
             this.userName = this.getUserName();
             this.isTyping = false;
+            this.hasMessages = false;
 
             if (this.widget) {
                 this.initFloatingWidget();
@@ -27,10 +28,16 @@
             
             // Toggle open/close
             toggle.addEventListener('click', () => {
-                this.widget.classList.toggle('open');
-                
-                // Check if we need to show user form
                 if (this.widget.classList.contains('open')) {
+                    // Closing - check if we should show rating
+                    if (this.hasMessages) {
+                        this.showRating(this.widget);
+                    } else {
+                        this.widget.classList.remove('open');
+                    }
+                } else {
+                    // Opening
+                    this.widget.classList.add('open');
                     this.checkUserInfo(this.widget, messagesContainer);
                 }
             });
@@ -56,7 +63,9 @@
             const input = container.querySelector('.aiagent-input');
             const messagesContainer = container.querySelector('.aiagent-messages');
             const newChatBtn = container.querySelector('.aiagent-new-chat');
+            const closeChatBtn = container.querySelector('.aiagent-close-chat');
             const userInfoForm = container.querySelector('.aiagent-user-info-form');
+            const ratingModal = container.querySelector('.aiagent-rating-modal');
 
             if (!form || !input || !messagesContainer) return;
 
@@ -85,10 +94,105 @@
                 });
             }
 
+            // Handle close chat
+            if (closeChatBtn) {
+                closeChatBtn.addEventListener('click', () => {
+                    if (this.hasMessages) {
+                        this.showRating(container);
+                    } else {
+                        this.closeChat(container);
+                    }
+                });
+            }
+
+            // Handle rating
+            if (ratingModal) {
+                this.initRating(container, ratingModal);
+            }
+
             // Add welcome message for inline chats
             if (container.classList.contains('aiagent-inline-chat')) {
                 this.checkUserInfo(container, messagesContainer);
             }
+        }
+
+        initRating(container, ratingModal) {
+            const stars = ratingModal.querySelectorAll('.aiagent-star');
+            const skipBtn = ratingModal.querySelector('.aiagent-skip-rating');
+            let selectedRating = 0;
+
+            // Star hover effect
+            stars.forEach((star, index) => {
+                star.addEventListener('mouseenter', () => {
+                    stars.forEach((s, i) => {
+                        s.classList.toggle('active', i <= index);
+                    });
+                });
+
+                star.addEventListener('mouseleave', () => {
+                    stars.forEach((s, i) => {
+                        s.classList.remove('active');
+                        s.classList.toggle('selected', i < selectedRating);
+                    });
+                });
+
+                star.addEventListener('click', () => {
+                    selectedRating = index + 1;
+                    stars.forEach((s, i) => {
+                        s.classList.toggle('selected', i < selectedRating);
+                    });
+                    // Submit rating after a brief delay
+                    setTimeout(() => {
+                        this.submitRating(container, selectedRating);
+                    }, 300);
+                });
+            });
+
+            // Skip rating
+            if (skipBtn) {
+                skipBtn.addEventListener('click', () => {
+                    this.closeChat(container);
+                });
+            }
+        }
+
+        showRating(container) {
+            container.classList.add('show-rating');
+        }
+
+        async submitRating(container, rating) {
+            try {
+                await fetch(aiagentConfig.restUrl + 'rate-conversation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': aiagentConfig.nonce
+                    },
+                    body: JSON.stringify({
+                        session_id: this.sessionId,
+                        rating: rating
+                    })
+                });
+            } catch (error) {
+                console.error('AI Agent Error:', error);
+            }
+
+            this.closeChat(container);
+        }
+
+        closeChat(container) {
+            container.classList.remove('show-rating');
+            
+            if (container.id === 'aiagent-chat-widget') {
+                container.classList.remove('open');
+            }
+            
+            // Reset for next conversation
+            this.hasMessages = false;
+            
+            // Reset rating stars
+            const stars = container.querySelectorAll('.aiagent-star');
+            stars.forEach(s => s.classList.remove('selected', 'active'));
         }
 
         async handleUserInfoSubmit(container, form, messagesContainer) {
@@ -154,6 +258,7 @@
         async sendMessage(messagesContainer, input, message) {
             // Add user message
             this.addMessage(messagesContainer, message, 'user');
+            this.hasMessages = true;
             input.value = '';
             input.disabled = true;
 
@@ -299,6 +404,7 @@
         async startNewConversation(container, messagesContainer) {
             // Clear messages
             messagesContainer.innerHTML = '';
+            this.hasMessages = false;
             
             // Request new session
             try {

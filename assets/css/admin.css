@@ -269,3 +269,10 @@
     margin-top: 5px;
 }
 
+/* Rating Display */
+.aiagent-rating-display {
+    color: #ffc107;
+    font-size: 14px;
+    letter-spacing: 2px;
+}
+

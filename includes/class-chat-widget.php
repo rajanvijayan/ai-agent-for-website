@@ -59,15 +59,22 @@ class AIAGENT_Chat_Widget {
                             <div class="aiagent-status"><?php _e('Online now', 'ai-agent-for-website'); ?></div>
                         </div>
                     </div>
-                    <button class="aiagent-new-chat" title="<?php _e('New conversation', 'ai-agent-for-website'); ?>">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                        </svg>
-                    </button>
+                    <div class="aiagent-header-actions">
+                        <button class="aiagent-new-chat" title="<?php _e('New conversation', 'ai-agent-for-website'); ?>">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                            </svg>
+                        </button>
+                        <button class="aiagent-close-chat" title="<?php _e('End conversation', 'ai-agent-for-website'); ?>">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- User Info Form -->
-                <div class="aiagent-user-form" style="display: none;">
+                <div class="aiagent-user-form">
                     <div class="aiagent-user-form-inner">
                         <h3><?php _e('Start a conversation', 'ai-agent-for-website'); ?></h3>
                         <p><?php _e('Please introduce yourself so we can assist you better.', 'ai-agent-for-website'); ?></p>
@@ -95,6 +102,24 @@ class AIAGENT_Chat_Widget {
                                 </svg>
                             </button>
                         </form>
+                    </div>
+                </div>
+
+                <!-- Rating Modal -->
+                <div class="aiagent-rating-modal">
+                    <div class="aiagent-rating-inner">
+                        <h3><?php _e('How was your experience?', 'ai-agent-for-website'); ?></h3>
+                        <p><?php _e('Please rate your conversation', 'ai-agent-for-website'); ?></p>
+                        <div class="aiagent-stars">
+                            <button type="button" class="aiagent-star" data-rating="1">★</button>
+                            <button type="button" class="aiagent-star" data-rating="2">★</button>
+                            <button type="button" class="aiagent-star" data-rating="3">★</button>
+                            <button type="button" class="aiagent-star" data-rating="4">★</button>
+                            <button type="button" class="aiagent-star" data-rating="5">★</button>
+                        </div>
+                        <div class="aiagent-rating-actions">
+                            <button type="button" class="aiagent-skip-rating"><?php _e('Skip', 'ai-agent-for-website'); ?></button>
+                        </div>
                     </div>
                 </div>
 
@@ -158,15 +183,22 @@ class AIAGENT_Chat_Widget {
                         <div class="aiagent-status"><?php _e('Online now', 'ai-agent-for-website'); ?></div>
                     </div>
                 </div>
-                <button class="aiagent-new-chat" title="<?php _e('New conversation', 'ai-agent-for-website'); ?>">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                    </svg>
-                </button>
+                <div class="aiagent-header-actions">
+                    <button class="aiagent-new-chat" title="<?php _e('New conversation', 'ai-agent-for-website'); ?>">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                        </svg>
+                    </button>
+                    <button class="aiagent-close-chat" title="<?php _e('End conversation', 'ai-agent-for-website'); ?>">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- User Info Form -->
-            <div class="aiagent-user-form" style="display: none;">
+            <div class="aiagent-user-form">
                 <div class="aiagent-user-form-inner">
                     <h3><?php _e('Start a conversation', 'ai-agent-for-website'); ?></h3>
                     <p><?php _e('Please introduce yourself so we can assist you better.', 'ai-agent-for-website'); ?></p>
@@ -194,6 +226,24 @@ class AIAGENT_Chat_Widget {
                             </svg>
                         </button>
                     </form>
+                </div>
+            </div>
+
+            <!-- Rating Modal -->
+            <div class="aiagent-rating-modal">
+                <div class="aiagent-rating-inner">
+                    <h3><?php _e('How was your experience?', 'ai-agent-for-website'); ?></h3>
+                    <p><?php _e('Please rate your conversation', 'ai-agent-for-website'); ?></p>
+                    <div class="aiagent-stars">
+                        <button type="button" class="aiagent-star" data-rating="1">★</button>
+                        <button type="button" class="aiagent-star" data-rating="2">★</button>
+                        <button type="button" class="aiagent-star" data-rating="3">★</button>
+                        <button type="button" class="aiagent-star" data-rating="4">★</button>
+                        <button type="button" class="aiagent-star" data-rating="5">★</button>
+                    </div>
+                    <div class="aiagent-rating-actions">
+                        <button type="button" class="aiagent-skip-rating"><?php _e('Skip', 'ai-agent-for-website'); ?></button>
+                    </div>
                 </div>
             </div>
 
