@@ -294,9 +294,6 @@ class AIAGENT_REST_API {
             // Send message
             $response = $ai->chat($message);
 
-            // Save conversation history to transient
-            $this->save_conversation($ai, $session_id);
-
             // Handle error response
             if (is_array($response) && isset($response['error'])) {
                 return new WP_Error('ai_error', $response['error'], ['status' => 500]);
@@ -406,51 +403,56 @@ class AIAGENT_REST_API {
     }
 
     /**
-     * Get conversation key for transient
-     */
-    private function get_conversation_key($session_id) {
-        return 'aiagent_conv_' . md5($session_id);
-    }
-
-    /**
-     * Restore conversation history
+     * Restore conversation history from database
      */
     private function restore_conversation($ai, $session_id) {
-        $key = $this->get_conversation_key($session_id);
-        $history = get_transient($key);
+        global $wpdb;
         
-        if ($history && is_array($history)) {
+        $conversations_table = $wpdb->prefix . 'aiagent_conversations';
+        $messages_table = $wpdb->prefix . 'aiagent_messages';
+        
+        // Get active conversation for this session
+        $conversation = $wpdb->get_row($wpdb->prepare(
+            "SELECT id FROM $conversations_table WHERE session_id = %s AND status = 'active' ORDER BY id DESC LIMIT 1",
+            $session_id
+        ));
+        
+        if (!$conversation) {
+            return;
+        }
+        
+        // Get last 20 messages from this conversation
+        $messages = $wpdb->get_results($wpdb->prepare(
+            "SELECT role, content FROM $messages_table WHERE conversation_id = %d ORDER BY id DESC LIMIT 20",
+            $conversation->id
+        ));
+        
+        if ($messages) {
+            // Reverse to get chronological order
+            $messages = array_reverse($messages);
             $provider = $ai->getProvider();
-            foreach ($history as $msg) {
-                if (isset($msg['role']) && isset($msg['content'])) {
-                    $provider->addToHistory($msg['role'], $msg['content']);
-                }
+            foreach ($messages as $msg) {
+                $provider->addToHistory($msg->role, $msg->content);
             }
         }
     }
 
     /**
-     * Save conversation history
-     */
-    private function save_conversation($ai, $session_id) {
-        $key = $this->get_conversation_key($session_id);
-        $history = $ai->getHistory();
-        
-        // Keep last 20 messages to avoid memory issues
-        if (count($history) > 20) {
-            $history = array_slice($history, -20);
-        }
-        
-        // Store for 1 hour
-        set_transient($key, $history, HOUR_IN_SECONDS);
-    }
-
-    /**
-     * Clear conversation history
+     * Clear conversation history (mark as ended)
      */
     private function clear_conversation($session_id) {
-        $key = $this->get_conversation_key($session_id);
-        delete_transient($key);
+        global $wpdb;
+        
+        $conversations_table = $wpdb->prefix . 'aiagent_conversations';
+        
+        $wpdb->update(
+            $conversations_table,
+            [
+                'status' => 'ended',
+                'ended_at' => current_time('mysql'),
+            ],
+            ['session_id' => $session_id, 'status' => 'active']
+        );
     }
 
     /**

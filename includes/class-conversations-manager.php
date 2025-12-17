@@ -19,6 +19,17 @@ class AIAGENT_Conversations_Manager {
         $conversations_table = $wpdb->prefix . 'aiagent_conversations';
         $messages_table = $wpdb->prefix . 'aiagent_messages';
 
+        // Handle clear actions
+        if (isset($_POST['aiagent_clear_action']) && check_admin_referer('aiagent_clear_chats')) {
+            $action = sanitize_text_field($_POST['aiagent_clear_action']);
+            $result = $this->handle_clear_action($action);
+            if ($result['success']) {
+                echo '<div class="notice notice-success"><p>' . esc_html($result['message']) . '</p></div>';
+            } else {
+                echo '<div class="notice notice-error"><p>' . esc_html($result['message']) . '</p></div>';
+            }
+        }
+
         // Check if viewing a specific conversation
         $view_conversation = isset($_GET['conversation']) ? absint($_GET['conversation']) : null;
         
@@ -47,9 +58,45 @@ class AIAGENT_Conversations_Manager {
             LIMIT 50
         ");
 
+        // Get count of ended conversations
+        $ended_count = $wpdb->get_var("SELECT COUNT(*) FROM $conversations_table WHERE status = 'ended'");
+        $old_count = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $conversations_table WHERE started_at < %s",
+            date('Y-m-d', strtotime('-30 days'))
+        ));
+
         ?>
         <div class="wrap aiagent-admin">
             <h1><?php _e('Conversations', 'ai-agent-for-website'); ?></h1>
+
+            <!-- Clear Chats Actions -->
+            <div class="aiagent-card" style="margin-bottom: 20px;">
+                <h2><?php _e('Manage Conversations', 'ai-agent-for-website'); ?></h2>
+                <form method="post" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <?php wp_nonce_field('aiagent_clear_chats'); ?>
+                    
+                    <div>
+                        <button type="submit" name="aiagent_clear_action" value="clear_ended" class="button" 
+                                onclick="return confirm('<?php _e('Delete all ended conversations? This cannot be undone.', 'ai-agent-for-website'); ?>');">
+                            <?php printf(__('Clear Ended Chats (%d)', 'ai-agent-for-website'), $ended_count); ?>
+                        </button>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" name="aiagent_clear_action" value="clear_old" class="button"
+                                onclick="return confirm('<?php _e('Delete conversations older than 30 days? This cannot be undone.', 'ai-agent-for-website'); ?>');">
+                            <?php printf(__('Clear Old Chats (30+ days: %d)', 'ai-agent-for-website'), $old_count); ?>
+                        </button>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" name="aiagent_clear_action" value="clear_all" class="button button-link-delete"
+                                onclick="return confirm('<?php _e('DELETE ALL conversations and messages? This cannot be undone!', 'ai-agent-for-website'); ?>');">
+                            <?php _e('Clear All Chats', 'ai-agent-for-website'); ?>
+                        </button>
+                    </div>
+                </form>
+            </div>
 
             <div class="aiagent-stats-grid">
                 <div class="aiagent-stat-card">
@@ -329,6 +376,91 @@ class AIAGENT_Conversations_Manager {
             "SELECT * FROM $table WHERE conversation_id = %d ORDER BY created_at ASC",
             $conversation_id
         ));
+    }
+
+    /**
+     * Handle clear action
+     */
+    private function handle_clear_action($action) {
+        global $wpdb;
+        
+        $conversations_table = $wpdb->prefix . 'aiagent_conversations';
+        $messages_table = $wpdb->prefix . 'aiagent_messages';
+        
+        switch ($action) {
+            case 'clear_ended':
+                // Get ended conversation IDs
+                $ended_ids = $wpdb->get_col("SELECT id FROM $conversations_table WHERE status = 'ended'");
+                
+                if (!empty($ended_ids)) {
+                    $ids_placeholder = implode(',', array_map('intval', $ended_ids));
+                    
+                    // Delete messages first
+                    $wpdb->query("DELETE FROM $messages_table WHERE conversation_id IN ($ids_placeholder)");
+                    
+                    // Delete conversations
+                    $deleted = $wpdb->query("DELETE FROM $conversations_table WHERE status = 'ended'");
+                    
+                    return [
+                        'success' => true,
+                        'message' => sprintf(__('%d ended conversations deleted.', 'ai-agent-for-website'), $deleted)
+                    ];
+                }
+                
+                return [
+                    'success' => true,
+                    'message' => __('No ended conversations to delete.', 'ai-agent-for-website')
+                ];
+                
+            case 'clear_old':
+                // Get old conversation IDs (older than 30 days)
+                $old_date = date('Y-m-d', strtotime('-30 days'));
+                $old_ids = $wpdb->get_col($wpdb->prepare(
+                    "SELECT id FROM $conversations_table WHERE started_at < %s",
+                    $old_date
+                ));
+                
+                if (!empty($old_ids)) {
+                    $ids_placeholder = implode(',', array_map('intval', $old_ids));
+                    
+                    // Delete messages first
+                    $wpdb->query("DELETE FROM $messages_table WHERE conversation_id IN ($ids_placeholder)");
+                    
+                    // Delete conversations
+                    $deleted = $wpdb->query($wpdb->prepare(
+                        "DELETE FROM $conversations_table WHERE started_at < %s",
+                        $old_date
+                    ));
+                    
+                    return [
+                        'success' => true,
+                        'message' => sprintf(__('%d old conversations deleted.', 'ai-agent-for-website'), $deleted)
+                    ];
+                }
+                
+                return [
+                    'success' => true,
+                    'message' => __('No old conversations to delete.', 'ai-agent-for-website')
+                ];
+                
+            case 'clear_all':
+                // Delete all messages
+                $wpdb->query("TRUNCATE TABLE $messages_table");
+                
+                // Delete all conversations
+                $wpdb->query("TRUNCATE TABLE $conversations_table");
+                
+                return [
+                    'success' => true,
+                    'message' => __('All conversations and messages deleted.', 'ai-agent-for-website')
+                ];
+                
+            default:
+                return [
+                    'success' => false,
+                    'message' => __('Invalid action.', 'ai-agent-for-website')
+                ];
+        }
     }
 }
 
