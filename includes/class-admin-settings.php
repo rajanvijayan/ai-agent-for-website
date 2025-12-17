@@ -124,6 +124,39 @@ class AIAGENT_Admin_Settings {
                     <table class="form-table">
                         <tr>
                             <th scope="row">
+                                <label for="avatar_url"><?php _e('Avatar Image', 'ai-agent-for-website'); ?></label>
+                            </th>
+                            <td>
+                                <div class="aiagent-avatar-upload">
+                                    <input type="hidden" 
+                                           id="avatar_url" 
+                                           name="avatar_url" 
+                                           value="<?php echo esc_attr($settings['avatar_url'] ?? ''); ?>">
+                                    <div class="aiagent-avatar-preview" id="avatar_preview">
+                                        <?php if (!empty($settings['avatar_url'])): ?>
+                                            <img src="<?php echo esc_url($settings['avatar_url']); ?>" alt="Avatar">
+                                        <?php else: ?>
+                                            <span class="aiagent-avatar-placeholder">
+                                                <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                                </svg>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <button type="button" class="button" id="upload_avatar_btn">
+                                        <?php _e('Upload Avatar', 'ai-agent-for-website'); ?>
+                                    </button>
+                                    <button type="button" class="button" id="remove_avatar_btn" <?php echo empty($settings['avatar_url']) ? 'style="display:none;"' : ''; ?>>
+                                        <?php _e('Remove', 'ai-agent-for-website'); ?>
+                                    </button>
+                                </div>
+                                <p class="description">
+                                    <?php _e('Upload an avatar image for the chat assistant (recommended: 80x80px)', 'ai-agent-for-website'); ?>
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
                                 <label for="widget_position"><?php _e('Widget Position', 'ai-agent-for-website'); ?></label>
                             </th>
                             <td>
@@ -146,6 +179,31 @@ class AIAGENT_Admin_Settings {
                                        id="primary_color" 
                                        name="primary_color" 
                                        value="<?php echo esc_attr($settings['primary_color'] ?? '#0073aa'); ?>">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="aiagent-card">
+                    <h2><?php _e('User Information', 'ai-agent-for-website'); ?></h2>
+                    
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row">
+                                <label for="require_user_info"><?php _e('Require Name & Email', 'ai-agent-for-website'); ?></label>
+                            </th>
+                            <td>
+                                <label class="aiagent-switch">
+                                    <input type="checkbox" 
+                                           id="require_user_info" 
+                                           name="require_user_info" 
+                                           value="1" 
+                                           <?php checked(!empty($settings['require_user_info'])); ?>>
+                                    <span class="slider"></span>
+                                </label>
+                                <p class="description">
+                                    <?php _e('Ask users for their name and email before starting a conversation', 'ai-agent-for-website'); ?>
+                                </p>
                             </td>
                         </tr>
                     </table>
@@ -184,6 +242,8 @@ class AIAGENT_Admin_Settings {
         $settings['system_instruction'] = sanitize_textarea_field($_POST['system_instruction'] ?? '');
         $settings['widget_position'] = sanitize_text_field($_POST['widget_position'] ?? 'bottom-right');
         $settings['primary_color'] = sanitize_hex_color($_POST['primary_color'] ?? '#0073aa');
+        $settings['avatar_url'] = esc_url_raw($_POST['avatar_url'] ?? '');
+        $settings['require_user_info'] = !empty($_POST['require_user_info']);
 
         AI_Agent_For_Website::update_settings($settings);
 

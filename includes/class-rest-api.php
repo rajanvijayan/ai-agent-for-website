@@ -36,6 +36,35 @@ class AIAGENT_REST_API {
                     'type' => 'string',
                     'sanitize_callback' => 'sanitize_text_field',
                 ],
+                'user_id' => [
+                    'required' => false,
+                    'type' => 'integer',
+                    'sanitize_callback' => 'absint',
+                ],
+            ],
+        ]);
+
+        // Register user endpoint
+        register_rest_route($this->namespace, '/register-user', [
+            'methods' => 'POST',
+            'callback' => [$this, 'handle_register_user'],
+            'permission_callback' => '__return_true',
+            'args' => [
+                'name' => [
+                    'required' => true,
+                    'type' => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
+                'email' => [
+                    'required' => true,
+                    'type' => 'string',
+                    'sanitize_callback' => 'sanitize_email',
+                ],
+                'session_id' => [
+                    'required' => false,
+                    'type' => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
             ],
         ]);
 
@@ -49,6 +78,11 @@ class AIAGENT_REST_API {
                     'required' => false,
                     'type' => 'string',
                     'sanitize_callback' => 'sanitize_text_field',
+                ],
+                'user_id' => [
+                    'required' => false,
+                    'type' => 'integer',
+                    'sanitize_callback' => 'absint',
                 ],
             ],
         ]);
@@ -73,6 +107,58 @@ class AIAGENT_REST_API {
                 ],
             ],
         ]);
+
+        // Rate conversation endpoint
+        register_rest_route($this->namespace, '/rate-conversation', [
+            'methods' => 'POST',
+            'callback' => [$this, 'handle_rate_conversation'],
+            'permission_callback' => '__return_true',
+            'args' => [
+                'session_id' => [
+                    'required' => true,
+                    'type' => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
+                'rating' => [
+                    'required' => true,
+                    'type' => 'integer',
+                    'sanitize_callback' => 'absint',
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Handle conversation rating
+     */
+    public function handle_rate_conversation($request) {
+        global $wpdb;
+        
+        $session_id = $request->get_param('session_id');
+        $rating = $request->get_param('rating');
+
+        // Validate rating (1-5)
+        if ($rating < 1 || $rating > 5) {
+            return new WP_Error('invalid_rating', __('Rating must be between 1 and 5.', 'ai-agent-for-website'), ['status' => 400]);
+        }
+
+        $conversations_table = $wpdb->prefix . 'aiagent_conversations';
+        
+        // Update the most recent conversation with this session
+        $updated = $wpdb->update(
+            $conversations_table,
+            [
+                'rating' => $rating,
+                'status' => 'ended',
+                'ended_at' => current_time('mysql'),
+            ],
+            ['session_id' => $session_id]
+        );
+
+        return rest_ensure_response([
+            'success' => true,
+            'message' => __('Thank you for your feedback!', 'ai-agent-for-website'),
+        ]);
     }
 
     /**
@@ -83,11 +169,69 @@ class AIAGENT_REST_API {
     }
 
     /**
+     * Handle user registration
+     */
+    public function handle_register_user($request) {
+        global $wpdb;
+        
+        $name = $request->get_param('name');
+        $email = $request->get_param('email');
+        $session_id = $request->get_param('session_id') ?: $this->generate_session_id();
+
+        // Validate email
+        if (!is_email($email)) {
+            return new WP_Error('invalid_email', __('Please enter a valid email address.', 'ai-agent-for-website'), ['status' => 400]);
+        }
+
+        $users_table = $wpdb->prefix . 'aiagent_users';
+
+        // Check if user already exists
+        $existing_user = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $users_table WHERE email = %s",
+            $email
+        ));
+
+        if ($existing_user) {
+            // Update session ID and return existing user
+            $wpdb->update(
+                $users_table,
+                ['session_id' => $session_id, 'name' => $name],
+                ['id' => $existing_user->id]
+            );
+            $user_id = $existing_user->id;
+        } else {
+            // Create new user
+            $wpdb->insert($users_table, [
+                'name' => $name,
+                'email' => $email,
+                'session_id' => $session_id,
+            ]);
+            $user_id = $wpdb->insert_id;
+        }
+
+        if (!$user_id) {
+            return new WP_Error('db_error', __('Could not register user.', 'ai-agent-for-website'), ['status' => 500]);
+        }
+
+        // Create a new conversation for this user
+        $this->create_conversation($user_id, $session_id);
+
+        return rest_ensure_response([
+            'success' => true,
+            'user_id' => $user_id,
+            'session_id' => $session_id,
+        ]);
+    }
+
+    /**
      * Handle chat request
      */
     public function handle_chat($request) {
+        global $wpdb;
+        
         $message = $request->get_param('message');
         $session_id = $request->get_param('session_id') ?: $this->generate_session_id();
+        $user_id = $request->get_param('user_id');
 
         // Validate message
         if (empty(trim($message))) {
@@ -106,6 +250,9 @@ class AIAGENT_REST_API {
         if (empty($settings['api_key'])) {
             return new WP_Error('no_api_key', __('AI is not configured.', 'ai-agent-for-website'), ['status' => 500]);
         }
+
+        // Get or create conversation
+        $conversation_id = $this->get_or_create_conversation($user_id, $session_id);
 
         try {
             // Create AI Engine with Groq
@@ -139,15 +286,22 @@ class AIAGENT_REST_API {
             // Restore conversation history
             $this->restore_conversation($ai, $session_id);
 
+            // Save user message to database
+            if ($conversation_id) {
+                $this->save_message($conversation_id, 'user', $message);
+            }
+
             // Send message
             $response = $ai->chat($message);
-
-            // Save conversation history
-            $this->save_conversation($ai, $session_id);
 
             // Handle error response
             if (is_array($response) && isset($response['error'])) {
                 return new WP_Error('ai_error', $response['error'], ['status' => 500]);
+            }
+
+            // Save AI response to database
+            if ($conversation_id) {
+                $this->save_message($conversation_id, 'assistant', $response);
             }
 
             return rest_ensure_response([
@@ -166,12 +320,20 @@ class AIAGENT_REST_API {
      */
     public function handle_new_conversation($request) {
         $session_id = $request->get_param('session_id');
+        $user_id = $request->get_param('user_id');
         
         if ($session_id) {
+            // Mark old conversation as ended
+            $this->end_conversation($session_id);
             $this->clear_conversation($session_id);
         }
 
         $new_session_id = $this->generate_session_id();
+
+        // Create new conversation if we have a user
+        if ($user_id) {
+            $this->create_conversation($user_id, $new_session_id);
+        }
 
         return rest_ensure_response([
             'success' => true,
@@ -241,51 +403,133 @@ class AIAGENT_REST_API {
     }
 
     /**
-     * Get conversation key for transient
-     */
-    private function get_conversation_key($session_id) {
-        return 'aiagent_conv_' . md5($session_id);
-    }
-
-    /**
-     * Restore conversation history
+     * Restore conversation history from database
      */
     private function restore_conversation($ai, $session_id) {
-        $key = $this->get_conversation_key($session_id);
-        $history = get_transient($key);
+        global $wpdb;
         
-        if ($history && is_array($history)) {
+        $conversations_table = $wpdb->prefix . 'aiagent_conversations';
+        $messages_table = $wpdb->prefix . 'aiagent_messages';
+        
+        // Get active conversation for this session
+        $conversation = $wpdb->get_row($wpdb->prepare(
+            "SELECT id FROM $conversations_table WHERE session_id = %s AND status = 'active' ORDER BY id DESC LIMIT 1",
+            $session_id
+        ));
+        
+        if (!$conversation) {
+            return;
+        }
+        
+        // Get last 20 messages from this conversation
+        $messages = $wpdb->get_results($wpdb->prepare(
+            "SELECT role, content FROM $messages_table WHERE conversation_id = %d ORDER BY id DESC LIMIT 20",
+            $conversation->id
+        ));
+        
+        if ($messages) {
+            // Reverse to get chronological order
+            $messages = array_reverse($messages);
             $provider = $ai->getProvider();
-            foreach ($history as $msg) {
-                if (isset($msg['role']) && isset($msg['content'])) {
-                    $provider->addToHistory($msg['role'], $msg['content']);
-                }
+            foreach ($messages as $msg) {
+                $provider->addToHistory($msg->role, $msg->content);
             }
         }
     }
 
     /**
-     * Save conversation history
+     * Clear conversation history (mark as ended)
      */
-    private function save_conversation($ai, $session_id) {
-        $key = $this->get_conversation_key($session_id);
-        $history = $ai->getHistory();
+    private function clear_conversation($session_id) {
+        global $wpdb;
         
-        // Keep last 20 messages to avoid memory issues
-        if (count($history) > 20) {
-            $history = array_slice($history, -20);
-        }
+        $conversations_table = $wpdb->prefix . 'aiagent_conversations';
         
-        // Store for 1 hour
-        set_transient($key, $history, HOUR_IN_SECONDS);
+        $wpdb->update(
+            $conversations_table,
+            [
+                'status' => 'ended',
+                'ended_at' => current_time('mysql'),
+            ],
+            ['session_id' => $session_id, 'status' => 'active']
+        );
     }
 
     /**
-     * Clear conversation history
+     * Create a new conversation in database
      */
-    private function clear_conversation($session_id) {
-        $key = $this->get_conversation_key($session_id);
-        delete_transient($key);
+    private function create_conversation($user_id, $session_id) {
+        global $wpdb;
+        
+        if (!$user_id) return null;
+
+        $conversations_table = $wpdb->prefix . 'aiagent_conversations';
+        
+        $wpdb->insert($conversations_table, [
+            'user_id' => $user_id,
+            'session_id' => $session_id,
+            'status' => 'active',
+        ]);
+
+        return $wpdb->insert_id;
+    }
+
+    /**
+     * Get or create conversation
+     */
+    private function get_or_create_conversation($user_id, $session_id) {
+        global $wpdb;
+        
+        if (!$user_id) return null;
+
+        $conversations_table = $wpdb->prefix . 'aiagent_conversations';
+        
+        // Check for existing active conversation
+        $conversation = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $conversations_table WHERE session_id = %s AND status = 'active' ORDER BY id DESC LIMIT 1",
+            $session_id
+        ));
+
+        if ($conversation) {
+            return $conversation->id;
+        }
+
+        // Create new conversation
+        return $this->create_conversation($user_id, $session_id);
+    }
+
+    /**
+     * End conversation
+     */
+    private function end_conversation($session_id) {
+        global $wpdb;
+        
+        $conversations_table = $wpdb->prefix . 'aiagent_conversations';
+        
+        $wpdb->update(
+            $conversations_table,
+            [
+                'status' => 'ended',
+                'ended_at' => current_time('mysql'),
+            ],
+            ['session_id' => $session_id]
+        );
+    }
+
+    /**
+     * Save message to database
+     */
+    private function save_message($conversation_id, $role, $content) {
+        global $wpdb;
+        
+        if (!$conversation_id) return;
+
+        $messages_table = $wpdb->prefix . 'aiagent_messages';
+        
+        $wpdb->insert($messages_table, [
+            'conversation_id' => $conversation_id,
+            'role' => $role,
+            'content' => $content,
+        ]);
     }
 }
-

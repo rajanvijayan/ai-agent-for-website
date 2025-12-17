@@ -142,3 +142,137 @@
     color: #dc3232 !important;
 }
 
+/* Avatar Upload */
+.aiagent-avatar-upload {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.aiagent-avatar-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ddd;
+}
+
+.aiagent-avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.aiagent-avatar-placeholder {
+    color: #999;
+}
+
+/* Conversations Table */
+.aiagent-conversations-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.aiagent-conversations-table th,
+.aiagent-conversations-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.aiagent-conversations-table th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.aiagent-conversations-table tr:hover {
+    background: #f9f9f9;
+}
+
+.aiagent-conversation-detail {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.aiagent-message-log {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.aiagent-message-item {
+    margin-bottom: 15px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    max-width: 80%;
+}
+
+.aiagent-message-item.user {
+    background: #0073aa;
+    color: #fff;
+    margin-left: auto;
+}
+
+.aiagent-message-item.assistant {
+    background: #fff;
+    border: 1px solid #ddd;
+}
+
+.aiagent-message-meta {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 5px;
+}
+
+.aiagent-user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    background: #e8f4fc;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.aiagent-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.aiagent-stat-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+}
+
+.aiagent-stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #0073aa;
+}
+
+.aiagent-stat-label {
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Rating Display */
+.aiagent-rating-display {
+    color: #ffc107;
+    font-size: 14px;
+    letter-spacing: 2px;
+}
+
