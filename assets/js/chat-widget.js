@@ -177,10 +177,10 @@
                 console.error('AI Agent Error:', error);
             }
 
-            this.closeChat(container);
+            this.closeChat(container, true);
         }
 
-        closeChat(container) {
+        closeChat(container, endConversation = false) {
             container.classList.remove('show-rating');
             
             if (container.id === 'aiagent-chat-widget') {
@@ -193,6 +193,16 @@
             // Reset rating stars
             const stars = container.querySelectorAll('.aiagent-star');
             stars.forEach(s => s.classList.remove('selected', 'active'));
+
+            // If ending conversation, clear messages and generate new session
+            if (endConversation) {
+                const messagesContainer = container.querySelector('.aiagent-messages');
+                if (messagesContainer) {
+                    messagesContainer.innerHTML = '';
+                }
+                // Generate new session ID for next conversation
+                this.sessionId = this.generateSessionId();
+            }
         }
 
         async handleUserInfoSubmit(container, form, messagesContainer) {
@@ -401,10 +411,17 @@
             }
         }
 
-        async startNewConversation(container, messagesContainer) {
+        async startNewConversation(container, messagesContainer, resetUser = false) {
             // Clear messages
             messagesContainer.innerHTML = '';
             this.hasMessages = false;
+            
+            // If reset user, clear user info
+            if (resetUser) {
+                this.clearUserInfo();
+                this.userId = null;
+                this.userName = null;
+            }
             
             // Request new session
             try {
@@ -466,7 +483,12 @@
         // User info management
         getUserId() {
             try {
-                return localStorage.getItem('aiagent_user_id') || null;
+                const userId = localStorage.getItem('aiagent_user_id');
+                // Return null if empty or not a valid number
+                if (!userId || userId === 'null' || userId === 'undefined') {
+                    return null;
+                }
+                return parseInt(userId, 10) || null;
             } catch (e) {
                 return null;
             }
@@ -474,7 +496,11 @@
 
         getUserName() {
             try {
-                return localStorage.getItem('aiagent_user_name') || null;
+                const name = localStorage.getItem('aiagent_user_name');
+                if (!name || name === 'null' || name === 'undefined') {
+                    return null;
+                }
+                return name;
             } catch (e) {
                 return null;
             }
@@ -482,9 +508,20 @@
 
         saveUserInfo(userId, name, email) {
             try {
-                localStorage.setItem('aiagent_user_id', userId);
+                localStorage.setItem('aiagent_user_id', String(userId));
                 localStorage.setItem('aiagent_user_name', name);
                 localStorage.setItem('aiagent_user_email', email);
+            } catch (e) {
+                // Storage not available
+            }
+        }
+
+        clearUserInfo() {
+            try {
+                localStorage.removeItem('aiagent_user_id');
+                localStorage.removeItem('aiagent_user_name');
+                localStorage.removeItem('aiagent_user_email');
+                localStorage.removeItem('aiagent_session');
             } catch (e) {
                 // Storage not available
             }

@@ -81,6 +81,22 @@ class AI_Agent_For_Website {
         add_action('admin_enqueue_scripts', [$this, 'admin_scripts']);
         add_action('wp_enqueue_scripts', [$this, 'frontend_scripts']);
         add_action('rest_api_init', [$this, 'register_rest_routes']);
+        
+        // Check and create tables if needed
+        add_action('admin_init', [$this, 'maybe_create_tables']);
+    }
+
+    /**
+     * Check if tables exist and create if needed
+     */
+    public function maybe_create_tables() {
+        global $wpdb;
+        $db_version = get_option('aiagent_db_version', '0');
+        
+        // Check if we need to create/update tables
+        if (version_compare($db_version, '1.1.0', '<')) {
+            $this->create_tables();
+        }
     }
 
     /**
@@ -177,7 +193,7 @@ class AI_Agent_For_Website {
         dbDelta($messages_sql);
 
         // Store DB version
-        update_option('aiagent_db_version', '1.0.0');
+        update_option('aiagent_db_version', '1.1.0');
     }
 
     /**
