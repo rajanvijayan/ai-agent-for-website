@@ -146,6 +146,12 @@
     height: 24px;
 }
 
+.aiagent-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .aiagent-name {
     font-weight: 600;
     font-size: 16px;
@@ -450,5 +456,117 @@
 
 .aiagent-messages::-webkit-scrollbar-thumb:hover {
     background: #aaa;
+}
+
+/* User Info Form */
+.aiagent-user-form {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--aiagent-bg);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aiagent-user-form-inner {
+    padding: 30px;
+    text-align: center;
+    max-width: 300px;
+}
+
+.aiagent-user-form h3 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--aiagent-text);
+}
+
+.aiagent-user-form p {
+    margin: 0 0 24px 0;
+    color: var(--aiagent-text-light);
+    font-size: 14px;
+}
+
+.aiagent-form-group {
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.aiagent-form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--aiagent-text);
+}
+
+.aiagent-form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--aiagent-border);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.aiagent-form-group input:focus {
+    outline: none;
+    border-color: var(--aiagent-primary);
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.aiagent-start-chat-btn {
+    width: 100%;
+    padding: 14px 20px;
+    background: var(--aiagent-primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-top: 8px;
+}
+
+.aiagent-start-chat-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.aiagent-start-chat-btn svg {
+    flex-shrink: 0;
+}
+
+/* Hide chat area when form is visible */
+.aiagent-widget.show-user-form .aiagent-messages,
+.aiagent-widget.show-user-form .aiagent-input-area,
+.aiagent-widget.show-user-form .aiagent-powered,
+.aiagent-inline-chat.show-user-form .aiagent-messages,
+.aiagent-inline-chat.show-user-form .aiagent-input-area {
+    display: none;
+}
+
+.aiagent-widget.show-user-form .aiagent-user-form,
+.aiagent-inline-chat.show-user-form .aiagent-user-form {
+    display: flex;
+}
+
+/* Make window position relative for form overlay */
+.aiagent-window {
+    position: relative;
+}
+
+.aiagent-inline-chat {
+    position: relative;
 }
 

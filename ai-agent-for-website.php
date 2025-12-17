@@ -97,11 +97,21 @@ class AI_Agent_For_Website {
             'primary_color' => '#0073aa',
             'knowledge_urls' => [],
             'enabled' => false,
+            'avatar_url' => '',
+            'require_user_info' => true,
         ];
 
         if (!get_option('aiagent_settings')) {
             add_option('aiagent_settings', $defaults);
+        } else {
+            // Merge new defaults with existing settings
+            $existing = get_option('aiagent_settings');
+            $merged = array_merge($defaults, $existing);
+            update_option('aiagent_settings', $merged);
         }
+
+        // Create database tables
+        $this->create_tables();
 
         // Create knowledge base storage directory
         $upload_dir = wp_upload_dir();
@@ -111,6 +121,62 @@ class AI_Agent_For_Website {
         }
 
         flush_rewrite_rules();
+    }
+
+    /**
+     * Create database tables for users and conversations
+     */
+    private function create_tables() {
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+
+        // Chat users table
+        $users_table = $wpdb->prefix . 'aiagent_users';
+        $users_sql = "CREATE TABLE $users_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            name varchar(100) NOT NULL,
+            email varchar(100) NOT NULL,
+            session_id varchar(100) NOT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY email (email),
+            KEY session_id (session_id)
+        ) $charset_collate;";
+
+        // Conversations table
+        $conversations_table = $wpdb->prefix . 'aiagent_conversations';
+        $conversations_sql = "CREATE TABLE $conversations_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            user_id bigint(20) unsigned NOT NULL,
+            session_id varchar(100) NOT NULL,
+            started_at datetime DEFAULT CURRENT_TIMESTAMP,
+            ended_at datetime DEFAULT NULL,
+            status varchar(20) DEFAULT 'active',
+            PRIMARY KEY (id),
+            KEY user_id (user_id),
+            KEY session_id (session_id)
+        ) $charset_collate;";
+
+        // Messages table
+        $messages_table = $wpdb->prefix . 'aiagent_messages';
+        $messages_sql = "CREATE TABLE $messages_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            conversation_id bigint(20) unsigned NOT NULL,
+            role varchar(20) NOT NULL,
+            content text NOT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY conversation_id (conversation_id)
+        ) $charset_collate;";
+
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($users_sql);
+        dbDelta($conversations_sql);
+        dbDelta($messages_sql);
+
+        // Store DB version
+        update_option('aiagent_db_version', '1.0.0');
     }
 
     /**
@@ -162,6 +228,24 @@ class AI_Agent_For_Website {
             'ai-agent-knowledge',
             [$this, 'render_knowledge_page']
         );
+
+        add_submenu_page(
+            'ai-agent-settings',
+            __('Conversations', 'ai-agent-for-website'),
+            __('Conversations', 'ai-agent-for-website'),
+            'manage_options',
+            'ai-agent-conversations',
+            [$this, 'render_conversations_page']
+        );
+    }
+
+    /**
+     * Render conversations page
+     */
+    public function render_conversations_page() {
+        require_once AIAGENT_PLUGIN_DIR . 'includes/class-conversations-manager.php';
+        $manager = new AIAGENT_Conversations_Manager();
+        $manager->render_admin_page();
     }
 
     /**
@@ -195,6 +279,9 @@ class AI_Agent_For_Website {
         if (strpos($hook, 'ai-agent') === false) {
             return;
         }
+
+        // Enqueue media uploader for avatar
+        wp_enqueue_media();
 
         wp_enqueue_style(
             'aiagent-admin',
@@ -250,6 +337,8 @@ class AI_Agent_For_Website {
             'welcomeMessage' => $settings['welcome_message'] ?? 'Hello! How can I help you?',
             'position' => $settings['widget_position'] ?? 'bottom-right',
             'primaryColor' => $settings['primary_color'] ?? '#0073aa',
+            'avatarUrl' => $settings['avatar_url'] ?? '',
+            'requireUserInfo' => !empty($settings['require_user_info']),
         ]);
     }
 

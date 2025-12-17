@@ -10,6 +10,8 @@
             this.widget = document.getElementById('aiagent-chat-widget');
             this.inlineChats = document.querySelectorAll('.aiagent-inline-chat');
             this.sessionId = this.getSessionId();
+            this.userId = this.getUserId();
+            this.userName = this.getUserName();
             this.isTyping = false;
 
             if (this.widget) {
@@ -27,13 +29,26 @@
             toggle.addEventListener('click', () => {
                 this.widget.classList.toggle('open');
                 
-                // Add welcome message on first open
-                if (this.widget.classList.contains('open') && messagesContainer.children.length === 0) {
-                    this.addMessage(messagesContainer, aiagentConfig.welcomeMessage, 'ai');
+                // Check if we need to show user form
+                if (this.widget.classList.contains('open')) {
+                    this.checkUserInfo(this.widget, messagesContainer);
                 }
             });
 
             this.initChat(this.widget);
+        }
+
+        checkUserInfo(container, messagesContainer) {
+            // If user info is required and we don't have it, show the form
+            if (aiagentConfig.requireUserInfo && !this.userId) {
+                container.classList.add('show-user-form');
+            } else if (messagesContainer.children.length === 0) {
+                // Add welcome message if we have user info or don't need it
+                const welcomeMsg = this.userName 
+                    ? `Hi ${this.userName}! ${aiagentConfig.welcomeMessage}`
+                    : aiagentConfig.welcomeMessage;
+                this.addMessage(messagesContainer, welcomeMsg, 'ai');
+            }
         }
 
         initChat(container) {
@@ -41,8 +56,17 @@
             const input = container.querySelector('.aiagent-input');
             const messagesContainer = container.querySelector('.aiagent-messages');
             const newChatBtn = container.querySelector('.aiagent-new-chat');
+            const userInfoForm = container.querySelector('.aiagent-user-info-form');
 
             if (!form || !input || !messagesContainer) return;
+
+            // Handle user info form submit
+            if (userInfoForm) {
+                userInfoForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleUserInfoSubmit(container, userInfoForm, messagesContainer);
+                });
+            }
 
             // Handle form submit
             form.addEventListener('submit', (e) => {
@@ -57,13 +81,73 @@
             // Handle new chat
             if (newChatBtn) {
                 newChatBtn.addEventListener('click', () => {
-                    this.startNewConversation(messagesContainer);
+                    this.startNewConversation(container, messagesContainer);
                 });
             }
 
             // Add welcome message for inline chats
-            if (container.classList.contains('aiagent-inline-chat') && messagesContainer.children.length === 0) {
-                this.addMessage(messagesContainer, aiagentConfig.welcomeMessage, 'ai');
+            if (container.classList.contains('aiagent-inline-chat')) {
+                this.checkUserInfo(container, messagesContainer);
+            }
+        }
+
+        async handleUserInfoSubmit(container, form, messagesContainer) {
+            const nameInput = form.querySelector('input[name="user_name"]');
+            const emailInput = form.querySelector('input[name="user_email"]');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+
+            if (!name || !email) return;
+
+            // Disable form
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Starting...';
+
+            try {
+                const response = await fetch(aiagentConfig.restUrl + 'register-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': aiagentConfig.nonce
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        session_id: this.sessionId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Save user info
+                    this.userId = data.user_id;
+                    this.userName = name;
+                    this.saveUserInfo(data.user_id, name, email);
+                    
+                    if (data.session_id) {
+                        this.sessionId = data.session_id;
+                        this.saveSessionId();
+                    }
+
+                    // Hide form, show chat
+                    container.classList.remove('show-user-form');
+                    
+                    // Add personalized welcome message
+                    const welcomeMsg = `Hi ${name}! ${aiagentConfig.welcomeMessage}`;
+                    this.addMessage(messagesContainer, welcomeMsg, 'ai');
+                } else {
+                    alert(data.message || 'Something went wrong. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Start Chat <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>';
+                }
+            } catch (error) {
+                console.error('AI Agent Error:', error);
+                alert('Unable to connect. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Start Chat <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>';
             }
         }
 
@@ -86,7 +170,8 @@
                     },
                     body: JSON.stringify({
                         message: message,
-                        session_id: this.sessionId
+                        session_id: this.sessionId,
+                        user_id: this.userId
                     })
                 });
 
@@ -211,7 +296,7 @@
             }
         }
 
-        async startNewConversation(messagesContainer) {
+        async startNewConversation(container, messagesContainer) {
             // Clear messages
             messagesContainer.innerHTML = '';
             
@@ -224,7 +309,8 @@
                         'X-WP-Nonce': aiagentConfig.nonce
                     },
                     body: JSON.stringify({
-                        session_id: this.sessionId
+                        session_id: this.sessionId,
+                        user_id: this.userId
                     })
                 });
 
@@ -237,13 +323,21 @@
                 console.error('AI Agent Error:', error);
             }
 
-            // Add welcome message
-            this.addMessage(messagesContainer, aiagentConfig.welcomeMessage, 'ai');
+            // Check if we need user info again or just show welcome
+            if (aiagentConfig.requireUserInfo && !this.userId) {
+                container.classList.add('show-user-form');
+            } else {
+                const welcomeMsg = this.userName 
+                    ? `Hi ${this.userName}! ${aiagentConfig.welcomeMessage}`
+                    : aiagentConfig.welcomeMessage;
+                this.addMessage(messagesContainer, welcomeMsg, 'ai');
+            }
         }
 
+        // Session management
         getSessionId() {
             try {
-                return sessionStorage.getItem('aiagent_session') || this.generateSessionId();
+                return localStorage.getItem('aiagent_session') || this.generateSessionId();
             } catch (e) {
                 return this.generateSessionId();
             }
@@ -251,9 +345,9 @@
 
         saveSessionId() {
             try {
-                sessionStorage.setItem('aiagent_session', this.sessionId);
+                localStorage.setItem('aiagent_session', this.sessionId);
             } catch (e) {
-                // Session storage not available
+                // Storage not available
             }
         }
 
@@ -261,6 +355,33 @@
             const id = 'session_' + Math.random().toString(36).substr(2, 16);
             this.saveSessionId();
             return id;
+        }
+
+        // User info management
+        getUserId() {
+            try {
+                return localStorage.getItem('aiagent_user_id') || null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        getUserName() {
+            try {
+                return localStorage.getItem('aiagent_user_name') || null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        saveUserInfo(userId, name, email) {
+            try {
+                localStorage.setItem('aiagent_user_id', userId);
+                localStorage.setItem('aiagent_user_name', name);
+                localStorage.setItem('aiagent_user_email', email);
+            } catch (e) {
+                // Storage not available
+            }
         }
     }
 
@@ -272,4 +393,3 @@
     }
 
 })();
-

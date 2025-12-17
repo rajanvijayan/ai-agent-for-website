@@ -5,6 +5,9 @@
 (function($) {
     'use strict';
 
+    // Media uploader instance
+    let mediaUploader;
+
     $(document).ready(function() {
         // Test API connection
         $('#aiagent-test-api').on('click', function(e) {
@@ -33,6 +36,50 @@
                     $btn.prop('disabled', false).text('Test Connection');
                 }
             });
+        });
+
+        // Avatar upload handler
+        $('#upload_avatar_btn').on('click', function(e) {
+            e.preventDefault();
+
+            // If media uploader exists, open it
+            if (mediaUploader) {
+                mediaUploader.open();
+                return;
+            }
+
+            // Create the media uploader
+            mediaUploader = wp.media({
+                title: 'Select Avatar Image',
+                button: {
+                    text: 'Use as Avatar'
+                },
+                multiple: false,
+                library: {
+                    type: 'image'
+                }
+            });
+
+            // When an image is selected
+            mediaUploader.on('select', function() {
+                const attachment = mediaUploader.state().get('selection').first().toJSON();
+                const url = attachment.sizes?.thumbnail?.url || attachment.url;
+                
+                $('#avatar_url').val(url);
+                $('#avatar_preview').html('<img src="' + url + '" alt="Avatar">');
+                $('#remove_avatar_btn').show();
+            });
+
+            mediaUploader.open();
+        });
+
+        // Remove avatar handler
+        $('#remove_avatar_btn').on('click', function(e) {
+            e.preventDefault();
+            
+            $('#avatar_url').val('');
+            $('#avatar_preview').html('<span class="aiagent-avatar-placeholder"><svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span>');
+            $(this).hide();
         });
 
         // Toggle password visibility
