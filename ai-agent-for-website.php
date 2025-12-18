@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: AI Agent for Website
- * Plugin URI: https://rajanvijayan.com
+ * Plugin URI: https://github.com/rajanvijayan/ai-agent-for-website
  * Description: Add an AI-powered chat agent to your website using Groq API. Train it with your website content.
  * Version: 1.0.2
  * Author: Rajan Vijayan
