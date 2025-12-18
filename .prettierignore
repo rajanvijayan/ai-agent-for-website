@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+build/
+dist/
+
+# WordPress
+*.php
+
+# Git
+.git/
+
+# IDE
+.idea/
+.vscode/
+*.code-workspace
+
+# Misc
+*.min.js
+*.min.css
+*.map
+
