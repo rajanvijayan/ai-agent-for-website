@@ -148,6 +148,26 @@
             $('#preview-welcome').text(message);
         });
 
+        // Widget position preview update
+        $('#widget_position').on('change', function () {
+            const position = $(this).val();
+            const $preview = $('#aiagent-preview-widget');
+
+            if (position === 'bottom-left') {
+                $preview.addClass('position-bottom-left');
+            } else {
+                $preview.removeClass('position-bottom-left');
+            }
+        });
+
+        // Initialize position on page load
+        (function () {
+            const position = $('#widget_position').val();
+            if (position === 'bottom-left') {
+                $('#aiagent-preview-widget').addClass('position-bottom-left');
+            }
+        })();
+
         // AI Suggestion buttons
         $('.aiagent-ai-suggest').on('click', function (e) {
             e.preventDefault();
