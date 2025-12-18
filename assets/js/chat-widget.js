@@ -66,10 +66,27 @@
                 container.classList.add('show-user-form');
             } else if (messagesContainer.children.length === 0) {
                 // Add welcome message if we have user info or don't need it
-                const welcomeMsg = this.userName
-                    ? `Hi ${this.userName}! ${aiagentConfig.welcomeMessage}`
-                    : aiagentConfig.welcomeMessage;
+                const welcomeMsg = this.getPersonalizedWelcome();
                 this.addMessage(messagesContainer, welcomeMsg, 'ai');
+            }
+        }
+
+        getPersonalizedWelcome() {
+            const welcome = aiagentConfig.welcomeMessage;
+
+            if (!this.userName) {
+                return welcome;
+            }
+
+            // Check if welcome message already contains a greeting pattern
+            const greetingPatterns = /^(hi|hello|hey|welcome|greetings|good\s*(morning|afternoon|evening))[,!.\s]*/i;
+
+            if (greetingPatterns.test(welcome)) {
+                // Replace the greeting with personalized version
+                return welcome.replace(greetingPatterns, `Hi ${this.userName}! `);
+            } else {
+                // Prepend personalized greeting
+                return `Hi ${this.userName}! ${welcome}`;
             }
         }
 
@@ -271,7 +288,7 @@
                     container.classList.remove('show-user-form');
 
                     // Add personalized welcome message
-                    const welcomeMsg = `Hi ${name}! ${aiagentConfig.welcomeMessage}`;
+                    const welcomeMsg = this.getPersonalizedWelcome();
                     this.addMessage(messagesContainer, welcomeMsg, 'ai');
                 } else {
                     alert(data.message || 'Something went wrong. Please try again.');
@@ -476,9 +493,7 @@
             if (aiagentConfig.requireUserInfo && !this.userId) {
                 container.classList.add('show-user-form');
             } else {
-                const welcomeMsg = this.userName
-                    ? `Hi ${this.userName}! ${aiagentConfig.welcomeMessage}`
-                    : aiagentConfig.welcomeMessage;
+                const welcomeMsg = this.getPersonalizedWelcome();
                 this.addMessage(messagesContainer, welcomeMsg, 'ai');
             }
         }
