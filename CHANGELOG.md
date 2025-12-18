@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Improved CI/CD pipeline with automated build and release process
 
+### Fixed
+- Plugin URI now correctly points to GitHub repository instead of author website
+
 ## [1.0.1] - 2024-12-18
 
 ### Fixed
