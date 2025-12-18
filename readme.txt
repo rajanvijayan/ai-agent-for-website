@@ -4,7 +4,7 @@ Tags: ai, chatbot, chat, groq, llama, assistant
 Requires at least: 5.8
 Tested up to: 6.4
 Requires PHP: 8.0
-Stable tag: 1.0.2
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,13 +16,15 @@ AI Agent for Website adds a beautiful, intelligent chat widget to your WordPress
 
 **Features:**
 
-* 🤖 AI-powered chat widget
+* 🤖 AI-powered chat widget with live preview
 * 📚 Knowledge Base - Train AI with your website content
+* 🔍 Auto-detect pillar pages using AI
 * ⚡ Ultra-fast responses using Groq API
-* 🎨 Customizable appearance
-* 💬 Conversation memory
+* 🎨 Customizable appearance with Lucide icons
+* 💬 Conversation memory with user info collection
 * 📱 Mobile responsive
-* 🔧 Easy configuration
+* 🔧 Easy configuration with AI suggestions
+* 📞 Optional phone number collection
 
 **How It Works:**
 
@@ -66,6 +68,15 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 
 == Changelog ==
 
+= 1.1.0 =
+* NEW: Phone number field option before starting chat
+* NEW: AI-powered "Auto Detect Pillar Pages" feature in Knowledge Base
+* NEW: AI suggestion buttons for Welcome Message and System Instruction
+* NEW: Live chat widget preview in Settings page
+* IMPROVED: Enhanced "Add Custom Text" form with categories and character count
+* IMPROVED: Updated icons to Lucide-style SVG icons (open-source)
+* IMPROVED: Database schema updated with phone number support
+
 = 1.0.2 =
 * Added GitHub-based automatic update system
 * Plugin now checks for updates from GitHub releases
@@ -86,6 +97,9 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 * Shortcode support
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Major feature update! AI-powered pillar page detection, phone field support, widget preview, and more.
 
 = 1.0.2 =
 Added automatic update system - plugin now updates directly from GitHub releases!

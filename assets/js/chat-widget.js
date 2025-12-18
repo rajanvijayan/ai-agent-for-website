@@ -66,10 +66,27 @@
                 container.classList.add('show-user-form');
             } else if (messagesContainer.children.length === 0) {
                 // Add welcome message if we have user info or don't need it
-                const welcomeMsg = this.userName
-                    ? `Hi ${this.userName}! ${aiagentConfig.welcomeMessage}`
-                    : aiagentConfig.welcomeMessage;
+                const welcomeMsg = this.getPersonalizedWelcome();
                 this.addMessage(messagesContainer, welcomeMsg, 'ai');
+            }
+        }
+
+        getPersonalizedWelcome() {
+            const welcome = aiagentConfig.welcomeMessage;
+
+            if (!this.userName) {
+                return welcome;
+            }
+
+            // Check if welcome message already contains a greeting pattern
+            const greetingPatterns = /^(hi|hello|hey|welcome|greetings|good\s*(morning|afternoon|evening))[,!.\s]*/i;
+
+            if (greetingPatterns.test(welcome)) {
+                // Replace the greeting with personalized version
+                return welcome.replace(greetingPatterns, `Hi ${this.userName}! `);
+            } else {
+                // Prepend personalized greeting
+                return `Hi ${this.userName}! ${welcome}`;
             }
         }
 
@@ -223,12 +240,17 @@
         async handleUserInfoSubmit(container, form, messagesContainer) {
             const nameInput = form.querySelector('input[name="user_name"]');
             const emailInput = form.querySelector('input[name="user_email"]');
+            const phoneInput = form.querySelector('input[name="user_phone"]');
             const submitBtn = form.querySelector('button[type="submit"]');
 
             const name = nameInput.value.trim();
             const email = emailInput.value.trim();
+            const phone = phoneInput ? phoneInput.value.trim() : '';
 
             if (!name || !email) return;
+
+            // Check if phone is required
+            if (phoneInput && phoneInput.required && !phone) return;
 
             // Disable form
             submitBtn.disabled = true;
@@ -244,6 +266,7 @@
                     body: JSON.stringify({
                         name: name,
                         email: email,
+                        phone: phone,
                         session_id: this.sessionId,
                     }),
                 });
@@ -254,7 +277,7 @@
                     // Save user info
                     this.userId = data.user_id;
                     this.userName = name;
-                    this.saveUserInfo(data.user_id, name, email);
+                    this.saveUserInfo(data.user_id, name, email, phone);
 
                     if (data.session_id) {
                         this.sessionId = data.session_id;
@@ -265,7 +288,7 @@
                     container.classList.remove('show-user-form');
 
                     // Add personalized welcome message
-                    const welcomeMsg = `Hi ${name}! ${aiagentConfig.welcomeMessage}`;
+                    const welcomeMsg = this.getPersonalizedWelcome();
                     this.addMessage(messagesContainer, welcomeMsg, 'ai');
                 } else {
                     alert(data.message || 'Something went wrong. Please try again.');
@@ -470,9 +493,7 @@
             if (aiagentConfig.requireUserInfo && !this.userId) {
                 container.classList.add('show-user-form');
             } else {
-                const welcomeMsg = this.userName
-                    ? `Hi ${this.userName}! ${aiagentConfig.welcomeMessage}`
-                    : aiagentConfig.welcomeMessage;
+                const welcomeMsg = this.getPersonalizedWelcome();
                 this.addMessage(messagesContainer, welcomeMsg, 'ai');
             }
         }
@@ -526,11 +547,14 @@
             }
         }
 
-        saveUserInfo(userId, name, email) {
+        saveUserInfo(userId, name, email, phone = '') {
             try {
                 localStorage.setItem('aiagent_user_id', String(userId));
                 localStorage.setItem('aiagent_user_name', name);
                 localStorage.setItem('aiagent_user_email', email);
+                if (phone) {
+                    localStorage.setItem('aiagent_user_phone', phone);
+                }
             } catch (e) {
                 // Storage not available
             }
@@ -541,6 +565,7 @@
                 localStorage.removeItem('aiagent_user_id');
                 localStorage.removeItem('aiagent_user_name');
                 localStorage.removeItem('aiagent_user_email');
+                localStorage.removeItem('aiagent_user_phone');
                 localStorage.removeItem('aiagent_session');
             } catch (e) {
                 // Storage not available

@@ -98,25 +98,50 @@ class AIAGENT_Knowledge_Manager {
 					<h2><?php esc_html_e( 'Add Custom Text', 'ai-agent-for-website' ); ?></h2>
 					<form method="post" action="">
 						<?php wp_nonce_field( 'aiagent_kb_nonce' ); ?>
-						<p>
-							<input type="text" 
-									name="kb_title" 
-									placeholder="<?php esc_attr_e( 'Title (optional)', 'ai-agent-for-website' ); ?>" 
-									class="large-text">
-						</p>
-						<p>
-							<textarea name="kb_text" 
-										rows="4" 
-										class="large-text" 
-										placeholder="<?php esc_attr_e( 'Enter your content here...', 'ai-agent-for-website' ); ?>" 
-										required></textarea>
-						</p>
-						<p>
-							<input type="submit" 
-									name="aiagent_add_text" 
-									class="button button-primary" 
-									value="<?php esc_attr_e( 'Add Text', 'ai-agent-for-website' ); ?>">
-						</p>
+						<div class="aiagent-custom-text-form">
+							<div class="aiagent-form-row">
+								<label for="kb_title"><?php esc_html_e( 'Title', 'ai-agent-for-website' ); ?></label>
+								<input type="text" 
+										id="kb_title"
+										name="kb_title" 
+										placeholder="<?php esc_attr_e( 'e.g., FAQ, Product Info, Company Details', 'ai-agent-for-website' ); ?>" 
+										class="large-text">
+							</div>
+							<div class="aiagent-form-row">
+								<label for="kb_category"><?php esc_html_e( 'Category', 'ai-agent-for-website' ); ?></label>
+								<select name="kb_category" id="kb_category" class="regular-text">
+									<option value=""><?php esc_html_e( 'Select a category...', 'ai-agent-for-website' ); ?></option>
+									<option value="general"><?php esc_html_e( 'General Information', 'ai-agent-for-website' ); ?></option>
+									<option value="faq"><?php esc_html_e( 'FAQ', 'ai-agent-for-website' ); ?></option>
+									<option value="product"><?php esc_html_e( 'Product/Service', 'ai-agent-for-website' ); ?></option>
+									<option value="support"><?php esc_html_e( 'Support', 'ai-agent-for-website' ); ?></option>
+									<option value="policy"><?php esc_html_e( 'Policies', 'ai-agent-for-website' ); ?></option>
+									<option value="contact"><?php esc_html_e( 'Contact Info', 'ai-agent-for-website' ); ?></option>
+									<option value="other"><?php esc_html_e( 'Other', 'ai-agent-for-website' ); ?></option>
+								</select>
+							</div>
+							<div class="aiagent-form-row">
+								<label for="kb_text"><?php esc_html_e( 'Content', 'ai-agent-for-website' ); ?></label>
+								<textarea name="kb_text" 
+											id="kb_text"
+											rows="6" 
+											class="large-text" 
+											placeholder="<?php esc_attr_e( 'Enter your content here. You can include FAQs, product details, company information, or any text you want the AI to know about.', 'ai-agent-for-website' ); ?>" 
+											required></textarea>
+								<div class="aiagent-char-count">
+									<span id="kb-char-count">0</span> <?php esc_html_e( 'characters', 'ai-agent-for-website' ); ?>
+								</div>
+							</div>
+							<div class="aiagent-form-actions">
+								<input type="submit" 
+										name="aiagent_add_text" 
+										class="button button-primary" 
+										value="<?php esc_attr_e( 'Add to Knowledge Base', 'ai-agent-for-website' ); ?>">
+								<p class="description">
+									<?php esc_html_e( 'Tip: Be specific and include details the AI should know when answering questions.', 'ai-agent-for-website' ); ?>
+								</p>
+							</div>
+						</div>
 					</form>
 				</div>
 			</div>
@@ -201,6 +226,33 @@ class AIAGENT_Knowledge_Manager {
 						<?php esc_html_e( 'No content added yet. Add URLs or text above to train your AI agent.', 'ai-agent-for-website' ); ?>
 					</p>
 				<?php endif; ?>
+			</div>
+
+			<div class="aiagent-card">
+				<h2><?php esc_html_e( 'Auto Detect Pillar Pages', 'ai-agent-for-website' ); ?></h2>
+				<p class="description">
+					<?php esc_html_e( 'Use AI to analyze your website and suggest the most important pages to add to the knowledge base.', 'ai-agent-for-website' ); ?>
+				</p>
+				<div class="aiagent-pillar-detect">
+					<button type="button" id="aiagent-detect-pillar" class="button button-primary">
+						<span class="dashicons dashicons-admin-generic"></span>
+						<?php esc_html_e( 'Detect Pillar Pages', 'ai-agent-for-website' ); ?>
+					</button>
+					<span class="aiagent-detect-status"></span>
+				</div>
+				<div id="aiagent-pillar-results" class="aiagent-pillar-results" style="display: none;">
+					<h3><?php esc_html_e( 'Recommended Pages', 'ai-agent-for-website' ); ?></h3>
+					<p class="description"><?php esc_html_e( 'AI has identified these important pages for your knowledge base:', 'ai-agent-for-website' ); ?></p>
+					<div id="aiagent-pillar-list" class="aiagent-pillar-list"></div>
+					<div class="aiagent-pillar-actions">
+						<button type="button" id="aiagent-add-selected-pillar" class="button button-primary">
+							<?php esc_html_e( 'Add Selected Pages', 'ai-agent-for-website' ); ?>
+						</button>
+						<button type="button" id="aiagent-add-all-pillar" class="button">
+							<?php esc_html_e( 'Add All Pages', 'ai-agent-for-website' ); ?>
+						</button>
+					</div>
+				</div>
 			</div>
 
 			<div class="aiagent-card">

@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2024-12-18
+
+### Added
+- Phone number field option in user info form before starting chat
+- "Show Phone Number Field" and "Make Phone Required" settings options
+- Improved "Add Custom Text" form in Knowledge Base with category selection
+- Character count display for custom text entries
+- AI-powered "Auto Detect Pillar Pages" feature to identify important pages for knowledge base
+- AI suggestion buttons for Welcome Message and System Instruction fields
+- Live chat widget preview in Settings page with real-time updates
+- Database support for storing user phone numbers
+
+### Changed
+- Updated all chat widget icons to Lucide-style SVG icons (open-source)
+- Enhanced Knowledge Base UI with better form organization
+- Database schema updated to version 1.2.0
+
+### Improved
+- Better user experience with live preview of widget customizations
+- More intuitive knowledge base content management
+
 ## [1.0.2] - 2024-12-18
 
 ### Added
@@ -67,7 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sanitization of user inputs
 - Capability checks for admin operations
 
-[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/rajanvijayan/ai-agent-for-website/releases/tag/v1.0.0

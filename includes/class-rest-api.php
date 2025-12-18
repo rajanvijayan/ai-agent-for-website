@@ -83,6 +83,11 @@ class AIAGENT_REST_API {
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_email',
 					],
+					'phone'      => [
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
 					'session_id' => [
 						'required'          => false,
 						'type'              => 'string',
@@ -122,6 +127,35 @@ class AIAGENT_REST_API {
 			[
 				'methods'             => 'POST',
 				'callback'            => [ $this, 'handle_test' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		// AI suggestion endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/ai-suggest',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_ai_suggest' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+				'args'                => [
+					'type' => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+				],
+			]
+		);
+
+		// Auto detect pillar pages endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/detect-pillar-pages',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_detect_pillar_pages' ],
 				'permission_callback' => [ $this, 'admin_permission_check' ],
 			]
 		);
@@ -227,6 +261,7 @@ class AIAGENT_REST_API {
 
 		$name          = $request->get_param( 'name' );
 		$email         = $request->get_param( 'email' );
+		$phone         = $request->get_param( 'phone' );
 		$param_session = $request->get_param( 'session_id' );
 		$session_id    = ! empty( $param_session ) ? $param_session : $this->generate_session_id();
 
@@ -246,26 +281,34 @@ class AIAGENT_REST_API {
 
 		if ( $existing_user ) {
 			// Update session ID and return existing user.
+			$update_data = [
+				'session_id' => $session_id,
+				'name'       => $name,
+			];
+			if ( ! empty( $phone ) ) {
+				$update_data['phone'] = $phone;
+			}
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional direct update.
 			$wpdb->update(
 				$users_table,
-				[
-					'session_id' => $session_id,
-					'name'       => $name,
-				],
+				$update_data,
 				[ 'id' => $existing_user->id ]
 			);
 			$user_id = $existing_user->id;
 		} else {
 			// Create new user.
+			$insert_data = [
+				'name'       => $name,
+				'email'      => $email,
+				'session_id' => $session_id,
+			];
+			if ( ! empty( $phone ) ) {
+				$insert_data['phone'] = $phone;
+			}
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Intentional direct insert.
 			$wpdb->insert(
 				$users_table,
-				[
-					'name'       => $name,
-					'email'      => $email,
-					'session_id' => $session_id,
-				]
+				$insert_data
 			);
 			$user_id = $wpdb->insert_id;
 		}
@@ -480,6 +523,178 @@ class AIAGENT_REST_API {
 		}
 
 		return new WP_Error( 'fetch_error', $result['error'] ?? 'Failed to fetch URL', [ 'status' => 400 ] );
+	}
+
+	/**
+	 * Handle AI suggestion request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_ai_suggest( $request ) {
+		$type     = $request->get_param( 'type' );
+		$settings = AI_Agent_For_Website::get_settings();
+
+		if ( empty( $settings['api_key'] ) ) {
+			return new WP_Error( 'no_api_key', __( 'API key not configured.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$site_name = get_bloginfo( 'name' );
+		$site_desc = get_bloginfo( 'description' );
+		$site_url  = home_url();
+
+		try {
+			$ai = AIEngine::create( 'groq', $settings['api_key'] );
+
+			if ( 'welcome' === $type ) {
+				$prompt = sprintf(
+					'Generate a friendly, professional welcome message for a chat widget on a website called "%s" (%s). The site description is: "%s". Keep it under 100 characters, warm and inviting. Just return the message text, no quotes or explanation.',
+					$site_name,
+					$site_url,
+					$site_desc
+				);
+			} else {
+				$prompt = sprintf(
+					'Generate a system instruction for an AI chat assistant on a website called "%s" (%s). The site description is: "%s". The instruction should define the AI personality, tone, and behavior. Keep it concise (2-3 sentences). Just return the instruction text, no quotes or explanation.',
+					$site_name,
+					$site_url,
+					$site_desc
+				);
+			}
+
+			$response = $ai->generateContent( $prompt );
+
+			if ( is_array( $response ) && isset( $response['error'] ) ) {
+				return new WP_Error( 'ai_error', $response['error'], [ 'status' => 500 ] );
+			}
+
+			return rest_ensure_response(
+				[
+					'success'    => true,
+					'suggestion' => trim( $response ),
+				]
+			);
+
+		} catch ( Exception $e ) {
+			return new WP_Error( 'exception', $e->getMessage(), [ 'status' => 500 ] );
+		}
+	}
+
+	/**
+	 * Handle auto detect pillar pages request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_detect_pillar_pages( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$settings = AI_Agent_For_Website::get_settings();
+
+		if ( empty( $settings['api_key'] ) ) {
+			return new WP_Error( 'no_api_key', __( 'API key not configured.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		// Get all published pages and posts.
+		$pages = get_posts(
+			[
+				'post_type'      => [ 'page', 'post' ],
+				'post_status'    => 'publish',
+				'posts_per_page' => 100,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+			]
+		);
+
+		if ( empty( $pages ) ) {
+			return new WP_Error( 'no_content', __( 'No published content found.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		// Prepare content list for AI.
+		$content_list = [];
+		foreach ( $pages as $page ) {
+			$content_list[] = [
+				'id'      => $page->ID,
+				'title'   => $page->post_title,
+				'type'    => $page->post_type,
+				'url'     => get_permalink( $page->ID ),
+				'excerpt' => wp_trim_words( $page->post_content, 50 ),
+			];
+		}
+
+		try {
+			$ai = AIEngine::create( 'groq', $settings['api_key'] );
+
+			$site_name = get_bloginfo( 'name' );
+			$site_desc = get_bloginfo( 'description' );
+
+			$content_json = wp_json_encode( $content_list );
+
+			$prompt = sprintf(
+				'You are analyzing content for a website called "%s" with description: "%s".
+
+Here is a list of pages/posts on the website:
+%s
+
+Identify the TOP 10 most important "pillar pages" - these are foundational, comprehensive pages that cover key topics and are most valuable for training an AI chatbot about this website.
+
+Consider factors like:
+- Comprehensive topic coverage
+- Core business/service pages
+- About/company information
+- Key landing pages
+- Important product/service pages
+
+Return ONLY a JSON array of the recommended page IDs in order of importance, like: [1, 2, 3, 4, 5]
+Do not include any explanation, just the JSON array.',
+				$site_name,
+				$site_desc,
+				$content_json
+			);
+
+			$response = $ai->generateContent( $prompt );
+
+			if ( is_array( $response ) && isset( $response['error'] ) ) {
+				return new WP_Error( 'ai_error', $response['error'], [ 'status' => 500 ] );
+			}
+
+			// Parse the AI response to get page IDs.
+			$response = trim( $response );
+			// Remove any markdown formatting.
+			$response = preg_replace( '/```json\s*/', '', $response );
+			$response = preg_replace( '/```\s*/', '', $response );
+
+			$page_ids = json_decode( $response, true );
+
+			if ( ! is_array( $page_ids ) ) {
+				return new WP_Error( 'parse_error', __( 'Could not parse AI response.', 'ai-agent-for-website' ), [ 'status' => 500 ] );
+			}
+
+			// Get the recommended pages with full details.
+			$recommended = [];
+			foreach ( $page_ids as $id ) {
+				$page = get_post( $id );
+				if ( $page ) {
+					$recommended[] = [
+						'id'    => $page->ID,
+						'title' => $page->post_title,
+						'type'  => $page->post_type,
+						'url'   => get_permalink( $page->ID ),
+					];
+				}
+			}
+
+			return rest_ensure_response(
+				[
+					'success' => true,
+					'pages'   => $recommended,
+				]
+			);
+
+		} catch ( Exception $e ) {
+			return new WP_Error( 'exception', $e->getMessage(), [ 'status' => 500 ] );
+		}
 	}
 
 	/**
