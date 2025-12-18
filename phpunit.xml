@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
+    bootstrap="vendor/autoload.php"
+    colors="true"
+    failOnRisky="true"
+    failOnWarning="true"
+    stopOnError="false"
+    stopOnFailure="false"
+    cacheResultFile=".phpunit.cache/test-results"
+    verbose="true"
+>
+    <testsuites>
+        <testsuite name="Unit Tests">
+            <directory suffix="Test.php">./tests</directory>
+            <directory suffix="Test.php">./vendor/rajanvijayan/ai-engine/tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./includes</directory>
+            <file>./ai-agent-for-website.php</file>
+        </include>
+        <exclude>
+            <directory>./vendor</directory>
+            <directory>./tests</directory>
+        </exclude>
+        <report>
+            <html outputDirectory="coverage-report"/>
+            <clover outputFile="coverage.xml"/>
+        </report>
+    </coverage>
+</phpunit>

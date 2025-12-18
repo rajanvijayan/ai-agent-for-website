@@ -1,38 +1,40 @@
-# Ignore system files
-.DS_Store
-Thumbs.db
-
-# Ignore build and compiled files
+# Dependencies
 /node_modules/
+
+# Composer
+/vendor/
+
+# Build output
 /build/
 /dist/
 
-# Ignore IDE and editor-specific files
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
+# Coverage reports
+/coverage-report/
+/coverage.xml
+/.phpunit.cache/
 
-# Ignore environment-specific files
+# IDE
+.idea/
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
 .env
 .env.local
 .env.*.local
 
-# Ignore log and backup files
-*.log
-*.bak
-
-# Ignore Composer dependencies
-/vendor/
-.DS_Store
-
+# Package lock (keep composer.lock for reproducible builds)
 package-lock.json
+
+# Composer lock
 composer.lock
-
-# PHPUnit
-.phpunit.result.cache
-.phpunit.cache/
-/coverage/
-
-# API Keys
-*.ai-key

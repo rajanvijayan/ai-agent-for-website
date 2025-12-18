@@ -1,0 +1,98 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Install production dependencies
+        run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
+
+      - name: Create plugin directory
+        run: |
+          mkdir -p build/ai-agent-for-website
+          
+          # Copy only necessary files
+          cp -r assets build/ai-agent-for-website/
+          cp -r includes build/ai-agent-for-website/
+          cp -r vendor build/ai-agent-for-website/
+          cp ai-agent-for-website.php build/ai-agent-for-website/
+          cp readme.txt build/ai-agent-for-website/
+          cp README.md build/ai-agent-for-website/
+          cp CHANGELOG.md build/ai-agent-for-website/
+          
+          # Remove unnecessary files from vendor
+          find build/ai-agent-for-website/vendor -name "*.md" -type f -delete
+          find build/ai-agent-for-website/vendor -name "*.txt" -type f -delete
+          find build/ai-agent-for-website/vendor -name ".git*" -type f -delete
+          find build/ai-agent-for-website/vendor -name "tests" -type d -exec rm -rf {} + 2>/dev/null || true
+          find build/ai-agent-for-website/vendor -name "test" -type d -exec rm -rf {} + 2>/dev/null || true
+          find build/ai-agent-for-website/vendor -name "Tests" -type d -exec rm -rf {} + 2>/dev/null || true
+          find build/ai-agent-for-website/vendor -name "phpunit.xml" -type f -delete
+          find build/ai-agent-for-website/vendor -name "phpunit.xml.dist" -type f -delete
+          find build/ai-agent-for-website/vendor -name ".travis.yml" -type f -delete
+          find build/ai-agent-for-website/vendor -name ".github" -type d -exec rm -rf {} + 2>/dev/null || true
+
+      - name: Create ZIP archive
+        run: |
+          cd build
+          zip -r ../ai-agent-for-website-${{ steps.get_version.outputs.VERSION }}.zip ai-agent-for-website
+
+      - name: Extract changelog for version
+        id: changelog
+        run: |
+          # Extract changelog content for the current version
+          VERSION=${{ steps.get_version.outputs.VERSION }}
+          
+          # Get the content between the current version header and the next version header (or EOF)
+          CHANGELOG_CONTENT=$(awk "/^## \[$VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md)
+          
+          # If no specific version found, use Unreleased section
+          if [ -z "$CHANGELOG_CONTENT" ]; then
+            CHANGELOG_CONTENT=$(awk '/^## \[Unreleased\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md)
+          fi
+          
+          # Write to file for the release notes
+          echo "$CHANGELOG_CONTENT" > release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.get_version.outputs.VERSION }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+          files: |
+            ai-agent-for-website-${{ steps.get_version.outputs.VERSION }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-agent-for-website-${{ steps.get_version.outputs.VERSION }}
+          path: ai-agent-for-website-${{ steps.get_version.outputs.VERSION }}.zip
+          retention-days: 30
+

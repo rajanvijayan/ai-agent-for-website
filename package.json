@@ -1,0 +1,25 @@
+{
+  "name": "ai-agent-for-website",
+  "version": "1.0.0",
+  "description": "AI-powered chat agent for WordPress websites",
+  "author": "Rajan Vijayan",
+  "license": "GPL-2.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rajanvijayan/ai-agent-for-website.git"
+  },
+  "scripts": {
+    "prettier:check": "prettier --check 'assets/**/*.{js,css}'",
+    "prettier:fix": "prettier --write 'assets/**/*.{js,css}'",
+    "lint": "npm run prettier:check",
+    "lint:fix": "npm run prettier:fix"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
+

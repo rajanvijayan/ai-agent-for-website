@@ -1,0 +1,47 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# PHP files
+*.php text eol=lf
+
+# JavaScript files
+*.js text eol=lf
+
+# CSS files
+*.css text eol=lf
+
+# JSON files
+*.json text eol=lf
+
+# Markdown files
+*.md text eol=lf
+
+# YAML files
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# XML files
+*.xml text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+
+# Exclude from export (for release archives created via `git archive`)
+.editorconfig export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+.github/ export-ignore
+.prettierrc export-ignore
+.prettierignore export-ignore
+.phpunit.cache/ export-ignore
+composer.lock export-ignore
+coverage-report/ export-ignore
+coverage.xml export-ignore
+node_modules/ export-ignore
+package.json export-ignore
+package-lock.json export-ignore
+phpcs.xml export-ignore
+phpunit.xml export-ignore
+tests/ export-ignore
+CONTRIBUTING.md export-ignore
+

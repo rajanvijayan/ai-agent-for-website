@@ -2,7 +2,7 @@
  * AI Agent Chat Widget JavaScript
  */
 
-(function() {
+(function () {
     'use strict';
 
     class AIAgentChat {
@@ -20,20 +20,20 @@
                 requireUserInfo: aiagentConfig.requireUserInfo,
                 userId: this.userId,
                 userName: this.userName,
-                sessionId: this.sessionId
+                sessionId: this.sessionId,
             });
 
             if (this.widget) {
                 this.initFloatingWidget();
             }
 
-            this.inlineChats.forEach(chat => this.initChat(chat));
+            this.inlineChats.forEach((chat) => this.initChat(chat));
         }
 
         initFloatingWidget() {
             const toggle = this.widget.querySelector('.aiagent-toggle');
             const messagesContainer = this.widget.querySelector('.aiagent-messages');
-            
+
             // Toggle open/close
             toggle.addEventListener('click', () => {
                 if (this.widget.classList.contains('open')) {
@@ -57,16 +57,16 @@
             console.log('checkUserInfo:', {
                 requireUserInfo: aiagentConfig.requireUserInfo,
                 userId: this.userId,
-                showForm: aiagentConfig.requireUserInfo && !this.userId
+                showForm: aiagentConfig.requireUserInfo && !this.userId,
             });
-            
+
             // If user info is required and we don't have it, show the form
             if (aiagentConfig.requireUserInfo && !this.userId) {
                 console.log('Showing user form');
                 container.classList.add('show-user-form');
             } else if (messagesContainer.children.length === 0) {
                 // Add welcome message if we have user info or don't need it
-                const welcomeMsg = this.userName 
+                const welcomeMsg = this.userName
                     ? `Hi ${this.userName}! ${aiagentConfig.welcomeMessage}`
                     : aiagentConfig.welcomeMessage;
                 this.addMessage(messagesContainer, welcomeMsg, 'ai');
@@ -96,7 +96,7 @@
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const message = input.value.trim();
-                
+
                 if (message && !this.isTyping) {
                     this.sendMessage(messagesContainer, input, message);
                 }
@@ -181,12 +181,12 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-WP-Nonce': aiagentConfig.nonce
+                        'X-WP-Nonce': aiagentConfig.nonce,
                     },
                     body: JSON.stringify({
                         session_id: this.sessionId,
-                        rating: rating
-                    })
+                        rating: rating,
+                    }),
                 });
             } catch (error) {
                 console.error('AI Agent Error:', error);
@@ -197,17 +197,17 @@
 
         closeChat(container, endConversation = false) {
             container.classList.remove('show-rating');
-            
+
             if (container.id === 'aiagent-chat-widget') {
                 container.classList.remove('open');
             }
-            
+
             // Reset for next conversation
             this.hasMessages = false;
-            
+
             // Reset rating stars
             const stars = container.querySelectorAll('.aiagent-star');
-            stars.forEach(s => s.classList.remove('selected', 'active'));
+            stars.forEach((s) => s.classList.remove('selected', 'active'));
 
             // If ending conversation, clear messages and generate new session
             if (endConversation) {
@@ -224,7 +224,7 @@
             const nameInput = form.querySelector('input[name="user_name"]');
             const emailInput = form.querySelector('input[name="user_email"]');
             const submitBtn = form.querySelector('button[type="submit"]');
-            
+
             const name = nameInput.value.trim();
             const email = emailInput.value.trim();
 
@@ -239,13 +239,13 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-WP-Nonce': aiagentConfig.nonce
+                        'X-WP-Nonce': aiagentConfig.nonce,
                     },
                     body: JSON.stringify({
                         name: name,
                         email: email,
-                        session_id: this.sessionId
-                    })
+                        session_id: this.sessionId,
+                    }),
                 });
 
                 const data = await response.json();
@@ -255,7 +255,7 @@
                     this.userId = data.user_id;
                     this.userName = name;
                     this.saveUserInfo(data.user_id, name, email);
-                    
+
                     if (data.session_id) {
                         this.sessionId = data.session_id;
                         this.saveSessionId();
@@ -263,20 +263,22 @@
 
                     // Hide form, show chat
                     container.classList.remove('show-user-form');
-                    
+
                     // Add personalized welcome message
                     const welcomeMsg = `Hi ${name}! ${aiagentConfig.welcomeMessage}`;
                     this.addMessage(messagesContainer, welcomeMsg, 'ai');
                 } else {
                     alert(data.message || 'Something went wrong. Please try again.');
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Start Chat <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>';
+                    submitBtn.innerHTML =
+                        'Start Chat <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>';
                 }
             } catch (error) {
                 console.error('AI Agent Error:', error);
                 alert('Unable to connect. Please try again.');
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Start Chat <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>';
+                submitBtn.innerHTML =
+                    'Start Chat <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>';
             }
         }
 
@@ -296,13 +298,13 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-WP-Nonce': aiagentConfig.nonce
+                        'X-WP-Nonce': aiagentConfig.nonce,
                     },
                     body: JSON.stringify({
                         message: message,
                         session_id: this.sessionId,
-                        user_id: this.userId
-                    })
+                        user_id: this.userId,
+                    }),
                 });
 
                 const data = await response.json();
@@ -334,80 +336,83 @@
         addMessage(container, text, type) {
             const messageEl = document.createElement('div');
             messageEl.className = `aiagent-message aiagent-message-${type}`;
-            
+
             // For AI messages, render markdown/HTML; for user messages, use plain text
             if (type === 'ai' || type === 'error') {
                 messageEl.innerHTML = this.formatMessage(text);
             } else {
                 messageEl.textContent = text;
             }
-            
+
             container.appendChild(messageEl);
-            
+
             // Scroll to bottom
             container.scrollTop = container.scrollHeight;
         }
 
         formatMessage(text) {
             // Escape HTML first to prevent XSS
-            let formatted = text
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-            
+            let formatted = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
             // Convert markdown to HTML
             // Code blocks (```)
-            formatted = formatted.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
-            
+            formatted = formatted.replace(
+                /```(\w*)\n?([\s\S]*?)```/g,
+                '<pre><code>$2</code></pre>'
+            );
+
             // Inline code (`)
             formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
-            
+
             // Bold (**text** or __text__)
             formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
             formatted = formatted.replace(/__([^_]+)__/g, '<strong>$1</strong>');
-            
+
             // Italic (*text* or _text_)
             formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>');
             formatted = formatted.replace(/_([^_]+)_/g, '<em>$1</em>');
-            
+
             // Links [text](url)
-            formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-            
+            formatted = formatted.replace(
+                /\[([^\]]+)\]\(([^)]+)\)/g,
+                '<a href="$2" target="_blank" rel="noopener">$1</a>'
+            );
+
             // Unordered lists (- item or * item)
             formatted = formatted.replace(/^[\-\*]\s+(.+)$/gm, '<li>$1</li>');
             formatted = formatted.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-            
+
             // Ordered lists (1. item)
             formatted = formatted.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
-            
+
             // Wrap consecutive <li> tags in <ul> or <ol>
             formatted = formatted.replace(/(<li>[\s\S]*?<\/li>)+/g, (match) => {
                 return '<ul>' + match + '</ul>';
             });
-            
+
             // Clean up duplicate ul tags
             formatted = formatted.replace(/<ul><ul>/g, '<ul>');
             formatted = formatted.replace(/<\/ul><\/ul>/g, '</ul>');
-            
+
             // Headers (## text)
             formatted = formatted.replace(/^###\s+(.+)$/gm, '<h4>$1</h4>');
             formatted = formatted.replace(/^##\s+(.+)$/gm, '<h3>$1</h3>');
             formatted = formatted.replace(/^#\s+(.+)$/gm, '<h3>$1</h3>');
-            
+
             // Line breaks - convert double newlines to paragraphs
             formatted = formatted.replace(/\n\n+/g, '</p><p>');
             formatted = formatted.replace(/\n/g, '<br>');
-            
+
             // Wrap in paragraph if not already wrapped
             if (!formatted.startsWith('<')) {
                 formatted = '<p>' + formatted + '</p>';
             }
-            
+
             // Clean up empty paragraphs
             formatted = formatted.replace(/<p><\/p>/g, '');
             formatted = formatted.replace(/<p>(<[huo])/g, '$1');
             formatted = formatted.replace(/(<\/[huo]l>|<\/h[34]>)<\/p>/g, '$1');
-            
+
             return formatted;
         }
 
@@ -430,26 +435,26 @@
             // Clear messages
             messagesContainer.innerHTML = '';
             this.hasMessages = false;
-            
+
             // If reset user, clear user info
             if (resetUser) {
                 this.clearUserInfo();
                 this.userId = null;
                 this.userName = null;
             }
-            
+
             // Request new session
             try {
                 const response = await fetch(aiagentConfig.restUrl + 'new-conversation', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-WP-Nonce': aiagentConfig.nonce
+                        'X-WP-Nonce': aiagentConfig.nonce,
                     },
                     body: JSON.stringify({
                         session_id: this.sessionId,
-                        user_id: this.userId
-                    })
+                        user_id: this.userId,
+                    }),
                 });
 
                 const data = await response.json();
@@ -465,7 +470,7 @@
             if (aiagentConfig.requireUserInfo && !this.userId) {
                 container.classList.add('show-user-form');
             } else {
-                const welcomeMsg = this.userName 
+                const welcomeMsg = this.userName
                     ? `Hi ${this.userName}! ${aiagentConfig.welcomeMessage}`
                     : aiagentConfig.welcomeMessage;
                 this.addMessage(messagesContainer, welcomeMsg, 'ai');
@@ -549,5 +554,4 @@
     } else {
         new AIAgentChat();
     }
-
 })();
