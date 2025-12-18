@@ -1,6 +1,9 @@
 # Dependencies
 /node_modules/
 
+# Composer
+/vendor/
+
 # Build output
 /build/
 /dist/
@@ -32,3 +35,6 @@ npm-debug.log*
 
 # Package lock (keep composer.lock for reproducible builds)
 package-lock.json
+
+# Composer lock
+composer.lock
