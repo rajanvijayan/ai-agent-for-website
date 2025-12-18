@@ -113,7 +113,7 @@ class AI_Agent_For_Website {
 		$db_version = get_option( 'aiagent_db_version', '0' );
 
 		// Check if we need to create/update tables.
-		if ( version_compare( $db_version, '1.1.0', '<' ) ) {
+		if ( version_compare( $db_version, '1.2.0', '<' ) ) {
 			$this->create_tables();
 		}
 
@@ -132,6 +132,8 @@ class AI_Agent_For_Website {
 		$defaults = [
 			'avatar_url'        => '',
 			'require_user_info' => true,
+			'require_phone'     => false,
+			'phone_required'    => false,
 		];
 
 		foreach ( $defaults as $key => $default ) {
@@ -162,6 +164,8 @@ class AI_Agent_For_Website {
 			'enabled'            => false,
 			'avatar_url'         => '',
 			'require_user_info'  => true,
+			'require_phone'      => false,
+			'phone_required'     => false,
 		];
 
 		if ( ! get_option( 'aiagent_settings' ) ) {
@@ -199,6 +203,7 @@ class AI_Agent_For_Website {
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             name varchar(100) NOT NULL,
             email varchar(100) NOT NULL,
+            phone varchar(50) DEFAULT NULL,
             session_id varchar(100) NOT NULL,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -240,7 +245,7 @@ class AI_Agent_For_Website {
 		dbDelta( $messages_sql );
 
 		// Store DB version.
-		update_option( 'aiagent_db_version', '1.1.0' );
+		update_option( 'aiagent_db_version', '1.2.0' );
 	}
 
 	/**

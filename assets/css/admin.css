@@ -275,3 +275,304 @@
     font-size: 14px;
     letter-spacing: 2px;
 }
+
+/* AI Suggestion Styles */
+.aiagent-ai-suggest-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.aiagent-ai-suggest {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.aiagent-ai-suggest .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.aiagent-ai-suggest.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.aiagent-suggest-status {
+    font-size: 13px;
+    color: #666;
+}
+
+.aiagent-suggest-status.success {
+    color: #46b450;
+}
+
+.aiagent-suggest-status.error {
+    color: #dc3232;
+}
+
+/* Custom Text Form Improvements */
+.aiagent-custom-text-form .aiagent-form-row {
+    margin-bottom: 16px;
+}
+
+.aiagent-custom-text-form label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #1e1e1e;
+}
+
+.aiagent-custom-text-form textarea {
+    min-height: 120px;
+}
+
+.aiagent-char-count {
+    text-align: right;
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.aiagent-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.aiagent-form-actions .description {
+    margin: 0;
+    flex: 1;
+}
+
+/* Pillar Pages Detection */
+.aiagent-pillar-detect {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.aiagent-pillar-detect .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-right: 3px;
+}
+
+.aiagent-detect-status {
+    font-size: 13px;
+    color: #666;
+}
+
+.aiagent-pillar-results {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.aiagent-pillar-results h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
+.aiagent-pillar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 15px 0;
+}
+
+.aiagent-pillar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.aiagent-pillar-item input[type="checkbox"] {
+    margin: 0;
+}
+
+.aiagent-pillar-item .pillar-title {
+    flex: 1;
+    font-weight: 500;
+}
+
+.aiagent-pillar-item .pillar-type {
+    font-size: 11px;
+    background: #e0e0e0;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+}
+
+.aiagent-pillar-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Chat Preview Styles */
+.aiagent-preview-container {
+    display: flex;
+    justify-content: center;
+    padding: 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.aiagent-preview-widget {
+    position: relative;
+    width: 350px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+}
+
+.aiagent-preview-window {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.aiagent-preview-header {
+    background: var(--aiagent-primary, #0073aa);
+    color: #fff;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.aiagent-preview-header-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.aiagent-preview-avatar {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.aiagent-preview-avatar svg {
+    width: 24px;
+    height: 24px;
+    color: #fff;
+}
+
+.aiagent-preview-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.aiagent-preview-name {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.aiagent-preview-status {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.aiagent-preview-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.aiagent-preview-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.aiagent-preview-messages {
+    padding: 20px;
+    background: #f5f5f5;
+    min-height: 150px;
+}
+
+.aiagent-preview-message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    margin-bottom: 10px;
+}
+
+.aiagent-preview-message-ai {
+    background: #fff;
+    color: #1e1e1e;
+    border: 1px solid #e0e0e0;
+    border-bottom-left-radius: 4px;
+}
+
+.aiagent-preview-input {
+    padding: 16px 20px;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.aiagent-preview-input input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 24px;
+    font-size: 14px;
+}
+
+.aiagent-preview-input button {
+    width: 44px;
+    height: 44px;
+    background: var(--aiagent-primary, #0073aa);
+    border: none;
+    border-radius: 50%;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.aiagent-preview-toggle {
+    position: absolute;
+    bottom: -70px;
+    right: 0;
+    width: 56px;
+    height: 56px;
+    background: var(--aiagent-primary, #0073aa);
+    border: none;
+    border-radius: 50%;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}

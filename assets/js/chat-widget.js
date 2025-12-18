@@ -223,12 +223,17 @@
         async handleUserInfoSubmit(container, form, messagesContainer) {
             const nameInput = form.querySelector('input[name="user_name"]');
             const emailInput = form.querySelector('input[name="user_email"]');
+            const phoneInput = form.querySelector('input[name="user_phone"]');
             const submitBtn = form.querySelector('button[type="submit"]');
 
             const name = nameInput.value.trim();
             const email = emailInput.value.trim();
+            const phone = phoneInput ? phoneInput.value.trim() : '';
 
             if (!name || !email) return;
+
+            // Check if phone is required
+            if (phoneInput && phoneInput.required && !phone) return;
 
             // Disable form
             submitBtn.disabled = true;
@@ -244,6 +249,7 @@
                     body: JSON.stringify({
                         name: name,
                         email: email,
+                        phone: phone,
                         session_id: this.sessionId,
                     }),
                 });
@@ -254,7 +260,7 @@
                     // Save user info
                     this.userId = data.user_id;
                     this.userName = name;
-                    this.saveUserInfo(data.user_id, name, email);
+                    this.saveUserInfo(data.user_id, name, email, phone);
 
                     if (data.session_id) {
                         this.sessionId = data.session_id;
@@ -526,11 +532,14 @@
             }
         }
 
-        saveUserInfo(userId, name, email) {
+        saveUserInfo(userId, name, email, phone = '') {
             try {
                 localStorage.setItem('aiagent_user_id', String(userId));
                 localStorage.setItem('aiagent_user_name', name);
                 localStorage.setItem('aiagent_user_email', email);
+                if (phone) {
+                    localStorage.setItem('aiagent_user_phone', phone);
+                }
             } catch (e) {
                 // Storage not available
             }
@@ -541,6 +550,7 @@
                 localStorage.removeItem('aiagent_user_id');
                 localStorage.removeItem('aiagent_user_name');
                 localStorage.removeItem('aiagent_user_email');
+                localStorage.removeItem('aiagent_user_phone');
                 localStorage.removeItem('aiagent_session');
             } catch (e) {
                 // Storage not available
