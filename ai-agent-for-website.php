@@ -3,7 +3,7 @@
  * Plugin Name: AI Agent for Website
  * Plugin URI: https://rajanvijayan.com
  * Description: Add an AI-powered chat agent to your website using Groq API. Train it with your website content.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Rajan Vijayan
  * Author URI: https://rajanvijayan.com
  * License: GPL v2 or later
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'AIAGENT_VERSION', '1.0.1' );
+define( 'AIAGENT_VERSION', '1.0.2' );
 define( 'AIAGENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -71,6 +71,7 @@ class AI_Agent_For_Website {
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-rest-api.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-chat-widget.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-knowledge-manager.php';
+		require_once AIAGENT_PLUGIN_DIR . 'includes/class-plugin-updater.php';
 	}
 
 	/**
@@ -90,6 +91,18 @@ class AI_Agent_For_Website {
 
 		// Check and create tables if needed.
 		add_action( 'admin_init', [ $this, 'maybe_create_tables' ] );
+
+		// Initialize plugin updater for GitHub releases.
+		add_action( 'admin_init', [ $this, 'init_updater' ] );
+	}
+
+	/**
+	 * Initialize the plugin updater.
+	 *
+	 * @return void
+	 */
+	public function init_updater() {
+		new AIAGENT_Plugin_Updater();
 	}
 
 	/**

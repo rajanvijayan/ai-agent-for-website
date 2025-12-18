@@ -1,10 +1,10 @@
 === AI Agent for Website ===
-Contributors: developer
+Contributors: rajanvijayan
 Tags: ai, chatbot, chat, groq, llama, assistant
 Requires at least: 5.8
 Tested up to: 6.4
 Requires PHP: 8.0
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,12 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 
 == Changelog ==
 
+= 1.0.2 =
+* Added GitHub-based automatic update system
+* Plugin now checks for updates from GitHub releases
+* One-click updates directly from WordPress dashboard
+* Auto-release workflow for automated builds
+
 = 1.0.1 =
 * Fixed all PHPCS (WordPress Coding Standards) errors
 * Improved output escaping for better security
@@ -80,6 +86,9 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 * Shortcode support
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+Added automatic update system - plugin now updates directly from GitHub releases!
 
 = 1.0.1 =
 Code quality improvements and WordPress Coding Standards compliance.

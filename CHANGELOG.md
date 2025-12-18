@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2024-12-18
+
+### Added
+- GitHub-based automatic update system for seamless plugin updates from WordPress dashboard
+- Auto-release GitHub Action workflow that triggers on main branch updates
+- Plugin updater module that checks GitHub releases for new versions
+- One-click update capability directly from wp-admin Plugins page
+- Release notes display in WordPress update popup
+
+### Changed
+- Improved CI/CD pipeline with automated build and release process
+
 ## [1.0.1] - 2024-12-18
 
 ### Fixed
@@ -52,7 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sanitization of user inputs
 - Capability checks for admin operations
 
-[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/rajanvijayan/ai-agent-for-website/releases/tag/v1.0.0
 
