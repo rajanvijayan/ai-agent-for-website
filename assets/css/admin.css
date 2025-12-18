@@ -287,13 +287,18 @@
 .aiagent-ai-suggest {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
+    padding: 6px 12px;
+    line-height: 1.4;
 }
 
 .aiagent-ai-suggest .dashicons {
     font-size: 16px;
     width: 16px;
     height: 16px;
+    line-height: 1;
+    vertical-align: middle;
+    margin-top: -1px;
 }
 
 .aiagent-ai-suggest.loading {
@@ -357,11 +362,21 @@
     margin-top: 15px;
 }
 
+.aiagent-pillar-detect .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    line-height: 1.4;
+}
+
 .aiagent-pillar-detect .dashicons {
     font-size: 16px;
     width: 16px;
     height: 16px;
-    margin-right: 3px;
+    line-height: 1;
+    vertical-align: middle;
+    margin-top: -1px;
 }
 
 .aiagent-detect-status {
@@ -422,25 +437,46 @@
 
 /* Chat Preview Styles */
 .aiagent-preview-container {
-    display: flex;
-    justify-content: center;
-    padding: 30px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    min-height: 500px;
+    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
     border-radius: 8px;
     margin-top: 15px;
+    border: 2px dashed #c0c0c0;
+    overflow: hidden;
+}
+
+.aiagent-preview-container::before {
+    content: 'Preview Area - This simulates how the widget appears on your website';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #666;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 5px 15px;
+    border-radius: 20px;
+    white-space: nowrap;
 }
 
 .aiagent-preview-widget {
-    position: relative;
-    width: 350px;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 14px;
+    z-index: 10;
 }
 
 .aiagent-preview-window {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 350px;
     background: #fff;
     border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     overflow: hidden;
 }
 
@@ -513,7 +549,7 @@
 .aiagent-preview-messages {
     padding: 20px;
     background: #f5f5f5;
-    min-height: 150px;
+    min-height: 120px;
 }
 
 .aiagent-preview-message {
@@ -558,12 +594,10 @@
     align-items: center;
     justify-content: center;
     color: #fff;
+    flex-shrink: 0;
 }
 
 .aiagent-preview-toggle {
-    position: absolute;
-    bottom: -70px;
-    right: 0;
     width: 56px;
     height: 56px;
     background: var(--aiagent-primary, #0073aa);
