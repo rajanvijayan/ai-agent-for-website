@@ -4,7 +4,7 @@ Tags: ai, chatbot, chat, groq, llama, assistant
 Requires at least: 5.8
 Tested up to: 6.4
 Requires PHP: 8.0
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,12 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 
 == Changelog ==
 
+= 1.0.1 =
+* Fixed all PHPCS (WordPress Coding Standards) errors
+* Improved output escaping for better security
+* Added proper documentation comments to all functions
+* Code quality improvements and standards compliance
+
 = 1.0.0 =
 * Initial release
 * Chat widget with Groq API
@@ -74,6 +80,9 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 * Shortcode support
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Code quality improvements and WordPress Coding Standards compliance.
 
 = 1.0.0 =
 Initial release of AI Agent for Website.

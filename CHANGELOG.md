@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2024-12-18
+
+### Fixed
+- Fixed all PHPCS (WordPress Coding Standards) errors across all PHP files
+- Added proper `@package` tags to all file comments
+- Added class and function documentation comments with `@param` and `@return` tags
+- Replaced `_e()` with `esc_html_e()` and `esc_attr_e()` for proper output escaping
+- Added proper output escaping for all variables using `esc_html()`, `esc_attr()`, `esc_url()`
+- Fixed inline comments to end with proper punctuation
+- Applied Yoda condition checks where required
+- Added `wp_unslash()` before sanitization of POST/GET data
+- Replaced `date()` with `gmdate()` for timezone-safe date formatting
+- Replaced short ternary operators with explicit conditionals
+- Added translators comments for sprintf placeholders
+- Added proper phpcs:ignore comments for intentional direct database queries
+- Fixed variable naming to use snake_case format
+
 ### Added
 - CI/CD workflows for automated testing
 - GitHub Actions for release automation
@@ -35,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sanitization of user inputs
 - Capability checks for admin operations
 
-[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/rajanvijayan/ai-agent-for-website/releases/tag/v1.0.0
 
