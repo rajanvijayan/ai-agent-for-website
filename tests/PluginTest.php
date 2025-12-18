@@ -31,7 +31,7 @@ class PluginTest extends TestCase
         // This would normally require WordPress to be loaded
         // For now, we just verify the plugin file contains the version
         $plugin_content = file_get_contents(dirname(__DIR__) . '/ai-agent-for-website.php');
-        $this->assertStringContainsString("define('AIAGENT_VERSION'", $plugin_content);
+        $this->assertStringContainsString("define( 'AIAGENT_VERSION'", $plugin_content);
     }
 
     /**

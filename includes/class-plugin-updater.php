@@ -415,11 +415,11 @@ class AIAGENT_Plugin_Updater {
 	/**
 	 * Display update message in plugin row.
 	 *
-	 * @param array  $plugin_data Plugin data.
-	 * @param object $response    Response object.
+	 * @param array  $plugin_data Plugin data (unused, required by hook).
+	 * @param object $response    Response object (unused, required by hook).
 	 * @return void
 	 */
-	public function update_message( $plugin_data, $response ) {
+	public function update_message( $plugin_data, $response ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$release = $this->get_github_release();
 
 		if ( false === $release || empty( $release->html_url ) ) {
@@ -465,12 +465,12 @@ class AIAGENT_Plugin_Updater {
 		$release = $this->get_github_release();
 
 		$status = [
-			'current_version' => $this->current_version,
-			'latest_version'  => false === $release ? $this->current_version : $release->version,
+			'current_version'  => $this->current_version,
+			'latest_version'   => false === $release ? $this->current_version : $release->version,
 			'update_available' => false,
-			'download_url'    => false === $release ? '' : $release->download_url,
-			'release_url'     => false === $release ? '' : $release->html_url,
-			'changelog'       => false === $release ? '' : $release->changelog,
+			'download_url'     => false === $release ? '' : $release->download_url,
+			'release_url'      => false === $release ? '' : $release->html_url,
+			'changelog'        => false === $release ? '' : $release->changelog,
 		];
 
 		if ( false !== $release && version_compare( $release->version, $this->current_version, '>' ) ) {
@@ -480,4 +480,3 @@ class AIAGENT_Plugin_Updater {
 		return $status;
 	}
 }
-
