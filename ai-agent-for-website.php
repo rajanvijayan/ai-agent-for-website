@@ -71,6 +71,7 @@ class AI_Agent_For_Website {
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-rest-api.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-chat-widget.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-knowledge-manager.php';
+		require_once AIAGENT_PLUGIN_DIR . 'includes/class-plugin-updater.php';
 	}
 
 	/**
@@ -90,6 +91,18 @@ class AI_Agent_For_Website {
 
 		// Check and create tables if needed.
 		add_action( 'admin_init', [ $this, 'maybe_create_tables' ] );
+
+		// Initialize plugin updater for GitHub releases.
+		add_action( 'admin_init', [ $this, 'init_updater' ] );
+	}
+
+	/**
+	 * Initialize the plugin updater.
+	 *
+	 * @return void
+	 */
+	public function init_updater() {
+		new AIAGENT_Plugin_Updater();
 	}
 
 	/**

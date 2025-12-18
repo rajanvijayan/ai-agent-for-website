@@ -1,5 +1,5 @@
 === AI Agent for Website ===
-Contributors: developer
+Contributors: rajanvijayan
 Tags: ai, chatbot, chat, groq, llama, assistant
 Requires at least: 5.8
 Tested up to: 6.4
