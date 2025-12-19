@@ -797,44 +797,67 @@ class AIAGENT_Admin_Settings {
 		$settings = AI_Agent_For_Website::get_settings();
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified in render().
-		$settings['api_key']            = isset( $_POST['api_key'] ) ? sanitize_text_field( wp_unslash( $_POST['api_key'] ) ) : '';
-		$settings['enabled']            = ! empty( $_POST['enabled'] );
-		$settings['ai_name']            = isset( $_POST['ai_name'] ) ? sanitize_text_field( wp_unslash( $_POST['ai_name'] ) ) : 'AI Assistant';
-		$settings['welcome_message']    = isset( $_POST['welcome_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['welcome_message'] ) ) : '';
-		$settings['system_instruction'] = isset( $_POST['system_instruction'] ) ? sanitize_textarea_field( wp_unslash( $_POST['system_instruction'] ) ) : '';
-		$settings['widget_position']    = isset( $_POST['widget_position'] ) ? sanitize_text_field( wp_unslash( $_POST['widget_position'] ) ) : 'bottom-right';
-		$settings['primary_color']      = isset( $_POST['primary_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['primary_color'] ) ) : '#0073aa';
-		$settings['avatar_url']         = isset( $_POST['avatar_url'] ) ? esc_url_raw( wp_unslash( $_POST['avatar_url'] ) ) : '';
-		$settings['require_user_info']  = ! empty( $_POST['require_user_info'] );
-		$settings['require_phone']      = ! empty( $_POST['require_phone'] );
-		$settings['phone_required']     = ! empty( $_POST['phone_required'] );
-		$settings['show_powered_by']    = ! empty( $_POST['show_powered_by'] );
+		// Get the active tab to only save settings for that tab.
+		$active_tab = isset( $_POST['aiagent_active_tab'] ) ? sanitize_key( $_POST['aiagent_active_tab'] ) : 'general';
 
-		// Save Google Drive settings if provided.
-		if ( isset( $_POST['gdrive_client_id'] ) || isset( $_POST['gdrive_client_secret'] ) ) {
-			$gdrive_settings = AIAGENT_Google_Drive_Integration::get_settings();
-			if ( isset( $_POST['gdrive_client_id'] ) ) {
-				$gdrive_settings['client_id'] = sanitize_text_field( wp_unslash( $_POST['gdrive_client_id'] ) );
-			}
-			if ( isset( $_POST['gdrive_client_secret'] ) ) {
-				$gdrive_settings['client_secret'] = sanitize_text_field( wp_unslash( $_POST['gdrive_client_secret'] ) );
-			}
-			AIAGENT_Google_Drive_Integration::update_settings( $gdrive_settings );
-		}
+		// Save settings based on active tab to prevent overwriting other tab settings.
+		switch ( $active_tab ) {
+			case 'general':
+				if ( isset( $_POST['api_key'] ) ) {
+					$settings['api_key'] = sanitize_text_field( wp_unslash( $_POST['api_key'] ) );
+				}
+				$settings['enabled']            = ! empty( $_POST['enabled'] );
+				$settings['ai_name']            = isset( $_POST['ai_name'] ) ? sanitize_text_field( wp_unslash( $_POST['ai_name'] ) ) : ( $settings['ai_name'] ?? 'AI Assistant' );
+				$settings['welcome_message']    = isset( $_POST['welcome_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['welcome_message'] ) ) : ( $settings['welcome_message'] ?? '' );
+				$settings['system_instruction'] = isset( $_POST['system_instruction'] ) ? sanitize_textarea_field( wp_unslash( $_POST['system_instruction'] ) ) : ( $settings['system_instruction'] ?? '' );
+				break;
 
-		// Save Confluence settings if provided.
-		if ( isset( $_POST['confluence_url'] ) || isset( $_POST['confluence_email'] ) || isset( $_POST['confluence_token'] ) ) {
-			$confluence_settings = AIAGENT_Confluence_Integration::get_settings();
-			if ( isset( $_POST['confluence_url'] ) ) {
-				$confluence_settings['instance_url'] = esc_url_raw( wp_unslash( $_POST['confluence_url'] ) );
-			}
-			if ( isset( $_POST['confluence_email'] ) ) {
-				$confluence_settings['email'] = sanitize_email( wp_unslash( $_POST['confluence_email'] ) );
-			}
-			if ( isset( $_POST['confluence_token'] ) ) {
-				$confluence_settings['api_token'] = sanitize_text_field( wp_unslash( $_POST['confluence_token'] ) );
-			}
-			AIAGENT_Confluence_Integration::update_settings( $confluence_settings );
+			case 'integrations':
+				// Save Google Drive settings if provided.
+				if ( isset( $_POST['gdrive_client_id'] ) || isset( $_POST['gdrive_client_secret'] ) ) {
+					$gdrive_settings = AIAGENT_Google_Drive_Integration::get_settings();
+					if ( isset( $_POST['gdrive_client_id'] ) ) {
+						$gdrive_settings['client_id'] = sanitize_text_field( wp_unslash( $_POST['gdrive_client_id'] ) );
+					}
+					if ( isset( $_POST['gdrive_client_secret'] ) ) {
+						$gdrive_settings['client_secret'] = sanitize_text_field( wp_unslash( $_POST['gdrive_client_secret'] ) );
+					}
+					AIAGENT_Google_Drive_Integration::update_settings( $gdrive_settings );
+				}
+
+				// Save Confluence settings if provided.
+				if ( isset( $_POST['confluence_url'] ) || isset( $_POST['confluence_email'] ) || isset( $_POST['confluence_token'] ) ) {
+					$confluence_settings = AIAGENT_Confluence_Integration::get_settings();
+					if ( isset( $_POST['confluence_url'] ) ) {
+						$confluence_settings['instance_url'] = esc_url_raw( wp_unslash( $_POST['confluence_url'] ) );
+					}
+					if ( isset( $_POST['confluence_email'] ) ) {
+						$confluence_settings['email'] = sanitize_email( wp_unslash( $_POST['confluence_email'] ) );
+					}
+					if ( isset( $_POST['confluence_token'] ) ) {
+						$confluence_settings['api_token'] = sanitize_text_field( wp_unslash( $_POST['confluence_token'] ) );
+					}
+					AIAGENT_Confluence_Integration::update_settings( $confluence_settings );
+				}
+
+				// Also save API key from integrations tab if present.
+				if ( isset( $_POST['api_key'] ) ) {
+					$settings['api_key'] = sanitize_text_field( wp_unslash( $_POST['api_key'] ) );
+				}
+				break;
+
+			case 'appearance':
+				$settings['widget_position'] = isset( $_POST['widget_position'] ) ? sanitize_text_field( wp_unslash( $_POST['widget_position'] ) ) : ( $settings['widget_position'] ?? 'bottom-right' );
+				$settings['primary_color']   = isset( $_POST['primary_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['primary_color'] ) ) : ( $settings['primary_color'] ?? '#0073aa' );
+				$settings['avatar_url']      = isset( $_POST['avatar_url'] ) ? esc_url_raw( wp_unslash( $_POST['avatar_url'] ) ) : ( $settings['avatar_url'] ?? '' );
+				$settings['show_powered_by'] = ! empty( $_POST['show_powered_by'] );
+				break;
+
+			case 'user_data':
+				$settings['require_user_info'] = ! empty( $_POST['require_user_info'] );
+				$settings['require_phone']     = ! empty( $_POST['require_phone'] );
+				$settings['phone_required']    = ! empty( $_POST['phone_required'] );
+				break;
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
