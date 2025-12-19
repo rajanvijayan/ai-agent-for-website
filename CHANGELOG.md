@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2024-12-19
+
+### Added
+- **Custom File Upload**: Upload documents directly to knowledge base (PDF, DOC, DOCX, TXT, CSV, MD, RTF)
+- **Google Drive Integration**: Connect Google Drive and import documents via OAuth 2.0
+- **Confluence Integration**: Connect Atlassian Confluence and import wiki pages
+- File processor class with support for multiple document formats
+- Drag & drop file upload interface with progress indicators
+- REST API endpoints for file upload, Google Drive, and Confluence operations
+- Integration configuration in Settings > Integrations tab
+- File/page browsers in Knowledge Base page for connected integrations
+- Uploaded files management table with delete functionality
+- Secure file storage with .htaccess protection
+
+### Changed
+- Reorganized Knowledge Base page with 3-column grid layout
+- Improved Integrations tab with actual connection settings (previously placeholder)
+- Enhanced admin UI with file type badges and source icons
+
+### Security
+- MIME type validation for uploaded files
+- File size limits (10MB max)
+- Nonce verification on all new endpoints
+- OAuth state verification for Google Drive
+
 ## [1.2.0] - 2024-12-19
 
 ### Added
@@ -103,7 +128,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sanitization of user inputs
 - Capability checks for admin operations
 
-[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.1...v1.0.2
