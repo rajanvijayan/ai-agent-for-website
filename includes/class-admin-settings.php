@@ -104,11 +104,10 @@ class AIAGENT_Admin_Settings {
 											rows="2" 
 											class="large-text"><?php echo esc_textarea( $settings['welcome_message'] ?? 'Hello! How can I help you today?' ); ?></textarea>
 								<div class="aiagent-ai-suggest-wrapper">
-									<button type="button" class="button aiagent-ai-suggest" data-target="welcome_message" data-type="welcome">
-										<span class="dashicons dashicons-admin-generic"></span>
+									<button type="button" class="button aiagent-ai-suggest-btn" data-target="welcome_message" data-type="welcome">
+										<span class="dashicons dashicons-lightbulb"></span>
 										<?php esc_html_e( 'AI Suggestion', 'ai-agent-for-website' ); ?>
 									</button>
-									<span class="aiagent-suggest-status"></span>
 								</div>
 								<p class="description">
 									<?php esc_html_e( 'First message shown when user opens the chat', 'ai-agent-for-website' ); ?>
@@ -125,11 +124,10 @@ class AIAGENT_Admin_Settings {
 											rows="4" 
 											class="large-text"><?php echo esc_textarea( $settings['system_instruction'] ?? '' ); ?></textarea>
 								<div class="aiagent-ai-suggest-wrapper">
-									<button type="button" class="button aiagent-ai-suggest" data-target="system_instruction" data-type="instruction">
-										<span class="dashicons dashicons-admin-generic"></span>
+									<button type="button" class="button aiagent-ai-suggest-btn" data-target="system_instruction" data-type="instruction">
+										<span class="dashicons dashicons-lightbulb"></span>
 										<?php esc_html_e( 'AI Suggestion', 'ai-agent-for-website' ); ?>
 									</button>
-									<span class="aiagent-suggest-status"></span>
 								</div>
 								<p class="description">
 									<?php esc_html_e( 'Instructions that define how the AI should behave and respond', 'ai-agent-for-website' ); ?>
@@ -139,70 +137,150 @@ class AIAGENT_Admin_Settings {
 					</table>
 				</div>
 
-				<div class="aiagent-card">
-					<h2><?php esc_html_e( 'Widget Appearance', 'ai-agent-for-website' ); ?></h2>
-					
-					<table class="form-table">
-						<tr>
-							<th scope="row">
-								<label for="avatar_url"><?php esc_html_e( 'Avatar Image', 'ai-agent-for-website' ); ?></label>
-							</th>
-							<td>
-								<div class="aiagent-avatar-upload">
-									<input type="hidden" 
-											id="avatar_url" 
-											name="avatar_url" 
-											value="<?php echo esc_attr( $settings['avatar_url'] ?? '' ); ?>">
-									<div class="aiagent-avatar-preview" id="avatar_preview">
-										<?php if ( ! empty( $settings['avatar_url'] ) ) : ?>
-											<img src="<?php echo esc_url( $settings['avatar_url'] ); ?>" alt="Avatar">
-										<?php else : ?>
-											<span class="aiagent-avatar-placeholder">
-												<svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
-													<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-												</svg>
-											</span>
-										<?php endif; ?>
+				<div class="aiagent-appearance-grid">
+					<div class="aiagent-card">
+						<h2><?php esc_html_e( 'Widget Appearance', 'ai-agent-for-website' ); ?></h2>
+						
+						<table class="form-table">
+							<tr>
+								<th scope="row">
+									<label for="avatar_url"><?php esc_html_e( 'Avatar Image', 'ai-agent-for-website' ); ?></label>
+								</th>
+								<td>
+									<div class="aiagent-avatar-upload">
+										<input type="hidden" 
+												id="avatar_url" 
+												name="avatar_url" 
+												value="<?php echo esc_attr( $settings['avatar_url'] ?? '' ); ?>">
+										<div class="aiagent-avatar-preview" id="avatar_preview">
+											<?php if ( ! empty( $settings['avatar_url'] ) ) : ?>
+												<img src="<?php echo esc_url( $settings['avatar_url'] ); ?>" alt="Avatar">
+											<?php else : ?>
+												<span class="aiagent-avatar-placeholder">
+													<svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+														<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+													</svg>
+												</span>
+											<?php endif; ?>
+										</div>
+										<button type="button" class="button" id="upload_avatar_btn">
+											<?php esc_html_e( 'Upload Avatar', 'ai-agent-for-website' ); ?>
+										</button>
+										<button type="button" class="button" id="remove_avatar_btn" <?php echo empty( $settings['avatar_url'] ) ? 'style="display:none;"' : ''; ?>>
+											<?php esc_html_e( 'Remove', 'ai-agent-for-website' ); ?>
+										</button>
 									</div>
-									<button type="button" class="button" id="upload_avatar_btn">
-										<?php esc_html_e( 'Upload Avatar', 'ai-agent-for-website' ); ?>
-									</button>
-									<button type="button" class="button" id="remove_avatar_btn" <?php echo empty( $settings['avatar_url'] ) ? 'style="display:none;"' : ''; ?>>
-										<?php esc_html_e( 'Remove', 'ai-agent-for-website' ); ?>
-									</button>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row">
+									<label for="widget_position"><?php esc_html_e( 'Widget Position', 'ai-agent-for-website' ); ?></label>
+								</th>
+								<td>
+									<select id="widget_position" name="widget_position">
+										<option value="bottom-right" <?php selected( $settings['widget_position'] ?? '', 'bottom-right' ); ?>>
+											<?php esc_html_e( 'Bottom Right', 'ai-agent-for-website' ); ?>
+										</option>
+										<option value="bottom-left" <?php selected( $settings['widget_position'] ?? '', 'bottom-left' ); ?>>
+											<?php esc_html_e( 'Bottom Left', 'ai-agent-for-website' ); ?>
+										</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row">
+									<label for="primary_color"><?php esc_html_e( 'Primary Color', 'ai-agent-for-website' ); ?></label>
+								</th>
+								<td>
+									<input type="color" 
+											id="primary_color" 
+											name="primary_color" 
+											value="<?php echo esc_attr( $settings['primary_color'] ?? '#0073aa' ); ?>">
+								</td>
+							</tr>
+							<tr>
+								<th scope="row">
+									<label for="show_powered_by"><?php esc_html_e( 'Show Powered By', 'ai-agent-for-website' ); ?></label>
+								</th>
+								<td>
+									<label class="aiagent-switch">
+										<input type="checkbox" 
+												id="show_powered_by" 
+												name="show_powered_by" 
+												value="1" 
+												<?php checked( $settings['show_powered_by'] ?? true ); ?>>
+										<span class="slider"></span>
+									</label>
+									<p class="description">
+										<?php esc_html_e( 'Show site name at the bottom of chat widget', 'ai-agent-for-website' ); ?>
+									</p>
+								</td>
+							</tr>
+						</table>
+					</div>
+
+					<div class="aiagent-card aiagent-preview-card">
+						<h2><?php esc_html_e( 'Live Preview', 'ai-agent-for-website' ); ?></h2>
+						<div class="aiagent-preview-container">
+							<div class="aiagent-preview-widget" id="aiagent-preview-widget" style="--aiagent-primary: <?php echo esc_attr( $settings['primary_color'] ?? '#0073aa' ); ?>;">
+								<div class="aiagent-preview-window">
+									<div class="aiagent-preview-header">
+										<div class="aiagent-preview-header-info">
+											<div class="aiagent-preview-avatar" id="preview-avatar">
+												<?php if ( ! empty( $settings['avatar_url'] ) ) : ?>
+													<img src="<?php echo esc_url( $settings['avatar_url'] ); ?>" alt="Avatar">
+												<?php else : ?>
+													<svg viewBox="0 0 24 24" fill="currentColor">
+														<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+													</svg>
+												<?php endif; ?>
+											</div>
+											<div>
+												<div class="aiagent-preview-name" id="preview-name"><?php echo esc_html( $settings['ai_name'] ?? 'AI Assistant' ); ?></div>
+												<div class="aiagent-preview-status"><?php esc_html_e( 'Online now', 'ai-agent-for-website' ); ?></div>
+											</div>
+										</div>
+										<div class="aiagent-preview-actions">
+											<button type="button" class="aiagent-preview-btn" title="<?php esc_attr_e( 'New conversation', 'ai-agent-for-website' ); ?>">
+												<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+													<line x1="12" y1="5" x2="12" y2="19"></line>
+													<line x1="5" y1="12" x2="19" y2="12"></line>
+												</svg>
+											</button>
+											<button type="button" class="aiagent-preview-btn" title="<?php esc_attr_e( 'Close', 'ai-agent-for-website' ); ?>">
+												<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+													<line x1="18" y1="6" x2="6" y2="18"></line>
+													<line x1="6" y1="6" x2="18" y2="18"></line>
+												</svg>
+											</button>
+										</div>
+									</div>
+									<div class="aiagent-preview-messages">
+										<div class="aiagent-preview-message aiagent-preview-message-ai" id="preview-welcome">
+											<?php echo esc_html( $settings['welcome_message'] ?? 'Hello! How can I help you today?' ); ?>
+										</div>
+									</div>
+									<div class="aiagent-preview-input">
+										<input type="text" placeholder="<?php esc_attr_e( 'Type your message...', 'ai-agent-for-website' ); ?>" disabled>
+										<button type="button" disabled>
+											<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+												<line x1="22" y1="2" x2="11" y2="13"></line>
+												<polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+											</svg>
+										</button>
+									</div>
+									<div class="aiagent-preview-powered" id="preview-powered">
+										<?php echo esc_html( get_bloginfo( 'name' ) ); ?>
+									</div>
 								</div>
-								<p class="description">
-									<?php esc_html_e( 'Upload an avatar image for the chat assistant (recommended: 80x80px)', 'ai-agent-for-website' ); ?>
-								</p>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row">
-								<label for="widget_position"><?php esc_html_e( 'Widget Position', 'ai-agent-for-website' ); ?></label>
-							</th>
-							<td>
-								<select id="widget_position" name="widget_position">
-									<option value="bottom-right" <?php selected( $settings['widget_position'] ?? '', 'bottom-right' ); ?>>
-										<?php esc_html_e( 'Bottom Right', 'ai-agent-for-website' ); ?>
-									</option>
-									<option value="bottom-left" <?php selected( $settings['widget_position'] ?? '', 'bottom-left' ); ?>>
-										<?php esc_html_e( 'Bottom Left', 'ai-agent-for-website' ); ?>
-									</option>
-								</select>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row">
-								<label for="primary_color"><?php esc_html_e( 'Primary Color', 'ai-agent-for-website' ); ?></label>
-							</th>
-							<td>
-								<input type="color" 
-										id="primary_color" 
-										name="primary_color" 
-										value="<?php echo esc_attr( $settings['primary_color'] ?? '#0073aa' ); ?>">
-							</td>
-						</tr>
-					</table>
+								<button type="button" class="aiagent-preview-toggle">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+										<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
 				</div>
 
 				<div class="aiagent-card">
@@ -267,69 +345,6 @@ class AIAGENT_Admin_Settings {
 				</div>
 
 				<div class="aiagent-card">
-					<h2><?php esc_html_e( 'Chat Widget Preview', 'ai-agent-for-website' ); ?></h2>
-					<p class="description">
-						<?php esc_html_e( 'Preview how your chat widget will appear to visitors:', 'ai-agent-for-website' ); ?>
-					</p>
-					<div class="aiagent-preview-container">
-						<div class="aiagent-preview-widget" id="aiagent-preview-widget" style="--aiagent-primary: <?php echo esc_attr( $settings['primary_color'] ?? '#0073aa' ); ?>;">
-							<div class="aiagent-preview-window">
-								<div class="aiagent-preview-header">
-									<div class="aiagent-preview-header-info">
-										<div class="aiagent-preview-avatar" id="preview-avatar">
-											<?php if ( ! empty( $settings['avatar_url'] ) ) : ?>
-												<img src="<?php echo esc_url( $settings['avatar_url'] ); ?>" alt="Avatar">
-											<?php else : ?>
-												<svg viewBox="0 0 24 24" fill="currentColor">
-													<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-												</svg>
-											<?php endif; ?>
-										</div>
-										<div>
-											<div class="aiagent-preview-name" id="preview-name"><?php echo esc_html( $settings['ai_name'] ?? 'AI Assistant' ); ?></div>
-											<div class="aiagent-preview-status"><?php esc_html_e( 'Online now', 'ai-agent-for-website' ); ?></div>
-										</div>
-									</div>
-									<div class="aiagent-preview-actions">
-										<button type="button" class="aiagent-preview-btn" title="<?php esc_attr_e( 'New conversation', 'ai-agent-for-website' ); ?>">
-											<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-												<line x1="12" y1="5" x2="12" y2="19"></line>
-												<line x1="5" y1="12" x2="19" y2="12"></line>
-											</svg>
-										</button>
-										<button type="button" class="aiagent-preview-btn" title="<?php esc_attr_e( 'Close', 'ai-agent-for-website' ); ?>">
-											<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-												<line x1="18" y1="6" x2="6" y2="18"></line>
-												<line x1="6" y1="6" x2="18" y2="18"></line>
-											</svg>
-										</button>
-									</div>
-								</div>
-								<div class="aiagent-preview-messages">
-									<div class="aiagent-preview-message aiagent-preview-message-ai" id="preview-welcome">
-										<?php echo esc_html( $settings['welcome_message'] ?? 'Hello! How can I help you today?' ); ?>
-									</div>
-								</div>
-								<div class="aiagent-preview-input">
-									<input type="text" placeholder="<?php esc_attr_e( 'Type your message...', 'ai-agent-for-website' ); ?>" disabled>
-									<button type="button" disabled>
-										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-											<line x1="22" y1="2" x2="11" y2="13"></line>
-											<polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-										</svg>
-									</button>
-								</div>
-							</div>
-							<button type="button" class="aiagent-preview-toggle">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
-									<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-								</svg>
-							</button>
-						</div>
-					</div>
-				</div>
-
-				<div class="aiagent-card">
 					<h2><?php esc_html_e( 'Shortcode Usage', 'ai-agent-for-website' ); ?></h2>
 					<p><?php esc_html_e( 'You can also embed the chat widget directly in any page or post using this shortcode:', 'ai-agent-for-website' ); ?></p>
 					<code>[ai_agent_chat]</code>
@@ -345,6 +360,43 @@ class AIAGENT_Admin_Settings {
 							value="<?php esc_attr_e( 'Save Settings', 'ai-agent-for-website' ); ?>">
 				</p>
 			</form>
+
+			<!-- AI Suggestion Modal -->
+			<div id="aiagent-suggest-modal" class="aiagent-modal" style="display: none;">
+				<div class="aiagent-modal-overlay"></div>
+				<div class="aiagent-modal-content">
+					<div class="aiagent-modal-header">
+						<h3 id="aiagent-modal-title"><?php esc_html_e( 'AI Suggestion', 'ai-agent-for-website' ); ?></h3>
+						<button type="button" class="aiagent-modal-close">&times;</button>
+					</div>
+					<div class="aiagent-modal-body">
+						<div id="aiagent-modal-loading" class="aiagent-modal-loading">
+							<span class="spinner is-active"></span>
+							<p><?php esc_html_e( 'Generating suggestion...', 'ai-agent-for-website' ); ?></p>
+						</div>
+						<div id="aiagent-modal-result" class="aiagent-modal-result" style="display: none;">
+							<label><?php esc_html_e( 'Suggested Text:', 'ai-agent-for-website' ); ?></label>
+							<textarea id="aiagent-modal-suggestion" rows="4" class="large-text" readonly></textarea>
+						</div>
+						<div id="aiagent-modal-error" class="aiagent-modal-error" style="display: none;">
+							<p></p>
+						</div>
+					</div>
+					<div class="aiagent-modal-footer">
+						<button type="button" class="button" id="aiagent-modal-regenerate">
+							<span class="dashicons dashicons-update"></span>
+							<?php esc_html_e( 'Regenerate', 'ai-agent-for-website' ); ?>
+						</button>
+						<button type="button" class="button button-primary" id="aiagent-modal-apply">
+							<span class="dashicons dashicons-yes"></span>
+							<?php esc_html_e( 'Use This', 'ai-agent-for-website' ); ?>
+						</button>
+						<button type="button" class="button" id="aiagent-modal-cancel">
+							<?php esc_html_e( 'Cancel', 'ai-agent-for-website' ); ?>
+						</button>
+					</div>
+				</div>
+			</div>
 		</div>
 		<?php
 	}
@@ -368,6 +420,7 @@ class AIAGENT_Admin_Settings {
 		$settings['require_user_info']  = ! empty( $_POST['require_user_info'] );
 		$settings['require_phone']      = ! empty( $_POST['require_phone'] );
 		$settings['phone_required']     = ! empty( $_POST['phone_required'] );
+		$settings['show_powered_by']    = ! empty( $_POST['show_powered_by'] );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		AI_Agent_For_Website::update_settings( $settings );

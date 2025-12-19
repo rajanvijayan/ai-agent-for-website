@@ -4,7 +4,7 @@ Tags: ai, chatbot, chat, groq, llama, assistant
 Requires at least: 5.8
 Tested up to: 6.4
 Requires PHP: 8.0
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,6 +68,12 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 
 == Changelog ==
 
+= 1.2.0 =
+* NEW: Configurable "Powered By" text - option to show/hide footer branding
+* NEW: AI suggestions now display in a modal with regenerate option
+* IMPROVED: Settings page layout - Widget Appearance and Preview side-by-side
+* IMPROVED: Responsive design for smaller screens
+
 = 1.1.0 =
 * NEW: Phone number field option before starting chat
 * NEW: AI-powered "Auto Detect Pillar Pages" feature in Knowledge Base
@@ -97,6 +103,9 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 * Shortcode support
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+UI improvements! Side-by-side settings layout, modal-based AI suggestions, and optional "Powered By" branding.
 
 = 1.1.0 =
 Major feature update! AI-powered pillar page detection, phone field support, widget preview, and more.

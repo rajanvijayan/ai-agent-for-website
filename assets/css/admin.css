@@ -438,16 +438,16 @@
 /* Chat Preview Styles */
 .aiagent-preview-container {
     position: relative;
-    min-height: 500px;
+    min-height: 520px;
     background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
     border-radius: 8px;
     margin-top: 15px;
     border: 2px dashed #c0c0c0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .aiagent-preview-container::before {
-    content: 'Preview Area - This simulates how the widget appears on your website';
+    content: "Preview Area - This simulates how the widget appears on your website";
     position: absolute;
     top: 10px;
     left: 50%;
@@ -468,7 +468,9 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 14px;
     z-index: 10;
-    transition: left 0.3s ease, right 0.3s ease;
+    transition:
+        left 0.3s ease,
+        right 0.3s ease;
 }
 
 .aiagent-preview-widget.position-bottom-left {
@@ -486,7 +488,9 @@
     border-radius: 16px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     overflow: hidden;
-    transition: left 0.3s ease, right 0.3s ease;
+    transition:
+        left 0.3s ease,
+        right 0.3s ease;
 }
 
 .aiagent-preview-widget.position-bottom-left .aiagent-preview-window {
@@ -623,4 +627,223 @@
     justify-content: center;
     color: #fff;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.aiagent-preview-powered {
+    text-align: center;
+    padding: 8px;
+    font-size: 11px;
+    color: #666;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+}
+
+.aiagent-preview-powered.hidden {
+    display: none;
+}
+
+/* Appearance Grid - Side by Side Layout */
+.aiagent-appearance-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 1200px) {
+    .aiagent-appearance-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aiagent-appearance-grid .aiagent-card {
+    margin-bottom: 0;
+}
+
+.aiagent-appearance-grid .form-table th {
+    width: 140px;
+}
+
+.aiagent-preview-card {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+}
+
+.aiagent-preview-card .aiagent-preview-container {
+    flex: 1;
+    min-height: 480px;
+    margin-top: 10px;
+    overflow: visible;
+}
+
+.aiagent-preview-card .aiagent-preview-container::before {
+    display: none;
+}
+
+/* AI Suggestion Button */
+.aiagent-ai-suggest-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    line-height: 1.4;
+}
+
+.aiagent-ai-suggest-btn .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+    vertical-align: middle;
+    margin-top: -1px;
+    color: #f0b849;
+}
+
+/* Modal Styles */
+.aiagent-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aiagent-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.aiagent-modal-content {
+    position: relative;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    width: 500px;
+    max-width: 90%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    animation: aiagent-modal-in 0.2s ease;
+}
+
+@keyframes aiagent-modal-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.aiagent-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.aiagent-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.aiagent-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.aiagent-modal-close:hover {
+    color: #000;
+}
+
+.aiagent-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.aiagent-modal-loading {
+    text-align: center;
+    padding: 30px;
+}
+
+.aiagent-modal-loading .spinner {
+    float: none;
+    margin: 0 auto 15px;
+}
+
+.aiagent-modal-loading p {
+    margin: 0;
+    color: #666;
+}
+
+.aiagent-modal-result label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.aiagent-modal-result textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.aiagent-modal-error {
+    padding: 15px;
+    background: #fef0f0;
+    border: 1px solid #f5c6c6;
+    border-radius: 6px;
+    color: #c00;
+}
+
+.aiagent-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1px solid #e0e0e0;
+    background: #f9f9f9;
+    border-radius: 0 0 8px 8px;
+}
+
+.aiagent-modal-footer .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.aiagent-modal-footer .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+    vertical-align: middle;
+    margin-top: -1px;
+}
+
+#aiagent-modal-regenerate {
+    margin-right: auto;
 }
