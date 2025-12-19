@@ -1275,6 +1275,189 @@
 }
 
 /* ===============================
+   Integration Import Cards
+   =============================== */
+.aiagent-integration-import-card {
+    margin-top: 20px;
+}
+
+.aiagent-integration-import-card.aiagent-card-disabled {
+    opacity: 0.85;
+    background: linear-gradient(to right, #fff 80%, #f7f7f7 100%);
+}
+
+.aiagent-integration-import-card.aiagent-card-disabled .button {
+    margin-top: 15px;
+}
+
+.aiagent-gdrive-browser,
+.aiagent-confluence-browser {
+    margin-top: 15px;
+}
+
+.aiagent-gdrive-search {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.aiagent-gdrive-search input {
+    flex: 1;
+}
+
+.aiagent-confluence-space-select {
+    margin-bottom: 15px;
+}
+
+.aiagent-confluence-space-select label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.aiagent-confluence-space-select select {
+    width: 100%;
+    max-width: 400px;
+}
+
+.aiagent-file-browser {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fafafa;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.aiagent-file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.aiagent-file-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.aiagent-file-item:hover {
+    border-color: #0073aa;
+    background: #f0f7fc;
+}
+
+.aiagent-file-item input[type="checkbox"] {
+    margin: 0;
+}
+
+.aiagent-file-item .dashicons {
+    color: #666;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+}
+
+.aiagent-file-item-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.aiagent-file-browser .aiagent-loading,
+.aiagent-file-browser .aiagent-empty,
+.aiagent-file-browser .aiagent-error {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    margin: 0;
+}
+
+.aiagent-file-browser .aiagent-loading .spinner {
+    float: none;
+    margin: 0 10px 0 0;
+}
+
+.aiagent-file-browser .aiagent-error {
+    color: #dc3232;
+}
+
+.aiagent-gdrive-actions,
+.aiagent-confluence-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.aiagent-import-status {
+    color: #666;
+    font-size: 13px;
+}
+
+/* Compact table for integrations */
+.aiagent-compact-table th {
+    padding: 10px 0;
+    width: 140px;
+}
+
+.aiagent-compact-table td {
+    padding: 10px 0;
+}
+
+.aiagent-integration-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.aiagent-connection-status {
+    color: #666;
+    font-size: 13px;
+}
+
+/* Copy to clipboard */
+.aiagent-copy-text {
+    display: inline-block;
+    padding: 6px 10px;
+    background: #f0f0f1;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    word-break: break-all;
+    max-width: 100%;
+}
+
+.aiagent-copy-btn {
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+.aiagent-copy-btn .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+/* Integration setup */
+.aiagent-integration-setup {
+    margin-top: 15px;
+}
+
+/* ===============================
    Responsive Adjustments
    =============================== */
 @media (max-width: 782px) {
@@ -1304,5 +1487,13 @@
 
     .aiagent-api-key-wrapper input {
         max-width: none;
+    }
+    
+    .aiagent-gdrive-search {
+        flex-direction: column;
+    }
+    
+    .aiagent-compact-table th {
+        width: auto;
     }
 }

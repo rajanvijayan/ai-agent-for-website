@@ -32,6 +32,12 @@ class AIAGENT_Admin_Settings {
 			$this->save_settings();
 		}
 
+		// Handle Google Drive OAuth callback.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth state verified in callback handler.
+		if ( isset( $_GET['gdrive_callback'] ) && isset( $_GET['code'] ) ) {
+			$this->handle_gdrive_callback();
+		}
+
 		// Get current tab from URL parameter.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just reading tab parameter for display.
 		$this->active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'general';
@@ -270,34 +276,196 @@ class AIAGENT_Admin_Settings {
 			</table>
 		</div>
 
+		<?php
+		$gdrive_settings  = AIAGENT_Google_Drive_Integration::get_settings();
+		$gdrive_connected = AIAGENT_Google_Drive_Integration::is_connected();
+		$gdrive_user      = AIAGENT_Google_Drive_Integration::get_connected_user();
+		?>
 		<div class="aiagent-card aiagent-integration-card">
 			<h2>
 				<span class="dashicons dashicons-google" style="color: #4285f4;"></span>
 				<?php esc_html_e( 'Google Drive', 'ai-agent-for-website' ); ?>
-				<span class="aiagent-badge aiagent-badge-soon"><?php esc_html_e( 'Coming Soon', 'ai-agent-for-website' ); ?></span>
+				<?php if ( $gdrive_connected ) : ?>
+					<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
+				<?php endif; ?>
 			</h2>
 			<p class="description">
 				<?php esc_html_e( 'Connect your Google Drive to import documents directly into your knowledge base.', 'ai-agent-for-website' ); ?>
 			</p>
-			<div class="aiagent-integration-status aiagent-status-disabled">
-				<span class="dashicons dashicons-lock"></span>
-				<?php esc_html_e( 'This integration will be available in a future update.', 'ai-agent-for-website' ); ?>
-			</div>
+
+			<?php if ( $gdrive_connected && $gdrive_user ) : ?>
+				<div class="aiagent-integration-status aiagent-status-connected">
+					<span class="dashicons dashicons-yes-alt"></span>
+					<?php
+					/* translators: %s: User email */
+					printf( esc_html__( 'Connected as %s', 'ai-agent-for-website' ), esc_html( $gdrive_user['email'] ) );
+					?>
+					<button type="button" class="button button-small button-link-delete aiagent-gdrive-disconnect" style="margin-left: 10px;">
+						<?php esc_html_e( 'Disconnect', 'ai-agent-for-website' ); ?>
+					</button>
+				</div>
+				<div style="margin-top: 15px;">
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-knowledge' ) ); ?>" class="button button-primary">
+						<span class="dashicons dashicons-cloud-upload" style="margin-top: 3px;"></span>
+						<?php esc_html_e( 'Import from Google Drive', 'ai-agent-for-website' ); ?>
+					</a>
+				</div>
+			<?php else : ?>
+				<div class="aiagent-integration-setup">
+					<p class="description" style="margin-bottom: 15px;">
+						<?php esc_html_e( 'To connect Google Drive, you need to create OAuth credentials in the Google Cloud Console.', 'ai-agent-for-website' ); ?>
+						<a href="https://console.cloud.google.com/apis/credentials" target="_blank"><?php esc_html_e( 'Learn how →', 'ai-agent-for-website' ); ?></a>
+					</p>
+					<table class="form-table aiagent-compact-table">
+						<tr>
+							<th scope="row">
+								<label for="gdrive_client_id"><?php esc_html_e( 'Client ID', 'ai-agent-for-website' ); ?></label>
+							</th>
+							<td>
+								<input type="text" 
+										id="gdrive_client_id" 
+										name="gdrive_client_id" 
+										value="<?php echo esc_attr( $gdrive_settings['client_id'] ?? '' ); ?>" 
+										class="regular-text"
+										placeholder="xxxxxx.apps.googleusercontent.com">
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">
+								<label for="gdrive_client_secret"><?php esc_html_e( 'Client Secret', 'ai-agent-for-website' ); ?></label>
+							</th>
+							<td>
+								<div class="aiagent-api-key-wrapper">
+									<input type="password" 
+											id="gdrive_client_secret" 
+											name="gdrive_client_secret" 
+											value="<?php echo esc_attr( $gdrive_settings['client_secret'] ?? '' ); ?>" 
+											class="regular-text"
+											autocomplete="off">
+									<button type="button" class="button aiagent-toggle-password">
+										<span class="dashicons dashicons-visibility"></span>
+									</button>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">
+								<label><?php esc_html_e( 'Redirect URI', 'ai-agent-for-website' ); ?></label>
+							</th>
+							<td>
+								<code class="aiagent-copy-text" id="gdrive-redirect-uri"><?php echo esc_html( admin_url( 'admin.php?page=ai-agent-settings&tab=integrations&gdrive_callback=1' ) ); ?></code>
+								<button type="button" class="button button-small aiagent-copy-btn" data-target="gdrive-redirect-uri">
+									<span class="dashicons dashicons-clipboard"></span>
+								</button>
+								<p class="description"><?php esc_html_e( 'Add this URL to your OAuth consent screen authorized redirect URIs.', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+					</table>
+					<div class="aiagent-integration-actions">
+						<button type="button" id="aiagent-gdrive-connect" class="button button-primary" <?php disabled( empty( $gdrive_settings['client_id'] ) || empty( $gdrive_settings['client_secret'] ) ); ?>>
+							<span class="dashicons dashicons-admin-links" style="margin-top: 3px;"></span>
+							<?php esc_html_e( 'Connect Google Drive', 'ai-agent-for-website' ); ?>
+						</button>
+						<span class="aiagent-connection-status"></span>
+					</div>
+				</div>
+			<?php endif; ?>
 		</div>
 
+		<?php
+		$confluence_settings  = AIAGENT_Confluence_Integration::get_settings();
+		$confluence_connected = AIAGENT_Confluence_Integration::is_connected();
+		?>
 		<div class="aiagent-card aiagent-integration-card">
 			<h2>
 				<span class="aiagent-integration-icon aiagent-icon-atlassian"></span>
-				<?php esc_html_e( 'Atlassian (Confluence & JIRA)', 'ai-agent-for-website' ); ?>
-				<span class="aiagent-badge aiagent-badge-soon"><?php esc_html_e( 'Coming Soon', 'ai-agent-for-website' ); ?></span>
+				<?php esc_html_e( 'Confluence', 'ai-agent-for-website' ); ?>
+				<?php if ( $confluence_connected ) : ?>
+					<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
+				<?php endif; ?>
 			</h2>
 			<p class="description">
-				<?php esc_html_e( 'Connect Confluence to import wiki content, and JIRA to import project issues into your knowledge base.', 'ai-agent-for-website' ); ?>
+				<?php esc_html_e( 'Connect Confluence to import wiki pages and documentation into your knowledge base.', 'ai-agent-for-website' ); ?>
 			</p>
-			<div class="aiagent-integration-status aiagent-status-disabled">
-				<span class="dashicons dashicons-lock"></span>
-				<?php esc_html_e( 'This integration will be available in a future update.', 'ai-agent-for-website' ); ?>
-			</div>
+
+			<?php if ( $confluence_connected ) : ?>
+				<div class="aiagent-integration-status aiagent-status-connected">
+					<span class="dashicons dashicons-yes-alt"></span>
+					<?php
+					/* translators: %s: Instance URL */
+					printf( esc_html__( 'Connected to %s', 'ai-agent-for-website' ), esc_html( $confluence_settings['instance_url'] ) );
+					?>
+					<button type="button" class="button button-small button-link-delete aiagent-confluence-disconnect" style="margin-left: 10px;">
+						<?php esc_html_e( 'Disconnect', 'ai-agent-for-website' ); ?>
+					</button>
+				</div>
+				<div style="margin-top: 15px;">
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-knowledge' ) ); ?>" class="button button-primary">
+						<span class="dashicons dashicons-cloud-upload" style="margin-top: 3px;"></span>
+						<?php esc_html_e( 'Import from Confluence', 'ai-agent-for-website' ); ?>
+					</a>
+				</div>
+			<?php else : ?>
+				<div class="aiagent-integration-setup">
+					<p class="description" style="margin-bottom: 15px;">
+						<?php esc_html_e( 'Enter your Confluence Cloud or Server credentials. For Cloud, use an API token from', 'ai-agent-for-website' ); ?>
+						<a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank"><?php esc_html_e( 'Atlassian API tokens', 'ai-agent-for-website' ); ?></a>
+					</p>
+					<table class="form-table aiagent-compact-table">
+						<tr>
+							<th scope="row">
+								<label for="confluence_url"><?php esc_html_e( 'Instance URL', 'ai-agent-for-website' ); ?></label>
+							</th>
+							<td>
+								<input type="url" 
+										id="confluence_url" 
+										name="confluence_url" 
+										value="<?php echo esc_attr( $confluence_settings['instance_url'] ?? '' ); ?>" 
+										class="regular-text"
+										placeholder="https://your-domain.atlassian.net">
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">
+								<label for="confluence_email"><?php esc_html_e( 'Email', 'ai-agent-for-website' ); ?></label>
+							</th>
+							<td>
+								<input type="email" 
+										id="confluence_email" 
+										name="confluence_email" 
+										value="<?php echo esc_attr( $confluence_settings['email'] ?? '' ); ?>" 
+										class="regular-text"
+										placeholder="you@example.com">
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">
+								<label for="confluence_token"><?php esc_html_e( 'API Token', 'ai-agent-for-website' ); ?></label>
+							</th>
+							<td>
+								<div class="aiagent-api-key-wrapper">
+									<input type="password" 
+											id="confluence_token" 
+											name="confluence_token" 
+											value="<?php echo esc_attr( $confluence_settings['api_token'] ?? '' ); ?>" 
+											class="regular-text"
+											autocomplete="off">
+									<button type="button" class="button aiagent-toggle-password">
+										<span class="dashicons dashicons-visibility"></span>
+									</button>
+								</div>
+							</td>
+						</tr>
+					</table>
+					<div class="aiagent-integration-actions">
+						<button type="button" id="aiagent-confluence-connect" class="button button-primary">
+							<span class="dashicons dashicons-admin-links" style="margin-top: 3px;"></span>
+							<?php esc_html_e( 'Connect Confluence', 'ai-agent-for-website' ); ?>
+						</button>
+						<span class="aiagent-confluence-status"></span>
+					</div>
+				</div>
+			<?php endif; ?>
 		</div>
 
 		<div class="aiagent-card aiagent-integration-card">
@@ -641,11 +809,79 @@ class AIAGENT_Admin_Settings {
 		$settings['require_phone']      = ! empty( $_POST['require_phone'] );
 		$settings['phone_required']     = ! empty( $_POST['phone_required'] );
 		$settings['show_powered_by']    = ! empty( $_POST['show_powered_by'] );
+
+		// Save Google Drive settings if provided.
+		if ( isset( $_POST['gdrive_client_id'] ) || isset( $_POST['gdrive_client_secret'] ) ) {
+			$gdrive_settings = AIAGENT_Google_Drive_Integration::get_settings();
+			if ( isset( $_POST['gdrive_client_id'] ) ) {
+				$gdrive_settings['client_id'] = sanitize_text_field( wp_unslash( $_POST['gdrive_client_id'] ) );
+			}
+			if ( isset( $_POST['gdrive_client_secret'] ) ) {
+				$gdrive_settings['client_secret'] = sanitize_text_field( wp_unslash( $_POST['gdrive_client_secret'] ) );
+			}
+			AIAGENT_Google_Drive_Integration::update_settings( $gdrive_settings );
+		}
+
+		// Save Confluence settings if provided.
+		if ( isset( $_POST['confluence_url'] ) || isset( $_POST['confluence_email'] ) || isset( $_POST['confluence_token'] ) ) {
+			$confluence_settings = AIAGENT_Confluence_Integration::get_settings();
+			if ( isset( $_POST['confluence_url'] ) ) {
+				$confluence_settings['instance_url'] = esc_url_raw( wp_unslash( $_POST['confluence_url'] ) );
+			}
+			if ( isset( $_POST['confluence_email'] ) ) {
+				$confluence_settings['email'] = sanitize_email( wp_unslash( $_POST['confluence_email'] ) );
+			}
+			if ( isset( $_POST['confluence_token'] ) ) {
+				$confluence_settings['api_token'] = sanitize_text_field( wp_unslash( $_POST['confluence_token'] ) );
+			}
+			AIAGENT_Confluence_Integration::update_settings( $confluence_settings );
+		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		AI_Agent_For_Website::update_settings( $settings );
 
 		add_settings_error( 'aiagent_messages', 'aiagent_message', __( 'Settings saved.', 'ai-agent-for-website' ), 'updated' );
 		settings_errors( 'aiagent_messages' );
+	}
+
+	/**
+	 * Handle Google Drive OAuth callback.
+	 */
+	private function handle_gdrive_callback() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- OAuth state verified in integration class.
+		$code  = isset( $_GET['code'] ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : '';
+		$state = isset( $_GET['state'] ) ? sanitize_text_field( wp_unslash( $_GET['state'] ) ) : '';
+		$error = isset( $_GET['error'] ) ? sanitize_text_field( wp_unslash( $_GET['error'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( $error ) {
+			add_settings_error(
+				'aiagent_messages',
+				'gdrive_error',
+				/* translators: %s: Error message */
+				sprintf( __( 'Google Drive authorization failed: %s', 'ai-agent-for-website' ), $error ),
+				'error'
+			);
+			return;
+		}
+
+		$gdrive = new AIAGENT_Google_Drive_Integration();
+		$result = $gdrive->handle_callback( $code, $state );
+
+		if ( is_wp_error( $result ) ) {
+			add_settings_error(
+				'aiagent_messages',
+				'gdrive_error',
+				$result->get_error_message(),
+				'error'
+			);
+		} else {
+			add_settings_error(
+				'aiagent_messages',
+				'gdrive_success',
+				__( 'Successfully connected to Google Drive!', 'ai-agent-for-website' ),
+				'updated'
+			);
+		}
 	}
 }

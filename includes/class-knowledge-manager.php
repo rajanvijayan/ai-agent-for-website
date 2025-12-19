@@ -196,6 +196,86 @@ class AIAGENT_Knowledge_Manager {
 					</div>
 					<div id="aiagent-file-upload-results" class="aiagent-file-upload-results"></div>
 				</div>
+
+				<?php if ( AIAGENT_Google_Drive_Integration::is_connected() ) : ?>
+				<div class="aiagent-card aiagent-integration-import-card">
+					<h2>
+						<span class="dashicons dashicons-google" style="color: #4285f4;"></span>
+						<?php esc_html_e( 'Import from Google Drive', 'ai-agent-for-website' ); ?>
+					</h2>
+					<div class="aiagent-gdrive-browser">
+						<div class="aiagent-gdrive-search">
+							<input type="text" id="aiagent-gdrive-search" placeholder="<?php esc_attr_e( 'Search files...', 'ai-agent-for-website' ); ?>" class="regular-text">
+							<button type="button" id="aiagent-gdrive-refresh" class="button">
+								<span class="dashicons dashicons-update"></span>
+							</button>
+						</div>
+						<div id="aiagent-gdrive-files" class="aiagent-file-browser">
+							<p class="aiagent-loading"><span class="spinner is-active"></span> <?php esc_html_e( 'Loading files...', 'ai-agent-for-website' ); ?></p>
+						</div>
+						<div class="aiagent-gdrive-actions" style="display: none;">
+							<button type="button" id="aiagent-gdrive-import-selected" class="button button-primary" disabled>
+								<?php esc_html_e( 'Import Selected', 'ai-agent-for-website' ); ?>
+							</button>
+							<span class="aiagent-import-status"></span>
+						</div>
+					</div>
+				</div>
+				<?php else : ?>
+				<div class="aiagent-card aiagent-integration-import-card aiagent-card-disabled">
+					<h2>
+						<span class="dashicons dashicons-google" style="color: #4285f4;"></span>
+						<?php esc_html_e( 'Google Drive', 'ai-agent-for-website' ); ?>
+					</h2>
+					<p class="description">
+						<?php esc_html_e( 'Connect your Google Drive account to import documents.', 'ai-agent-for-website' ); ?>
+					</p>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-settings&tab=integrations' ) ); ?>" class="button">
+						<span class="dashicons dashicons-admin-links" style="margin-top: 3px;"></span>
+						<?php esc_html_e( 'Connect Google Drive', 'ai-agent-for-website' ); ?>
+					</a>
+				</div>
+				<?php endif; ?>
+
+				<?php if ( AIAGENT_Confluence_Integration::is_connected() ) : ?>
+				<div class="aiagent-card aiagent-integration-import-card">
+					<h2>
+						<span class="aiagent-integration-icon aiagent-icon-atlassian"></span>
+						<?php esc_html_e( 'Import from Confluence', 'ai-agent-for-website' ); ?>
+					</h2>
+					<div class="aiagent-confluence-browser">
+						<div class="aiagent-confluence-space-select">
+							<label for="aiagent-confluence-space"><?php esc_html_e( 'Select Space:', 'ai-agent-for-website' ); ?></label>
+							<select id="aiagent-confluence-space" class="regular-text">
+								<option value=""><?php esc_html_e( 'Loading spaces...', 'ai-agent-for-website' ); ?></option>
+							</select>
+						</div>
+						<div id="aiagent-confluence-pages" class="aiagent-file-browser" style="display: none;">
+							<p class="aiagent-empty"><?php esc_html_e( 'Select a space to view pages', 'ai-agent-for-website' ); ?></p>
+						</div>
+						<div class="aiagent-confluence-actions" style="display: none;">
+							<button type="button" id="aiagent-confluence-import-selected" class="button button-primary" disabled>
+								<?php esc_html_e( 'Import Selected', 'ai-agent-for-website' ); ?>
+							</button>
+							<span class="aiagent-import-status"></span>
+						</div>
+					</div>
+				</div>
+				<?php else : ?>
+				<div class="aiagent-card aiagent-integration-import-card aiagent-card-disabled">
+					<h2>
+						<span class="aiagent-integration-icon aiagent-icon-atlassian"></span>
+						<?php esc_html_e( 'Confluence', 'ai-agent-for-website' ); ?>
+					</h2>
+					<p class="description">
+						<?php esc_html_e( 'Connect your Confluence account to import wiki pages.', 'ai-agent-for-website' ); ?>
+					</p>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-settings&tab=integrations' ) ); ?>" class="button">
+						<span class="dashicons dashicons-admin-links" style="margin-top: 3px;"></span>
+						<?php esc_html_e( 'Connect Confluence', 'ai-agent-for-website' ); ?>
+					</a>
+				</div>
+				<?php endif; ?>
 			</div>
 
 			<?php if ( ! empty( $uploaded_files ) ) : ?>

@@ -234,6 +234,126 @@ class AIAGENT_REST_API {
 				],
 			]
 		);
+
+		// Google Drive auth URL endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/gdrive/auth-url',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_gdrive_auth_url' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		// Google Drive disconnect endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/gdrive/disconnect',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_gdrive_disconnect' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		// Google Drive list files endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/gdrive/files',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_gdrive_list_files' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		// Google Drive import file endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/gdrive/import',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_gdrive_import' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+				'args'                => [
+					'file_id' => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+				],
+			]
+		);
+
+		// Confluence test connection endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/confluence/test',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_confluence_test' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		// Confluence disconnect endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/confluence/disconnect',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_confluence_disconnect' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		// Confluence list spaces endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/confluence/spaces',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_confluence_spaces' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		// Confluence list pages endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/confluence/pages',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_confluence_pages' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+				'args'                => [
+					'space_key' => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+				],
+			]
+		);
+
+		// Confluence import page endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/confluence/import',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_confluence_import' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+				'args'                => [
+					'page_id' => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+				],
+			]
+		);
 	}
 
 	/**
@@ -1006,5 +1126,189 @@ Do not include any explanation, just the JSON array.',
 				'message' => __( 'File deleted successfully.', 'ai-agent-for-website' ),
 			]
 		);
+	}
+
+	/**
+	 * Handle Google Drive auth URL request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_gdrive_auth_url( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$gdrive   = new AIAGENT_Google_Drive_Integration();
+		$auth_url = $gdrive->get_auth_url();
+
+		if ( is_wp_error( $auth_url ) ) {
+			return $auth_url;
+		}
+
+		return rest_ensure_response( [
+			'success'  => true,
+			'auth_url' => $auth_url,
+		] );
+	}
+
+	/**
+	 * Handle Google Drive disconnect request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_gdrive_disconnect( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		AIAGENT_Google_Drive_Integration::delete_tokens();
+
+		return rest_ensure_response( [
+			'success' => true,
+			'message' => __( 'Disconnected from Google Drive.', 'ai-agent-for-website' ),
+		] );
+	}
+
+	/**
+	 * Handle Google Drive list files request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_gdrive_list_files( $request ) {
+		$query = $request->get_param( 'query' ) ?? '';
+
+		$gdrive = new AIAGENT_Google_Drive_Integration();
+		$files  = $gdrive->list_files( $query );
+
+		if ( is_wp_error( $files ) ) {
+			return $files;
+		}
+
+		return rest_ensure_response( [
+			'success' => true,
+			'files'   => $files,
+		] );
+	}
+
+	/**
+	 * Handle Google Drive import file request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_gdrive_import( $request ) {
+		$file_id = $request->get_param( 'file_id' );
+
+		$gdrive = new AIAGENT_Google_Drive_Integration();
+		$result = $gdrive->import_to_knowledge_base( $file_id );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle Confluence test connection request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_confluence_test( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$confluence = new AIAGENT_Confluence_Integration();
+		$result     = $confluence->test_connection();
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle Confluence disconnect request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_confluence_disconnect( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		AIAGENT_Confluence_Integration::disconnect();
+
+		return rest_ensure_response( [
+			'success' => true,
+			'message' => __( 'Disconnected from Confluence.', 'ai-agent-for-website' ),
+		] );
+	}
+
+	/**
+	 * Handle Confluence list spaces request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_confluence_spaces( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$confluence = new AIAGENT_Confluence_Integration();
+		$spaces     = $confluence->get_spaces();
+
+		if ( is_wp_error( $spaces ) ) {
+			return $spaces;
+		}
+
+		return rest_ensure_response( [
+			'success' => true,
+			'spaces'  => $spaces,
+		] );
+	}
+
+	/**
+	 * Handle Confluence list pages request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_confluence_pages( $request ) {
+		$space_key = $request->get_param( 'space_key' );
+
+		$confluence = new AIAGENT_Confluence_Integration();
+		$pages      = $confluence->get_pages( $space_key );
+
+		if ( is_wp_error( $pages ) ) {
+			return $pages;
+		}
+
+		return rest_ensure_response( [
+			'success' => true,
+			'pages'   => $pages,
+		] );
+	}
+
+	/**
+	 * Handle Confluence import page request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_confluence_import( $request ) {
+		$page_id = $request->get_param( 'page_id' );
+
+		$confluence = new AIAGENT_Confluence_Integration();
+		$result     = $confluence->import_to_knowledge_base( $page_id );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( $result );
 	}
 }

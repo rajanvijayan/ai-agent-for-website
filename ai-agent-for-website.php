@@ -73,6 +73,10 @@ class AI_Agent_For_Website {
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-knowledge-manager.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-plugin-updater.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-file-processor.php';
+
+		// Load integrations.
+		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-google-drive-integration.php';
+		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-confluence-integration.php';
 	}
 
 	/**
