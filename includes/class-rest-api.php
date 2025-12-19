@@ -200,6 +200,40 @@ class AIAGENT_REST_API {
 				],
 			]
 		);
+
+		// File upload endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/upload-file',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_file_upload' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		// Delete uploaded file endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/delete-file',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_delete_file' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+				'args'                => [
+					'file_id'  => [
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+					'kb_index' => [
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
 	}
 
 	/**
@@ -874,6 +908,102 @@ Do not include any explanation, just the JSON array.',
 				'conversation_id' => $conversation_id,
 				'role'            => $role,
 				'content'         => $content,
+			]
+		);
+	}
+
+	/**
+	 * Handle file upload request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_file_upload( $request ) {
+		// Check if files were uploaded.
+		$files = $request->get_file_params();
+
+		if ( empty( $files ) || empty( $files['file'] ) ) {
+			return new WP_Error( 'no_file', __( 'No file was uploaded.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$file = $files['file'];
+
+		// Process the file.
+		$file_processor = new AIAGENT_File_Processor();
+		$result         = $file_processor->process_file( $file );
+
+		if ( ! $result['success'] ) {
+			return new WP_Error( 'processing_failed', $result['error'], [ 'status' => 400 ] );
+		}
+
+		// Add to knowledge base.
+		$knowledge_manager = new AIAGENT_Knowledge_Manager();
+		$kb                = $knowledge_manager->get_knowledge_base();
+
+		$source = 'file-upload-' . $result['filename'];
+		$title  = pathinfo( $result['original_name'], PATHINFO_FILENAME );
+
+		$kb_result = $kb->addText( $result['content'], $source, $title );
+
+		if ( ! $kb_result ) {
+			return new WP_Error( 'kb_add_failed', __( 'Failed to add content to knowledge base.', 'ai-agent-for-website' ), [ 'status' => 500 ] );
+		}
+
+		// Save knowledge base.
+		$knowledge_manager->save_knowledge_base( $kb );
+
+		// Get the document index (last added).
+		$summary  = $kb->getSummary();
+		$kb_index = $summary['count'] - 1;
+
+		// Save file record to database.
+		$file_id = $file_processor->save_file_record( $result, $kb_index );
+
+		return rest_ensure_response(
+			[
+				'success'       => true,
+				'message'       => __( 'File uploaded and added to knowledge base.', 'ai-agent-for-website' ),
+				'file_id'       => $file_id,
+				'filename'      => $result['original_name'],
+				'file_type'     => $result['file_type'],
+				'char_count'    => $result['char_count'],
+				'kb_index'      => $kb_index,
+			]
+		);
+	}
+
+	/**
+	 * Handle file deletion request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_delete_file( $request ) {
+		$file_id  = $request->get_param( 'file_id' );
+		$kb_index = $request->get_param( 'kb_index' );
+
+		// Delete from knowledge base if index provided.
+		if ( null !== $kb_index && $kb_index >= 0 ) {
+			$knowledge_manager = new AIAGENT_Knowledge_Manager();
+			$kb                = $knowledge_manager->get_knowledge_base();
+
+			if ( $kb->remove( $kb_index ) ) {
+				$knowledge_manager->save_knowledge_base( $kb );
+			}
+		}
+
+		// Delete file record and physical file.
+		$file_processor = new AIAGENT_File_Processor();
+		$deleted        = $file_processor->delete_file( $file_id );
+
+		if ( ! $deleted ) {
+			return new WP_Error( 'delete_failed', __( 'Failed to delete file.', 'ai-agent-for-website' ), [ 'status' => 500 ] );
+		}
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'message' => __( 'File deleted successfully.', 'ai-agent-for-website' ),
 			]
 		);
 	}

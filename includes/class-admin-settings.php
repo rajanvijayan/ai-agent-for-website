@@ -302,16 +302,19 @@ class AIAGENT_Admin_Settings {
 
 		<div class="aiagent-card aiagent-integration-card">
 			<h2>
-				<span class="dashicons dashicons-upload" style="color: #23a455;"></span>
+				<span class="dashicons dashicons-upload" style="color: #9b59b6;"></span>
 				<?php esc_html_e( 'File Upload', 'ai-agent-for-website' ); ?>
-				<span class="aiagent-badge aiagent-badge-soon"><?php esc_html_e( 'Coming Soon', 'ai-agent-for-website' ); ?></span>
+				<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Available', 'ai-agent-for-website' ); ?></span>
 			</h2>
 			<p class="description">
-				<?php esc_html_e( 'Upload documents (PDF, DOC, TXT, CSV) directly to your knowledge base.', 'ai-agent-for-website' ); ?>
+				<?php esc_html_e( 'Upload documents (PDF, DOC, DOCX, TXT, CSV, MD, RTF) directly to your knowledge base.', 'ai-agent-for-website' ); ?>
 			</p>
-			<div class="aiagent-integration-status aiagent-status-disabled">
-				<span class="dashicons dashicons-lock"></span>
-				<?php esc_html_e( 'This feature will be available in a future update.', 'ai-agent-for-website' ); ?>
+			<div class="aiagent-integration-status aiagent-status-connected">
+				<span class="dashicons dashicons-yes-alt"></span>
+				<?php esc_html_e( 'This feature is available. Go to Knowledge Base to upload files.', 'ai-agent-for-website' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-knowledge' ) ); ?>" class="button button-small" style="margin-left: 10px;">
+					<?php esc_html_e( 'Upload Files', 'ai-agent-for-website' ); ?>
+				</a>
 			</div>
 		</div>
 		<?php

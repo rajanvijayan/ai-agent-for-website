@@ -62,6 +62,12 @@ class AIAGENT_Knowledge_Manager {
 		$kb        = $this->get_knowledge_base();
 		$documents = $kb->getDocuments();
 		$summary   = $kb->getSummary();
+
+		// Get file processor for supported types.
+		$file_processor       = new AIAGENT_File_Processor();
+		$supported_extensions = $file_processor->get_supported_extensions();
+		$max_file_size        = $file_processor->get_max_file_size();
+		$uploaded_files       = $file_processor->get_uploaded_files();
 		?>
 		<div class="wrap aiagent-admin">
 			<h1><?php esc_html_e( 'Knowledge Base', 'ai-agent-for-website' ); ?></h1>
@@ -70,9 +76,12 @@ class AIAGENT_Knowledge_Manager {
 				<?php esc_html_e( 'Add content to train your AI agent. The AI will use this information to answer questions about your website.', 'ai-agent-for-website' ); ?>
 			</p>
 
-			<div class="aiagent-kb-grid">
+			<div class="aiagent-kb-grid aiagent-kb-grid-3">
 				<div class="aiagent-card">
-					<h2><?php esc_html_e( 'Add from URL', 'ai-agent-for-website' ); ?></h2>
+					<h2>
+						<span class="dashicons dashicons-admin-links" style="color: #0073aa;"></span>
+						<?php esc_html_e( 'Add from URL', 'ai-agent-for-website' ); ?>
+					</h2>
 					<form method="post" action="">
 						<?php wp_nonce_field( 'aiagent_kb_nonce' ); ?>
 						<p>
@@ -95,7 +104,10 @@ class AIAGENT_Knowledge_Manager {
 				</div>
 
 				<div class="aiagent-card">
-					<h2><?php esc_html_e( 'Add Custom Text', 'ai-agent-for-website' ); ?></h2>
+					<h2>
+						<span class="dashicons dashicons-edit" style="color: #23a455;"></span>
+						<?php esc_html_e( 'Add Custom Text', 'ai-agent-for-website' ); ?>
+					</h2>
 					<form method="post" action="">
 						<?php wp_nonce_field( 'aiagent_kb_nonce' ); ?>
 						<div class="aiagent-custom-text-form">
@@ -104,7 +116,7 @@ class AIAGENT_Knowledge_Manager {
 								<input type="text" 
 										id="kb_title"
 										name="kb_title" 
-										placeholder="<?php esc_attr_e( 'e.g., FAQ, Product Info, Company Details', 'ai-agent-for-website' ); ?>" 
+										placeholder="<?php esc_attr_e( 'e.g., FAQ, Product Info', 'ai-agent-for-website' ); ?>" 
 										class="large-text">
 							</div>
 							<div class="aiagent-form-row">
@@ -124,9 +136,9 @@ class AIAGENT_Knowledge_Manager {
 								<label for="kb_text"><?php esc_html_e( 'Content', 'ai-agent-for-website' ); ?></label>
 								<textarea name="kb_text" 
 											id="kb_text"
-											rows="6" 
+											rows="4" 
 											class="large-text" 
-											placeholder="<?php esc_attr_e( 'Enter your content here. You can include FAQs, product details, company information, or any text you want the AI to know about.', 'ai-agent-for-website' ); ?>" 
+											placeholder="<?php esc_attr_e( 'Enter your content here...', 'ai-agent-for-website' ); ?>" 
 											required></textarea>
 								<div class="aiagent-char-count">
 									<span id="kb-char-count">0</span> <?php esc_html_e( 'characters', 'ai-agent-for-website' ); ?>
@@ -136,15 +148,99 @@ class AIAGENT_Knowledge_Manager {
 								<input type="submit" 
 										name="aiagent_add_text" 
 										class="button button-primary" 
-										value="<?php esc_attr_e( 'Add to Knowledge Base', 'ai-agent-for-website' ); ?>">
-								<p class="description">
-									<?php esc_html_e( 'Tip: Be specific and include details the AI should know when answering questions.', 'ai-agent-for-website' ); ?>
-								</p>
+										value="<?php esc_attr_e( 'Add Text', 'ai-agent-for-website' ); ?>">
 							</div>
 						</div>
 					</form>
 				</div>
+
+				<div class="aiagent-card">
+					<h2>
+						<span class="dashicons dashicons-upload" style="color: #9b59b6;"></span>
+						<?php esc_html_e( 'Upload Files', 'ai-agent-for-website' ); ?>
+					</h2>
+					<div class="aiagent-file-upload-area" id="aiagent-file-drop-zone">
+						<div class="aiagent-file-upload-icon">
+							<span class="dashicons dashicons-cloud-upload"></span>
+						</div>
+						<p class="aiagent-file-upload-text">
+							<?php esc_html_e( 'Drag & drop files here or', 'ai-agent-for-website' ); ?>
+						</p>
+						<label class="button button-primary aiagent-file-upload-btn">
+							<?php esc_html_e( 'Choose Files', 'ai-agent-for-website' ); ?>
+							<input type="file" 
+									id="aiagent-file-input" 
+									accept="<?php echo esc_attr( '.' . implode( ',.', $supported_extensions ) ); ?>" 
+									multiple 
+									hidden>
+						</label>
+						<p class="description aiagent-file-upload-info">
+							<?php
+							/* translators: 1: List of supported file extensions, 2: Maximum file size in MB */
+							printf(
+								esc_html__( 'Supported: %1$s (Max %2$s MB)', 'ai-agent-for-website' ),
+								esc_html( strtoupper( implode( ', ', $supported_extensions ) ) ),
+								esc_html( round( $max_file_size / 1048576, 1 ) )
+							);
+							?>
+						</p>
+					</div>
+					<div id="aiagent-file-upload-progress" class="aiagent-file-upload-progress" style="display: none;">
+						<div class="aiagent-file-progress-item">
+							<span class="aiagent-file-name"></span>
+							<div class="aiagent-progress-bar">
+								<div class="aiagent-progress-fill"></div>
+							</div>
+							<span class="aiagent-file-status"></span>
+						</div>
+					</div>
+					<div id="aiagent-file-upload-results" class="aiagent-file-upload-results"></div>
+				</div>
 			</div>
+
+			<?php if ( ! empty( $uploaded_files ) ) : ?>
+			<div class="aiagent-card">
+				<h2>
+					<span class="dashicons dashicons-media-document" style="color: #9b59b6;"></span>
+					<?php esc_html_e( 'Uploaded Files', 'ai-agent-for-website' ); ?>
+					<span class="aiagent-badge"><?php echo esc_html( count( $uploaded_files ) ); ?></span>
+				</h2>
+				<table class="wp-list-table widefat fixed striped">
+					<thead>
+						<tr>
+							<th style="width: 30%;"><?php esc_html_e( 'File Name', 'ai-agent-for-website' ); ?></th>
+							<th style="width: 15%;"><?php esc_html_e( 'Type', 'ai-agent-for-website' ); ?></th>
+							<th style="width: 15%;"><?php esc_html_e( 'Size', 'ai-agent-for-website' ); ?></th>
+							<th style="width: 20%;"><?php esc_html_e( 'Uploaded', 'ai-agent-for-website' ); ?></th>
+							<th style="width: 20%;"><?php esc_html_e( 'Actions', 'ai-agent-for-website' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $uploaded_files as $file ) : ?>
+							<tr>
+								<td>
+									<span class="dashicons dashicons-media-document"></span>
+									<?php echo esc_html( $file['original_name'] ); ?>
+								</td>
+								<td>
+									<span class="aiagent-file-type-badge"><?php echo esc_html( strtoupper( $file['file_type'] ) ); ?></span>
+								</td>
+								<td><?php echo esc_html( size_format( $file['file_size'] ) ); ?></td>
+								<td><?php echo esc_html( gmdate( 'M j, Y g:i a', strtotime( $file['uploaded_at'] ) ) ); ?></td>
+								<td>
+									<button type="button" 
+											class="button button-small button-link-delete aiagent-delete-file" 
+											data-file-id="<?php echo esc_attr( $file['id'] ); ?>"
+											data-kb-index="<?php echo esc_attr( $file['kb_document_index'] ); ?>">
+										<?php esc_html_e( 'Delete', 'ai-agent-for-website' ); ?>
+									</button>
+								</td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			</div>
+			<?php endif; ?>
 
 			<div class="aiagent-card">
 				<h2>
@@ -177,12 +273,25 @@ class AIAGENT_Knowledge_Manager {
 									<td><?php echo esc_html( $index + 1 ); ?></td>
 									<td><?php echo esc_html( $doc['title'] ?? __( 'Untitled', 'ai-agent-for-website' ) ); ?></td>
 									<td>
-										<?php if ( filter_var( $doc['source'], FILTER_VALIDATE_URL ) ) : ?>
-											<a href="<?php echo esc_url( $doc['source'] ); ?>" target="_blank">
-												<?php echo esc_html( substr( $doc['source'], 0, 50 ) ); ?>...
+										<?php
+										$source      = $doc['source'] ?? '';
+										$source_icon = 'dashicons-admin-page';
+
+										if ( filter_var( $source, FILTER_VALIDATE_URL ) ) {
+											$source_icon = 'dashicons-admin-links';
+										} elseif ( strpos( $source, 'file-upload-' ) === 0 ) {
+											$source_icon = 'dashicons-media-document';
+										} elseif ( strpos( $source, 'manual-entry-' ) === 0 ) {
+											$source_icon = 'dashicons-edit';
+										}
+										?>
+										<span class="dashicons <?php echo esc_attr( $source_icon ); ?>" style="opacity: 0.5;"></span>
+										<?php if ( filter_var( $source, FILTER_VALIDATE_URL ) ) : ?>
+											<a href="<?php echo esc_url( $source ); ?>" target="_blank">
+												<?php echo esc_html( substr( $source, 0, 40 ) ); ?>...
 											</a>
 										<?php else : ?>
-											<?php echo esc_html( $doc['source'] ); ?>
+											<?php echo esc_html( substr( $source, 0, 30 ) ); ?>
 										<?php endif; ?>
 									</td>
 									<td><?php echo esc_html( number_format( strlen( $doc['content'] ) ) ); ?> <?php esc_html_e( 'chars', 'ai-agent-for-website' ); ?></td>
@@ -223,13 +332,16 @@ class AIAGENT_Knowledge_Manager {
 					</form>
 				<?php else : ?>
 					<p class="aiagent-empty-state">
-						<?php esc_html_e( 'No content added yet. Add URLs or text above to train your AI agent.', 'ai-agent-for-website' ); ?>
+						<?php esc_html_e( 'No content added yet. Add URLs, text, or upload files above to train your AI agent.', 'ai-agent-for-website' ); ?>
 					</p>
 				<?php endif; ?>
 			</div>
 
 			<div class="aiagent-card">
-				<h2><?php esc_html_e( 'Auto Detect Pillar Pages', 'ai-agent-for-website' ); ?></h2>
+				<h2>
+					<span class="dashicons dashicons-search" style="color: #e67e22;"></span>
+					<?php esc_html_e( 'Auto Detect Pillar Pages', 'ai-agent-for-website' ); ?>
+				</h2>
 				<p class="description">
 					<?php esc_html_e( 'Use AI to analyze your website and suggest the most important pages to add to the knowledge base.', 'ai-agent-for-website' ); ?>
 				</p>
@@ -256,7 +368,10 @@ class AIAGENT_Knowledge_Manager {
 			</div>
 
 			<div class="aiagent-card">
-				<h2><?php esc_html_e( 'Quick Add Website Pages', 'ai-agent-for-website' ); ?></h2>
+				<h2>
+					<span class="dashicons dashicons-admin-page" style="color: #3498db;"></span>
+					<?php esc_html_e( 'Quick Add Website Pages', 'ai-agent-for-website' ); ?>
+				</h2>
 				<p class="description">
 					<?php esc_html_e( 'Quickly add your website pages to the knowledge base:', 'ai-agent-for-website' ); ?>
 				</p>
@@ -306,7 +421,7 @@ class AIAGENT_Knowledge_Manager {
 	 * @param KnowledgeBase $kb The knowledge base instance to save.
 	 * @return bool True on success, false on failure.
 	 */
-	private function save_knowledge_base( KnowledgeBase $kb ) {
+	public function save_knowledge_base( KnowledgeBase $kb ) {
 		$dir = dirname( $this->kb_file );
 		if ( ! file_exists( $dir ) ) {
 			wp_mkdir_p( $dir );

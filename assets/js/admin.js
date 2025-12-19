@@ -436,6 +436,183 @@
                 });
             });
         }
+
+        // ===============================
+        // File Upload Functionality
+        // ===============================
+        const $dropZone = $('#aiagent-file-drop-zone');
+        const $fileInput = $('#aiagent-file-input');
+        const $progressContainer = $('#aiagent-file-upload-progress');
+        const $resultsContainer = $('#aiagent-file-upload-results');
+
+        // Drag and drop handlers
+        $dropZone.on('dragover dragenter', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).addClass('dragover');
+        });
+
+        $dropZone.on('dragleave dragend drop', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).removeClass('dragover');
+        });
+
+        $dropZone.on('drop', function (e) {
+            const files = e.originalEvent.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileUpload(files);
+            }
+        });
+
+        // File input change handler
+        $fileInput.on('change', function () {
+            if (this.files.length > 0) {
+                handleFileUpload(this.files);
+                // Reset input so same file can be selected again
+                $(this).val('');
+            }
+        });
+
+        function handleFileUpload(files) {
+            $resultsContainer.empty();
+
+            for (let i = 0; i < files.length; i++) {
+                uploadFile(files[i]);
+            }
+        }
+
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show progress
+            const $progressItem = $(`
+                <div class="aiagent-file-progress-item">
+                    <span class="aiagent-file-name">${escapeHtml(file.name)}</span>
+                    <div class="aiagent-progress-bar">
+                        <div class="aiagent-progress-fill" style="width: 0%"></div>
+                    </div>
+                    <span class="aiagent-file-status">0%</span>
+                </div>
+            `);
+
+            $progressContainer.show().append($progressItem);
+
+            $.ajax({
+                url: aiagentAdmin.restUrl + 'upload-file',
+                method: 'POST',
+                headers: {
+                    'X-WP-Nonce': aiagentAdmin.nonce,
+                },
+                data: formData,
+                processData: false,
+                contentType: false,
+                xhr: function () {
+                    const xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener('progress', function (evt) {
+                        if (evt.lengthComputable) {
+                            const percent = Math.round((evt.loaded / evt.total) * 100);
+                            $progressItem.find('.aiagent-progress-fill').css('width', percent + '%');
+                            $progressItem.find('.aiagent-file-status').text(percent + '%');
+                        }
+                    }, false);
+                    return xhr;
+                },
+                success: function (response) {
+                    $progressItem.find('.aiagent-progress-fill').css('width', '100%');
+                    $progressItem.find('.aiagent-file-status').text('✓').addClass('success');
+
+                    // Add success result
+                    const charCount = response.char_count ? response.char_count.toLocaleString() : 'N/A';
+                    $resultsContainer.append(`
+                        <div class="aiagent-file-result">
+                            <span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span>
+                            <strong>${escapeHtml(response.filename)}</strong> - ${charCount} characters extracted
+                        </div>
+                    `);
+
+                    // Remove progress item after delay
+                    setTimeout(function () {
+                        $progressItem.fadeOut(300, function () {
+                            $(this).remove();
+                            if ($progressContainer.find('.aiagent-file-progress-item').length === 0) {
+                                $progressContainer.hide();
+                            }
+                        });
+                    }, 1500);
+                },
+                error: function (xhr) {
+                    const error = xhr.responseJSON?.message || 'Upload failed';
+                    $progressItem.find('.aiagent-progress-fill').css({
+                        'width': '100%',
+                        'background': '#dc3232'
+                    });
+                    $progressItem.find('.aiagent-file-status').text('✗').addClass('error');
+
+                    // Add error result
+                    $resultsContainer.append(`
+                        <div class="aiagent-file-result error">
+                            <span class="dashicons dashicons-warning"></span>
+                            <strong>${escapeHtml(file.name)}</strong> - ${escapeHtml(error)}
+                        </div>
+                    `);
+
+                    // Remove progress item after delay
+                    setTimeout(function () {
+                        $progressItem.fadeOut(300, function () {
+                            $(this).remove();
+                            if ($progressContainer.find('.aiagent-file-progress-item').length === 0) {
+                                $progressContainer.hide();
+                            }
+                        });
+                    }, 2000);
+                },
+            });
+        }
+
+        // Delete file handler
+        $(document).on('click', '.aiagent-delete-file', function () {
+            if (!confirm('Are you sure you want to delete this file?')) {
+                return;
+            }
+
+            const $btn = $(this);
+            const fileId = $btn.data('file-id');
+            const kbIndex = $btn.data('kb-index');
+
+            $btn.prop('disabled', true).text('Deleting...');
+
+            $.ajax({
+                url: aiagentAdmin.restUrl + 'delete-file',
+                method: 'POST',
+                headers: {
+                    'X-WP-Nonce': aiagentAdmin.nonce,
+                    'Content-Type': 'application/json',
+                },
+                data: JSON.stringify({
+                    file_id: fileId,
+                    kb_index: kbIndex !== undefined ? kbIndex : null,
+                }),
+                success: function () {
+                    $btn.closest('tr').fadeOut(300, function () {
+                        $(this).remove();
+                    });
+                },
+                error: function (xhr) {
+                    const error = xhr.responseJSON?.message || 'Delete failed';
+                    alert(error);
+                    $btn.prop('disabled', false).text('Delete');
+                },
+            });
+        });
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
     });
 
     // Add spinning animation for loading state
