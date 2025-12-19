@@ -79,7 +79,8 @@
             }
 
             // Check if welcome message already contains a greeting pattern
-            const greetingPatterns = /^(hi|hello|hey|welcome|greetings|good\s*(morning|afternoon|evening))[,!.\s]*/i;
+            const greetingPatterns =
+                /^(hi|hello|hey|welcome|greetings|good\s*(morning|afternoon|evening))[,!.\s]*/i;
 
             if (greetingPatterns.test(welcome)) {
                 // Replace the greeting with personalized version

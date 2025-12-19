@@ -168,18 +168,48 @@
             }
         })();
 
-        // AI Suggestion buttons
-        $('.aiagent-ai-suggest').on('click', function (e) {
-            e.preventDefault();
+        // Show Powered By toggle - update preview
+        $('#show_powered_by').on('change', function () {
+            const $powered = $('#preview-powered');
+            if ($(this).is(':checked')) {
+                $powered.removeClass('hidden');
+            } else {
+                $powered.addClass('hidden');
+            }
+        });
 
-            const $btn = $(this);
-            const $status = $btn.siblings('.aiagent-suggest-status');
-            const target = $btn.data('target');
-            const type = $btn.data('type');
-            const $target = $('#' + target);
+        // Initialize powered by state on page load
+        (function () {
+            if (!$('#show_powered_by').is(':checked')) {
+                $('#preview-powered').addClass('hidden');
+            }
+        })();
 
-            $btn.addClass('loading').prop('disabled', true);
-            $status.removeClass('success error').text('Generating...');
+        // AI Suggestion Modal
+        let currentSuggestTarget = null;
+        let currentSuggestType = null;
+        const $modal = $('#aiagent-suggest-modal');
+        const $modalLoading = $('#aiagent-modal-loading');
+        const $modalResult = $('#aiagent-modal-result');
+        const $modalError = $('#aiagent-modal-error');
+        const $modalSuggestion = $('#aiagent-modal-suggestion');
+        const $modalTitle = $('#aiagent-modal-title');
+
+        function showModal() {
+            $modal.fadeIn(200);
+        }
+
+        function hideModal() {
+            $modal.fadeOut(200);
+            currentSuggestTarget = null;
+            currentSuggestType = null;
+        }
+
+        function generateSuggestion() {
+            $modalLoading.show();
+            $modalResult.hide();
+            $modalError.hide();
+            $('#aiagent-modal-apply, #aiagent-modal-regenerate').prop('disabled', true);
 
             $.ajax({
                 url: aiagentAdmin.restUrl + 'ai-suggest',
@@ -188,26 +218,83 @@
                     'X-WP-Nonce': aiagentAdmin.nonce,
                     'Content-Type': 'application/json',
                 },
-                data: JSON.stringify({ type: type }),
+                data: JSON.stringify({ type: currentSuggestType }),
                 success: function (response) {
+                    $modalLoading.hide();
                     if (response.success && response.suggestion) {
-                        $target.val(response.suggestion).trigger('input');
-                        $status.addClass('success').text('✓ Suggestion applied!');
-                        setTimeout(function () {
-                            $status.text('');
-                        }, 3000);
+                        $modalSuggestion.val(response.suggestion);
+                        $modalResult.show();
+                        $('#aiagent-modal-apply, #aiagent-modal-regenerate').prop(
+                            'disabled',
+                            false
+                        );
                     } else {
-                        $status.addClass('error').text('✗ No suggestion generated');
+                        $modalError.find('p').text('No suggestion generated. Please try again.');
+                        $modalError.show();
+                        $('#aiagent-modal-regenerate').prop('disabled', false);
                     }
                 },
                 error: function (xhr) {
-                    const error = xhr.responseJSON?.message || 'Failed to generate';
-                    $status.addClass('error').text('✗ ' + error);
-                },
-                complete: function () {
-                    $btn.removeClass('loading').prop('disabled', false);
+                    $modalLoading.hide();
+                    const error = xhr.responseJSON?.message || 'Failed to generate suggestion';
+                    $modalError.find('p').text(error);
+                    $modalError.show();
+                    $('#aiagent-modal-regenerate').prop('disabled', false);
                 },
             });
+        }
+
+        // Open modal on button click
+        $('.aiagent-ai-suggest-btn').on('click', function (e) {
+            e.preventDefault();
+
+            currentSuggestTarget = $(this).data('target');
+            currentSuggestType = $(this).data('type');
+
+            const title =
+                currentSuggestType === 'welcome'
+                    ? 'AI Welcome Message Suggestion'
+                    : 'AI System Instruction Suggestion';
+            $modalTitle.text(title);
+
+            showModal();
+            generateSuggestion();
+        });
+
+        // Regenerate button
+        $('#aiagent-modal-regenerate').on('click', function () {
+            generateSuggestion();
+        });
+
+        // Apply button
+        $('#aiagent-modal-apply').on('click', function () {
+            if (currentSuggestTarget) {
+                const suggestion = $modalSuggestion.val();
+                $('#' + currentSuggestTarget)
+                    .val(suggestion)
+                    .trigger('input');
+            }
+            hideModal();
+        });
+
+        // Cancel/Close buttons
+        $('#aiagent-modal-cancel, .aiagent-modal-close, .aiagent-modal-overlay').on(
+            'click',
+            function () {
+                hideModal();
+            }
+        );
+
+        // Prevent modal content click from closing
+        $('.aiagent-modal-content').on('click', function (e) {
+            e.stopPropagation();
+        });
+
+        // ESC key to close modal
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape' && $modal.is(':visible')) {
+                hideModal();
+            }
         });
 
         // Character count for knowledge base text

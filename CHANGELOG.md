@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2024-12-19
+
+### Added
+- Configurable "Powered By" text - option to show/hide footer branding
+- AI suggestions modal with regenerate and apply functionality
+
+### Changed
+- Settings page layout: Widget Appearance and Chat Widget Preview now display side-by-side
+- AI suggestion buttons now open a modal dialog instead of inline display
+- Improved responsive design for settings page (stacks vertically on smaller screens)
+
+### Improved
+- Better user experience with modal-based AI suggestions (regenerate, apply, or cancel)
+- Real-time preview updates when toggling "Show Powered By" setting
+
 ## [1.1.0] - 2024-12-18
 
 ### Added
@@ -88,7 +103,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sanitization of user inputs
 - Capability checks for admin operations
 
-[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.0...v1.0.1
