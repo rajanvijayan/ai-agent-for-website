@@ -853,7 +853,7 @@ class AIAGENT_Admin_Settings {
 				$settings['show_powered_by'] = ! empty( $_POST['show_powered_by'] );
 				break;
 
-			case 'user_data':
+			case 'user-info':
 				$settings['require_user_info'] = ! empty( $_POST['require_user_info'] );
 				$settings['require_phone']     = ! empty( $_POST['require_phone'] );
 				$settings['phone_required']    = ! empty( $_POST['phone_required'] );
