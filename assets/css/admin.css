@@ -34,7 +34,263 @@
     font-weight: normal;
 }
 
-/* Toggle Switch */
+.aiagent-badge-soon {
+    background: #dba617;
+    color: #fff;
+}
+
+.aiagent-badge-connected {
+    background: #46b450;
+}
+
+/* ===============================
+   Tab Navigation Styles
+   =============================== */
+.aiagent-tabs-nav {
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.aiagent-tab-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 24px;
+    text-decoration: none;
+    color: #50575e;
+    font-weight: 500;
+    font-size: 14px;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    background: transparent;
+}
+
+.aiagent-tab-link:hover {
+    background: #f6f7f7;
+    color: #1d2327;
+}
+
+.aiagent-tab-link.active {
+    background: #f0f6fc;
+    color: #0073aa;
+    border-bottom-color: #0073aa;
+}
+
+.aiagent-tab-link .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+}
+
+.aiagent-tab-content {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Shortcode display */
+.aiagent-shortcode-display {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    font-size: 14px;
+    user-select: all;
+}
+
+/* ===============================
+   Integration Cards
+   =============================== */
+.aiagent-integration-card {
+    position: relative;
+}
+
+.aiagent-integration-card h2 {
+    flex-wrap: wrap;
+}
+
+.aiagent-integration-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.aiagent-icon-atlassian::before {
+    content: "";
+    display: block;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%);
+    border-radius: 4px;
+}
+
+.aiagent-integration-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    margin-top: 15px;
+    font-size: 13px;
+    color: #666;
+}
+
+.aiagent-integration-status .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.aiagent-status-disabled {
+    background: #f5f5f5;
+    color: #999;
+}
+
+.aiagent-status-connected {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.aiagent-status-error {
+    background: #ffebee;
+    color: #c62828;
+}
+
+/* API Key wrapper with toggle */
+.aiagent-api-key-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.aiagent-api-key-wrapper input {
+    flex: 1;
+    max-width: 350px;
+}
+
+.aiagent-toggle-password {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    min-width: 36px;
+    height: 30px;
+}
+
+.aiagent-toggle-password .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+}
+
+.aiagent-api-test {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.aiagent-api-test .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aiagent-api-test .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+}
+
+.aiagent-test-result {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.aiagent-test-result.success {
+    color: #46b450;
+}
+
+.aiagent-test-result.error {
+    color: #dc3232;
+}
+
+/* ===============================
+   User Form Preview
+   =============================== */
+.aiagent-user-form-preview {
+    margin-top: 15px;
+}
+
+.aiagent-form-preview-box {
+    max-width: 320px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.aiagent-form-preview-field {
+    margin-bottom: 15px;
+}
+
+.aiagent-form-preview-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 13px;
+    color: #1e1e1e;
+}
+
+.aiagent-form-preview-field label .required {
+    color: #dc3232;
+}
+
+.aiagent-form-preview-field input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+}
+
+.aiagent-preview-submit {
+    width: 100%;
+    padding: 12px;
+    background: #0073aa;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
+/* ===============================
+   Toggle Switch
+   =============================== */
 .aiagent-switch {
     position: relative;
     display: inline-block;
@@ -80,7 +336,9 @@
     transform: translateX(24px);
 }
 
-/* Knowledge Base Grid */
+/* ===============================
+   Knowledge Base Grid
+   =============================== */
 .aiagent-kb-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -142,7 +400,9 @@
     color: #dc3232 !important;
 }
 
-/* Avatar Upload */
+/* ===============================
+   Avatar Upload
+   =============================== */
 .aiagent-avatar-upload {
     display: flex;
     align-items: center;
@@ -171,7 +431,9 @@
     color: #999;
 }
 
-/* Conversations Table */
+/* ===============================
+   Conversations Table
+   =============================== */
 .aiagent-conversations-table {
     width: 100%;
     border-collapse: collapse;
@@ -276,7 +538,9 @@
     letter-spacing: 2px;
 }
 
-/* AI Suggestion Styles */
+/* ===============================
+   AI Suggestion Styles
+   =============================== */
 .aiagent-ai-suggest-wrapper {
     display: flex;
     align-items: center;
@@ -354,7 +618,9 @@
     flex: 1;
 }
 
-/* Pillar Pages Detection */
+/* ===============================
+   Pillar Pages Detection
+   =============================== */
 .aiagent-pillar-detect {
     display: flex;
     align-items: center;
@@ -435,7 +701,9 @@
     margin-top: 15px;
 }
 
-/* Chat Preview Styles */
+/* ===============================
+   Chat Preview Styles
+   =============================== */
 .aiagent-preview-container {
     position: relative;
     min-height: 520px;
@@ -681,7 +949,9 @@
     display: none;
 }
 
-/* AI Suggestion Button */
+/* ===============================
+   AI Suggestion Button
+   =============================== */
 .aiagent-ai-suggest-btn {
     display: inline-flex;
     align-items: center;
@@ -700,7 +970,9 @@
     color: #f0b849;
 }
 
-/* Modal Styles */
+/* ===============================
+   Modal Styles
+   =============================== */
 .aiagent-modal {
     position: fixed;
     top: 0;
@@ -846,4 +1118,37 @@
 
 #aiagent-modal-regenerate {
     margin-right: auto;
+}
+
+/* ===============================
+   Responsive Adjustments
+   =============================== */
+@media (max-width: 782px) {
+    .aiagent-tabs-nav {
+        flex-direction: column;
+    }
+
+    .aiagent-tab-link {
+        border-bottom: none;
+        border-left: 3px solid transparent;
+    }
+
+    .aiagent-tab-link.active {
+        border-bottom: none;
+        border-left-color: #0073aa;
+    }
+
+    .aiagent-admin .form-table th {
+        width: auto;
+        padding-bottom: 0;
+    }
+
+    .aiagent-api-key-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .aiagent-api-key-wrapper input {
+        max-width: none;
+    }
 }

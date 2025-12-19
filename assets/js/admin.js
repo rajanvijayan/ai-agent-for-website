@@ -16,7 +16,8 @@
             const $btn = $(this);
             const $result = $('#aiagent-test-result');
 
-            $btn.prop('disabled', true).text('Testing...');
+            $btn.prop('disabled', true);
+            $btn.find('.dashicons').removeClass('dashicons-yes-alt').addClass('dashicons-update spin');
             $result.removeClass('success error').text('');
 
             $.ajax({
@@ -33,9 +34,22 @@
                     $result.addClass('error').text('✗ ' + error);
                 },
                 complete: function () {
-                    $btn.prop('disabled', false).text('Test Connection');
+                    $btn.prop('disabled', false);
+                    $btn.find('.dashicons').removeClass('dashicons-update spin').addClass('dashicons-yes-alt');
                 },
             });
+        });
+
+        // Toggle password visibility
+        $('.aiagent-toggle-password').on('click', function () {
+            const $input = $(this).siblings('input');
+            const $icon = $(this).find('.dashicons');
+            const isPassword = $input.attr('type') === 'password';
+
+            $input.attr('type', isPassword ? 'text' : 'password');
+            $icon
+                .removeClass(isPassword ? 'dashicons-visibility' : 'dashicons-hidden')
+                .addClass(isPassword ? 'dashicons-hidden' : 'dashicons-visibility');
         });
 
         // Avatar upload handler
@@ -87,14 +101,6 @@
                 '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>'
             );
             $(this).hide();
-        });
-
-        // Toggle password visibility
-        $('.aiagent-toggle-password').on('click', function () {
-            const $input = $(this).siblings('input');
-            const type = $input.attr('type') === 'password' ? 'text' : 'password';
-            $input.attr('type', type);
-            $(this).text(type === 'password' ? 'Show' : 'Hide');
         });
 
         // Fetch URL via AJAX
@@ -184,6 +190,26 @@
                 $('#preview-powered').addClass('hidden');
             }
         })();
+
+        // Phone field preview toggle (User Info tab)
+        $('#require_phone').on('change', function () {
+            const $phoneField = $('#phone-preview-field');
+            if ($(this).is(':checked')) {
+                $phoneField.slideDown(200);
+            } else {
+                $phoneField.slideUp(200);
+            }
+        });
+
+        // Phone required toggle (User Info tab)
+        $('#phone_required').on('change', function () {
+            const $requiredStar = $('#phone-required-star');
+            if ($(this).is(':checked')) {
+                $requiredStar.show();
+            } else {
+                $requiredStar.hide();
+            }
+        });
 
         // AI Suggestion Modal
         let currentSuggestTarget = null;
@@ -411,4 +437,17 @@
             });
         }
     });
+
+    // Add spinning animation for loading state
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .dashicons.spin {
+            animation: spin 1s linear infinite;
+        }
+    `;
+    document.head.appendChild(style);
 })(jQuery);
