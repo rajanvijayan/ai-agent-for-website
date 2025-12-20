@@ -3,7 +3,7 @@
  * Plugin Name: AI Agent for Website
  * Plugin URI: https://github.com/rajanvijayan/ai-agent-for-website
  * Description: Add an AI-powered chat agent to your website using Groq API. Train it with your website content.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Rajan Vijayan
  * Author URI: https://rajanvijayan.com
  * License: GPL v2 or later
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'AIAGENT_VERSION', '1.2.0' );
+define( 'AIAGENT_VERSION', '1.3.0' );
 define( 'AIAGENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -72,6 +72,11 @@ class AI_Agent_For_Website {
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-chat-widget.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-knowledge-manager.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-plugin-updater.php';
+		require_once AIAGENT_PLUGIN_DIR . 'includes/class-file-processor.php';
+
+		// Load integrations.
+		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-google-drive-integration.php';
+		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-confluence-integration.php';
 	}
 
 	/**
@@ -113,7 +118,7 @@ class AI_Agent_For_Website {
 		$db_version = get_option( 'aiagent_db_version', '0' );
 
 		// Check if we need to create/update tables.
-		if ( version_compare( $db_version, '1.2.0', '<' ) ) {
+		if ( version_compare( $db_version, '1.3.0', '<' ) ) {
 			$this->create_tables();
 		}
 
@@ -193,7 +198,7 @@ class AI_Agent_For_Website {
 	}
 
 	/**
-	 * Create database tables for users and conversations.
+	 * Create database tables for users, conversations, and uploaded files.
 	 */
 	private function create_tables() {
 		global $wpdb;
@@ -241,13 +246,29 @@ class AI_Agent_For_Website {
             KEY conversation_id (conversation_id)
         ) $charset_collate;";
 
+		// Uploaded files table.
+		$files_table = $wpdb->prefix . 'aiagent_uploaded_files';
+		$files_sql   = "CREATE TABLE $files_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            filename varchar(255) NOT NULL,
+            original_name varchar(255) NOT NULL,
+            file_type varchar(50) NOT NULL,
+            file_size bigint(20) unsigned DEFAULT 0,
+            file_path varchar(500) DEFAULT '',
+            kb_document_index int DEFAULT NULL,
+            uploaded_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY file_type (file_type)
+        ) $charset_collate;";
+
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $users_sql );
 		dbDelta( $conversations_sql );
 		dbDelta( $messages_sql );
+		dbDelta( $files_sql );
 
 		// Store DB version.
-		update_option( 'aiagent_db_version', '1.2.0' );
+		update_option( 'aiagent_db_version', '1.3.0' );
 	}
 
 	/**

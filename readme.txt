@@ -4,7 +4,7 @@ Tags: ai, chatbot, chat, groq, llama, assistant
 Requires at least: 5.8
 Tested up to: 6.4
 Requires PHP: 8.0
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,6 +18,9 @@ AI Agent for Website adds a beautiful, intelligent chat widget to your WordPress
 
 * 🤖 AI-powered chat widget with live preview
 * 📚 Knowledge Base - Train AI with your website content
+* 📁 File Upload - Import PDF, DOC, DOCX, TXT, CSV, MD, RTF files
+* ☁️ Google Drive Integration - Import documents directly
+* 📝 Confluence Integration - Import wiki pages
 * 🔍 Auto-detect pillar pages using AI
 * ⚡ Ultra-fast responses using Groq API
 * 🎨 Customizable appearance with Lucide icons
@@ -68,6 +71,16 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 
 == Changelog ==
 
+= 1.3.0 =
+* NEW: Custom file upload - upload PDF, DOC, DOCX, TXT, CSV, MD, RTF to knowledge base
+* NEW: Google Drive integration - connect and import documents via OAuth 2.0
+* NEW: Confluence integration - connect and import wiki pages
+* NEW: Drag & drop file upload with progress indicators
+* NEW: Integration file/page browsers for easy import
+* IMPROVED: Reorganized Knowledge Base page with 3-column grid layout
+* IMPROVED: Integrations tab now has actual connection settings
+* SECURITY: MIME type validation, file size limits, secure file storage
+
 = 1.2.0 =
 * NEW: Configurable "Powered By" text - option to show/hide footer branding
 * NEW: AI suggestions now display in a modal with regenerate option
@@ -103,6 +116,9 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 * Shortcode support
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+Major knowledge base update! Upload files directly, connect Google Drive, and import from Confluence.
 
 = 1.2.0 =
 UI improvements! Side-by-side settings layout, modal-based AI suggestions, and optional "Powered By" branding.
