@@ -3,7 +3,7 @@
  * Plugin Name: AI Agent for Website
  * Plugin URI: https://github.com/rajanvijayan/ai-agent-for-website
  * Description: Add an AI-powered chat agent to your website using Groq API. Train it with your website content.
- * Version: 1.6.0
+ * Version: 1.7.0
  * Author: Rajan Vijayan
  * Author URI: https://rajanvijayan.com
  * License: GPL v2 or later
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'AIAGENT_VERSION', '1.6.0' );
+define( 'AIAGENT_VERSION', '1.7.0' );
 define( 'AIAGENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -79,6 +79,7 @@ class AI_Agent_For_Website {
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-confluence-integration.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-zapier-integration.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-mailchimp-integration.php';
+		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-woocommerce-integration.php';
 
 		// Load leads manager.
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-leads-manager.php';
@@ -108,6 +109,12 @@ class AI_Agent_For_Website {
 
 		// Initialize plugin updater for GitHub releases.
 		add_action( 'admin_init', [ $this, 'init_updater' ] );
+
+		// Initialize WooCommerce auto-sync if enabled.
+		add_action( 'init', [ 'AIAGENT_WooCommerce_Integration', 'init_auto_sync' ] );
+
+		// Handle WooCommerce sync cron action.
+		add_action( 'aiagent_woocommerce_sync', [ 'AIAGENT_WooCommerce_Integration', 'sync_products_to_knowledge_base' ] );
 	}
 
 	/**
@@ -593,6 +600,10 @@ class AI_Agent_For_Website {
 		// Default to true if require_user_info is not set.
 		$require_user_info = array_key_exists( 'require_user_info', $settings ) ? $settings['require_user_info'] : true;
 
+		// Get WooCommerce settings if available.
+		$woo_enabled  = AIAGENT_WooCommerce_Integration::is_enabled();
+		$woo_settings = AIAGENT_WooCommerce_Integration::get_settings();
+
 		wp_localize_script(
 			'aiagent-chat',
 			'aiagentConfig',
@@ -616,6 +627,14 @@ class AI_Agent_For_Website {
 				'widgetButtonSize'       => $settings['widget_button_size'] ?? 'medium',
 				'widgetAnimation'        => $settings['widget_animation'] ?? 'slide',
 				'widgetSound'            => ! empty( $settings['widget_sound'] ),
+				'wooEnabled'             => $woo_enabled,
+				'wooShowPrices'          => $woo_enabled && ! empty( $woo_settings['show_prices'] ),
+				'wooShowAddToCart'       => $woo_enabled && ! empty( $woo_settings['show_add_to_cart'] ),
+				'wooShowRelated'         => $woo_enabled && ! empty( $woo_settings['show_related_products'] ),
+				'wooShowComparison'      => $woo_enabled && ! empty( $woo_settings['show_product_comparison'] ),
+				'wooMaxProducts'         => $woo_settings['max_products_display'] ?? 6,
+				'cartUrl'                => $woo_enabled ? wc_get_cart_url() : '',
+				'checkoutUrl'            => $woo_enabled ? wc_get_checkout_url() : '',
 			]
 		);
 	}

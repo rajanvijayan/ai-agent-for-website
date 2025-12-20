@@ -16,6 +16,8 @@
             this.hasMessages = false;
             this.soundEnabled = aiagentConfig.widgetSound || false;
             this.audioContext = null;
+            this.compareProducts = [];
+            this.wooEnabled = aiagentConfig.wooEnabled || false;
 
             // Debug: Log current state
             console.log('AI Agent Config:', {
@@ -24,6 +26,7 @@
                 userName: this.userName,
                 sessionId: this.sessionId,
                 soundEnabled: this.soundEnabled,
+                wooEnabled: this.wooEnabled,
             });
 
             if (this.widget) {
@@ -396,6 +399,9 @@
             this.isTyping = true;
 
             try {
+                // Check if this looks like a product search query
+                const isProductQuery = this.wooEnabled && this.isProductSearchQuery(message);
+
                 const response = await fetch(aiagentConfig.restUrl + 'chat', {
                     method: 'POST',
                     headers: {
@@ -420,6 +426,69 @@
                         this.sessionId = data.session_id;
                         this.saveSessionId();
                     }
+
+                    // If it was a product query, search and display products
+                    if (isProductQuery) {
+                        // Extract the actual product search term from the message
+                        const searchTerm = this.extractProductSearchTerms(message);
+
+                        // Try to search with the extracted term first
+                        let productData = null;
+                        if (searchTerm && searchTerm.length > 1) {
+                            productData = await this.searchProducts(searchTerm, messagesContainer);
+                        }
+
+                        // If no products found with extracted term, try the full message
+                        if (
+                            !productData ||
+                            !productData.products ||
+                            productData.products.length === 0
+                        ) {
+                            productData = await this.searchProducts(message, messagesContainer);
+                        }
+
+                        // If still no products found, try to get featured/all products
+                        if (
+                            !productData ||
+                            !productData.products ||
+                            productData.products.length === 0
+                        ) {
+                            productData = await this.getFeaturedProducts();
+                        }
+
+                        if (
+                            productData &&
+                            productData.products &&
+                            productData.products.length > 0
+                        ) {
+                            const introMessage =
+                                searchTerm && searchTerm.length > 1
+                                    ? `Here are products matching "${searchTerm}":`
+                                    : 'Here are some products you might be interested in:';
+                            this.addMessage(messagesContainer, introMessage, 'ai');
+                            this.renderProducts(productData.products, messagesContainer, {
+                                showCompareButton:
+                                    aiagentConfig.wooShowComparison &&
+                                    productData.products.length >= 2,
+                            });
+
+                            // Show related products if available
+                            if (
+                                productData.related &&
+                                productData.related.length > 0 &&
+                                aiagentConfig.wooShowRelated
+                            ) {
+                                this.addMessage(
+                                    messagesContainer,
+                                    'You might also like these related products:',
+                                    'ai'
+                                );
+                                this.renderProducts(productData.related, messagesContainer, {
+                                    showCompareButton: false,
+                                });
+                            }
+                        }
+                    }
                 } else {
                     const errorMsg = data.message || 'Sorry, something went wrong.';
                     this.addMessage(messagesContainer, errorMsg, 'error');
@@ -433,6 +502,101 @@
             input.disabled = false;
             input.focus();
             this.isTyping = false;
+        }
+
+        isProductSearchQuery(message) {
+            const productKeywords = [
+                'product',
+                'products',
+                'buy',
+                'purchase',
+                'shop',
+                'shopping',
+                'price',
+                'cost',
+                'how much',
+                'looking for',
+                'search for',
+                'find',
+                'show me',
+                'recommend',
+                'suggestion',
+                'suggestions',
+                'compare',
+                'comparison',
+                'best',
+                'top',
+                'popular',
+                'sale',
+                'discount',
+                'offer',
+                'deals',
+                'cheap',
+                'affordable',
+                'available',
+                'in stock',
+                'order',
+                'cart',
+                'checkout',
+                'i need',
+                'i want',
+                'looking to buy',
+                'interested in',
+                'do you have',
+                'do you sell',
+                'can i get',
+                'where can i find',
+                'any',
+            ];
+
+            const lowerMessage = message.toLowerCase();
+            return productKeywords.some((keyword) => lowerMessage.includes(keyword));
+        }
+
+        // Extract potential product search terms from user message
+        extractProductSearchTerms(message) {
+            // Remove common question words and phrases to get the product name
+            const removeWords = [
+                'i need',
+                'i want',
+                'looking for',
+                'search for',
+                'find me',
+                'show me',
+                'can i get',
+                'do you have',
+                'do you sell',
+                'where can i find',
+                'interested in',
+                'looking to buy',
+                'i am looking for',
+                "i'm looking for",
+                'any',
+                'some',
+                'the',
+                'a',
+                'an',
+                'please',
+                'products',
+                'product',
+                'items',
+                'item',
+            ];
+
+            let searchTerm = message.toLowerCase().trim();
+
+            // Remove question marks and other punctuation
+            searchTerm = searchTerm.replace(/[?!.,]/g, '');
+
+            // Remove common phrases
+            removeWords.forEach((word) => {
+                searchTerm = searchTerm.replace(new RegExp('\\b' + word + '\\b', 'gi'), '');
+            });
+
+            // Clean up extra spaces
+            searchTerm = searchTerm.replace(/\s+/g, ' ').trim();
+
+            return searchTerm;
         }
 
         addMessage(container, text, type, playSound = true) {
@@ -655,12 +819,565 @@
                 // Storage not available
             }
         }
+
+        // WooCommerce Product Methods
+        renderProducts(products, container, options = {}) {
+            if (!this.wooEnabled || !products || products.length === 0) return;
+
+            const productsHtml = `
+                <div class="aiagent-products-grid">
+                    ${products.map((product) => this.renderProductCard(product, options)).join('')}
+                </div>
+                ${
+                    options.showCompareButton && products.length >= 2
+                        ? `
+                    <div class="aiagent-compare-actions">
+                        <button class="aiagent-compare-btn" onclick="window.aiagentChat.showComparison()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+                            </svg>
+                            Compare Selected (${this.compareProducts.length})
+                        </button>
+                    </div>
+                `
+                        : ''
+                }
+            `;
+
+            this.addProductMessage(container, productsHtml);
+        }
+
+        renderProductCard(product, options = {}) {
+            const showPrices = aiagentConfig.wooShowPrices;
+            const showAddToCart = aiagentConfig.wooShowAddToCart;
+            const showCompare = aiagentConfig.wooShowComparison;
+            const isCompared = this.compareProducts.includes(product.id);
+
+            const placeholderImage = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect fill='%23f0f0f0' width='150' height='150'/%3E%3Cpath fill='%23ccc' d='M75 45c-11 0-20 9-20 20s9 20 20 20 20-9 20-20-9-20-20-20zm0 35c-8.3 0-15-6.7-15-15s6.7-15 15-15 15 6.7 15 15-6.7 15-15 15zm35 15H40c-2.8 0-5 2.2-5 5v10h80v-10c0-2.8-2.2-5-5-5z'/%3E%3Ctext x='75' y='125' text-anchor='middle' fill='%23999' font-size='12' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E`;
+            const productImage = product.image || placeholderImage;
+
+            return `
+                <div class="aiagent-product-card" data-product-id="${product.id}">
+                    ${product.on_sale ? '<span class="aiagent-product-badge sale">Sale</span>' : ''}
+                    ${!product.in_stock ? '<span class="aiagent-product-badge out-of-stock">Out of Stock</span>' : ''}
+                    <div class="aiagent-product-image">
+                        <img src="${productImage}" alt="${this.escapeHtml(product.name)}" loading="lazy" onerror="this.src='${placeholderImage}'">
+                    </div>
+                    <div class="aiagent-product-info">
+                        <h4 class="aiagent-product-name">
+                            <a href="${product.permalink}" target="_blank">${this.escapeHtml(product.name)}</a>
+                        </h4>
+                        ${product.short_desc ? `<p class="aiagent-product-desc">${this.truncateText(product.short_desc, 60)}</p>` : ''}
+                        ${
+                            showPrices && product.price_html
+                                ? `
+                            <div class="aiagent-product-price">${product.price_html}</div>
+                        `
+                                : ''
+                        }
+                        ${
+                            product.rating > 0
+                                ? `
+                            <div class="aiagent-product-rating">
+                                ${this.renderStars(product.rating)}
+                                <span class="aiagent-review-count">(${product.review_count})</span>
+                            </div>
+                        `
+                                : ''
+                        }
+                    </div>
+                    <div class="aiagent-product-actions">
+                        ${
+                            showAddToCart && product.in_stock && product.is_purchasable
+                                ? `
+                            <button class="aiagent-add-to-cart-btn" data-product-id="${product.id}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <circle cx="9" cy="21" r="1"></circle>
+                                    <circle cx="20" cy="21" r="1"></circle>
+                                    <path d="m1 1 4 4 14 0 -2.5 7.5H7.5L5 4"></path>
+                                </svg>
+                                Add to Cart
+                            </button>
+                        `
+                                : ''
+                        }
+                        ${
+                            showCompare
+                                ? `
+                            <button class="aiagent-compare-toggle ${isCompared ? 'active' : ''}" data-product-id="${product.id}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+                                </svg>
+                            </button>
+                        `
+                                : ''
+                        }
+                        <a href="${product.permalink}" class="aiagent-view-product-btn" target="_blank">
+                            View
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        renderStars(rating) {
+            const fullStars = Math.floor(rating);
+            const halfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+            return `
+                <span class="aiagent-stars">
+                    ${'★'.repeat(fullStars)}
+                    ${halfStar ? '½' : ''}
+                    ${'☆'.repeat(emptyStars)}
+                </span>
+            `;
+        }
+
+        addProductMessage(container, html) {
+            const messageEl = document.createElement('div');
+            messageEl.className = 'aiagent-message aiagent-message-ai aiagent-message-products';
+            messageEl.innerHTML = html;
+            container.appendChild(messageEl);
+            container.scrollTop = container.scrollHeight;
+
+            // Bind product action events
+            this.bindProductEvents(messageEl);
+        }
+
+        bindProductEvents(container) {
+            // Add to cart buttons
+            container.querySelectorAll('.aiagent-add-to-cart-btn').forEach((btn) => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const productId = btn.dataset.productId;
+                    this.addToCart(productId, btn);
+                });
+            });
+
+            // Compare toggle buttons
+            container.querySelectorAll('.aiagent-compare-toggle').forEach((btn) => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const productId = parseInt(btn.dataset.productId);
+                    this.toggleCompare(productId, btn);
+                });
+            });
+        }
+
+        async addToCart(productId, button) {
+            if (!this.wooEnabled) return;
+
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<span class="aiagent-spinner"></span>';
+
+            try {
+                const response = await fetch(aiagentConfig.restUrl + 'woocommerce/add-to-cart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': aiagentConfig.nonce,
+                    },
+                    body: JSON.stringify({
+                        product_id: parseInt(productId),
+                        quantity: 1,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    button.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                        Added!
+                    `;
+                    button.classList.add('success');
+
+                    // Show cart notification
+                    this.showCartNotification(data);
+
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.classList.remove('success');
+                        button.disabled = false;
+                    }, 2000);
+                } else if (data.requires_variation) {
+                    // Handle variable products
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    this.showVariationModal(productId, data.variations);
+                } else {
+                    throw new Error(data.message || 'Failed to add to cart');
+                }
+            } catch (error) {
+                console.error('Add to cart error:', error);
+                const errorMsg = error.message || 'Error adding to cart';
+                button.innerHTML = `<span title="${this.escapeHtml(errorMsg)}">Error</span>`;
+                button.classList.add('error');
+
+                // Show error notification
+                this.showErrorNotification(errorMsg);
+
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('error');
+                    button.disabled = false;
+                }, 3000);
+            }
+        }
+
+        showErrorNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'aiagent-cart-notification aiagent-cart-error';
+            notification.innerHTML = `
+                <div class="aiagent-cart-notification-content">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                    <span>${this.escapeHtml(message)}</span>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        showCartNotification(data) {
+            const notification = document.createElement('div');
+            notification.className = 'aiagent-cart-notification';
+            notification.innerHTML = `
+                <div class="aiagent-cart-notification-content">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    <span>${data.message}</span>
+                </div>
+                <div class="aiagent-cart-notification-actions">
+                    <a href="${data.cart_url}" class="aiagent-cart-link">View Cart (${data.cart_count})</a>
+                    <a href="${data.checkout_url}" class="aiagent-checkout-link">Checkout</a>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        toggleCompare(productId, button) {
+            const index = this.compareProducts.indexOf(productId);
+            if (index > -1) {
+                this.compareProducts.splice(index, 1);
+                button.classList.remove('active');
+            } else {
+                if (this.compareProducts.length >= 4) {
+                    alert('You can compare up to 4 products at a time.');
+                    return;
+                }
+                this.compareProducts.push(productId);
+                button.classList.add('active');
+            }
+
+            // Update compare button count
+            document.querySelectorAll('.aiagent-compare-btn').forEach((btn) => {
+                const count = this.compareProducts.length;
+                btn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+                    </svg>
+                    Compare Selected (${count})
+                `;
+                btn.disabled = count < 2;
+            });
+        }
+
+        async showComparison() {
+            if (this.compareProducts.length < 2) {
+                alert('Please select at least 2 products to compare.');
+                return;
+            }
+
+            try {
+                const response = await fetch(aiagentConfig.restUrl + 'woocommerce/compare', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': aiagentConfig.nonce,
+                    },
+                    body: JSON.stringify({
+                        product_ids: this.compareProducts,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this.renderComparisonModal(data.comparison);
+                }
+            } catch (error) {
+                console.error('Compare products error:', error);
+            }
+        }
+
+        renderComparisonModal(comparison) {
+            const modal = document.createElement('div');
+            modal.className = 'aiagent-comparison-modal';
+            modal.innerHTML = `
+                <div class="aiagent-comparison-overlay"></div>
+                <div class="aiagent-comparison-content">
+                    <div class="aiagent-comparison-header">
+                        <h3>Product Comparison</h3>
+                        <button class="aiagent-comparison-close">&times;</button>
+                    </div>
+                    <div class="aiagent-comparison-body">
+                        <table class="aiagent-comparison-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    ${comparison.products
+                                        .map(
+                                            (p) => `
+                                        <th>
+                                            <img src="${p.image}" alt="${this.escapeHtml(p.name)}">
+                                            <span>${this.escapeHtml(p.name)}</span>
+                                        </th>
+                                    `
+                                        )
+                                        .join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Price</strong></td>
+                                    ${comparison.products.map((p) => `<td>${p.price_html || '-'}</td>`).join('')}
+                                </tr>
+                                <tr>
+                                    <td><strong>Rating</strong></td>
+                                    ${comparison.products.map((p) => `<td>${p.rating > 0 ? this.renderStars(p.rating) + ` (${p.review_count})` : '-'}</td>`).join('')}
+                                </tr>
+                                <tr>
+                                    <td><strong>Stock</strong></td>
+                                    ${comparison.products.map((p) => `<td class="${p.in_stock ? 'in-stock' : 'out-of-stock'}">${p.in_stock ? 'In Stock' : 'Out of Stock'}</td>`).join('')}
+                                </tr>
+                                ${
+                                    comparison.products[0].sku
+                                        ? `
+                                    <tr>
+                                        <td><strong>SKU</strong></td>
+                                        ${comparison.products.map((p) => `<td>${p.sku || '-'}</td>`).join('')}
+                                    </tr>
+                                `
+                                        : ''
+                                }
+                                ${comparison.attributes
+                                    .map(
+                                        (attr) => `
+                                    <tr>
+                                        <td><strong>${this.escapeHtml(attr)}</strong></td>
+                                        ${comparison.products.map((p) => `<td>${p.attributes && p.attributes[attr] ? this.escapeHtml(p.attributes[attr]) : '-'}</td>`).join('')}
+                                    </tr>
+                                `
+                                    )
+                                    .join('')}
+                                <tr class="aiagent-comparison-actions-row">
+                                    <td></td>
+                                    ${comparison.products
+                                        .map(
+                                            (p) => `
+                                        <td>
+                                            ${
+                                                p.in_stock && p.is_purchasable
+                                                    ? `
+                                                <button class="aiagent-add-to-cart-btn" data-product-id="${p.id}">Add to Cart</button>
+                                            `
+                                                    : ''
+                                            }
+                                            <a href="${p.permalink}" class="aiagent-view-product-btn" target="_blank">View Details</a>
+                                        </td>
+                                    `
+                                        )
+                                        .join('')}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Close handlers
+            modal
+                .querySelector('.aiagent-comparison-close')
+                .addEventListener('click', () => modal.remove());
+            modal
+                .querySelector('.aiagent-comparison-overlay')
+                .addEventListener('click', () => modal.remove());
+
+            // Bind add to cart events
+            this.bindProductEvents(modal);
+
+            // Clear compare list
+            this.compareProducts = [];
+            document
+                .querySelectorAll('.aiagent-compare-toggle')
+                .forEach((btn) => btn.classList.remove('active'));
+        }
+
+        showVariationModal(productId, variationData) {
+            // Simple variation selection - for complex variations, redirect to product page
+            const product = document.querySelector(`[data-product-id="${productId}"]`);
+            if (product) {
+                const link = product.querySelector('.aiagent-view-product-btn');
+                if (link) {
+                    window.open(link.href, '_blank');
+                }
+            }
+        }
+
+        truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substr(0, maxLength) + '...';
+        }
+
+        escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Search products through chat
+        async searchProducts(query, messagesContainer) {
+            if (!this.wooEnabled) {
+                return null;
+            }
+
+            try {
+                const searchUrl =
+                    aiagentConfig.restUrl +
+                    'woocommerce/search?query=' +
+                    encodeURIComponent(query) +
+                    '&limit=' +
+                    aiagentConfig.wooMaxProducts;
+
+                const response = await fetch(searchUrl, {
+                    method: 'GET',
+                    headers: {
+                        'X-WP-Nonce': aiagentConfig.nonce,
+                    },
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.products && data.products.length > 0) {
+                    return data;
+                }
+            } catch (error) {
+                console.error('Product search error:', error);
+            }
+
+            return null;
+        }
+
+        // Get featured/all products as fallback
+        async getFeaturedProducts() {
+            if (!this.wooEnabled) {
+                return null;
+            }
+
+            try {
+                // Try featured products first
+                let response = await fetch(
+                    aiagentConfig.restUrl +
+                        'woocommerce/featured?limit=' +
+                        aiagentConfig.wooMaxProducts,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'X-WP-Nonce': aiagentConfig.nonce,
+                        },
+                    }
+                );
+
+                let data = await response.json();
+
+                if (data.success && data.products && data.products.length > 0) {
+                    return data;
+                }
+
+                // If no featured products, try bestsellers
+                response = await fetch(
+                    aiagentConfig.restUrl +
+                        'woocommerce/bestsellers?limit=' +
+                        aiagentConfig.wooMaxProducts,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'X-WP-Nonce': aiagentConfig.nonce,
+                        },
+                    }
+                );
+
+                data = await response.json();
+
+                if (data.success && data.products && data.products.length > 0) {
+                    return data;
+                }
+
+                // Last resort: search with empty query to get any products
+                response = await fetch(
+                    aiagentConfig.restUrl +
+                        'woocommerce/search?query=&limit=' +
+                        aiagentConfig.wooMaxProducts,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'X-WP-Nonce': aiagentConfig.nonce,
+                        },
+                    }
+                );
+
+                data = await response.json();
+
+                if (data.success && data.products && data.products.length > 0) {
+                    return data;
+                }
+            } catch (error) {
+                console.error('Get featured products error:', error);
+            }
+
+            return null;
+        }
     }
+
+    // Make instance globally available for inline handlers
+    window.aiagentChat = null;
 
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => new AIAgentChat());
+        document.addEventListener('DOMContentLoaded', () => {
+            window.aiagentChat = new AIAgentChat();
+        });
     } else {
-        new AIAgentChat();
+        window.aiagentChat = new AIAgentChat();
     }
 })();
