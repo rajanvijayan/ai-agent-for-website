@@ -178,20 +178,30 @@
             }
         })();
 
-        // Show Powered By toggle - update preview
+        // Show Powered By toggle - update preview and text field visibility
         $('#show_powered_by').on('change', function () {
             const $powered = $('#preview-powered');
+            const $textRow = $('.powered-by-text-row');
             if ($(this).is(':checked')) {
                 $powered.removeClass('hidden');
+                $textRow.slideDown(200);
             } else {
                 $powered.addClass('hidden');
+                $textRow.slideUp(200);
             }
+        });
+
+        // Powered By text - update preview in real-time
+        $('#powered_by_text').on('input', function () {
+            const text = $(this).val() || $(this).attr('placeholder');
+            $('#preview-powered').text(text);
         });
 
         // Initialize powered by state on page load
         (function () {
             if (!$('#show_powered_by').is(':checked')) {
                 $('#preview-powered').addClass('hidden');
+                $('.powered-by-text-row').hide();
             }
         })();
 

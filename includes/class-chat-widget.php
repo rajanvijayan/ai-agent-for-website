@@ -209,7 +209,10 @@ class AIAGENT_Chat_Widget {
 
 				<?php if ( $settings['show_powered_by'] ?? true ) : ?>
 				<div class="aiagent-powered">
-					<?php echo esc_html( get_bloginfo( 'name' ) ); ?>
+					<?php
+					$powered_by_text = $settings['powered_by_text'] ?? '';
+					echo esc_html( ! empty( $powered_by_text ) ? $powered_by_text : get_bloginfo( 'name' ) );
+					?>
 				</div>
 				<?php endif; ?>
 			</div>

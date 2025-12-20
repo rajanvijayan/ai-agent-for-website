@@ -711,7 +711,23 @@ class AIAGENT_Admin_Settings {
 								<span class="slider"></span>
 							</label>
 							<p class="description">
-								<?php esc_html_e( 'Show site name at the bottom of chat widget', 'ai-agent-for-website' ); ?>
+								<?php esc_html_e( 'Show branding text at the bottom of chat widget', 'ai-agent-for-website' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr class="powered-by-text-row" <?php echo empty( $settings['show_powered_by'] ) ? 'style="display:none;"' : ''; ?>>
+						<th scope="row">
+							<label for="powered_by_text"><?php esc_html_e( 'Powered By Text', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<input type="text" 
+									id="powered_by_text" 
+									name="powered_by_text" 
+									class="regular-text"
+									value="<?php echo esc_attr( $settings['powered_by_text'] ?? get_bloginfo( 'name' ) ); ?>"
+									placeholder="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+							<p class="description">
+								<?php esc_html_e( 'Custom text to display at the bottom of the chat widget. Leave empty to use site name.', 'ai-agent-for-website' ); ?>
 							</p>
 						</td>
 					</tr>
@@ -826,7 +842,10 @@ class AIAGENT_Admin_Settings {
 								</button>
 							</div>
 							<div class="aiagent-preview-powered" id="preview-powered">
-								<?php echo esc_html( get_bloginfo( 'name' ) ); ?>
+								<?php
+								$powered_text = $settings['powered_by_text'] ?? '';
+								echo esc_html( ! empty( $powered_text ) ? $powered_text : get_bloginfo( 'name' ) );
+								?>
 							</div>
 						</div>
 						<button type="button" class="aiagent-preview-toggle">
@@ -1162,6 +1181,7 @@ class AIAGENT_Admin_Settings {
 				$settings['primary_color']      = isset( $_POST['primary_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['primary_color'] ) ) : ( $settings['primary_color'] ?? '#0073aa' );
 				$settings['avatar_url']         = isset( $_POST['avatar_url'] ) ? esc_url_raw( wp_unslash( $_POST['avatar_url'] ) ) : ( $settings['avatar_url'] ?? '' );
 				$settings['show_powered_by']    = ! empty( $_POST['show_powered_by'] );
+				$settings['powered_by_text']    = isset( $_POST['powered_by_text'] ) ? sanitize_text_field( wp_unslash( $_POST['powered_by_text'] ) ) : ( $settings['powered_by_text'] ?? '' );
 				$settings['widget_button_size'] = isset( $_POST['widget_button_size'] ) ? sanitize_text_field( wp_unslash( $_POST['widget_button_size'] ) ) : ( $settings['widget_button_size'] ?? 'medium' );
 				$settings['widget_animation']   = isset( $_POST['widget_animation'] ) ? sanitize_text_field( wp_unslash( $_POST['widget_animation'] ) ) : ( $settings['widget_animation'] ?? 'slide' );
 				$settings['widget_sound']       = ! empty( $_POST['widget_sound'] );
