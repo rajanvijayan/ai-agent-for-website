@@ -1625,6 +1625,56 @@
     overflow-y: auto;
 }
 
+.aiagent-lead-notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.aiagent-note-item {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.aiagent-note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.aiagent-note-author {
+    color: #1e1e1e;
+    font-size: 13px;
+}
+
+.aiagent-note-date {
+    color: #757575;
+    font-size: 12px;
+}
+
+.aiagent-note-content {
+    color: #1e1e1e;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.aiagent-empty-notes {
+    color: #757575;
+    font-style: italic;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    text-align: center;
+}
+
 .aiagent-pagination {
     display: flex;
     gap: 5px;

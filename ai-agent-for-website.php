@@ -293,6 +293,20 @@ class AI_Agent_For_Website {
             KEY conversation_id (conversation_id)
         ) $charset_collate;";
 
+		// Lead notes table.
+		$lead_notes_table = $wpdb->prefix . 'aiagent_lead_notes';
+		$lead_notes_sql   = "CREATE TABLE $lead_notes_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            lead_id bigint(20) unsigned NOT NULL,
+            note text NOT NULL,
+            author_id bigint(20) unsigned NOT NULL,
+            author_name varchar(255) DEFAULT '',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY lead_id (lead_id),
+            KEY author_id (author_id)
+        ) $charset_collate;";
+
 		// User consents table.
 		$consents_table = $wpdb->prefix . 'aiagent_user_consents';
 		$consents_sql   = "CREATE TABLE $consents_table (
@@ -313,6 +327,7 @@ class AI_Agent_For_Website {
 		dbDelta( $messages_sql );
 		dbDelta( $files_sql );
 		dbDelta( $leads_sql );
+		dbDelta( $lead_notes_sql );
 		dbDelta( $consents_sql );
 
 		// Store DB version.

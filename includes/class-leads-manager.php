@@ -191,14 +191,6 @@ class AIAGENT_Leads_Manager {
 			'updated_at' => current_time( 'mysql' ),
 		];
 
-		if ( ! empty( $notes ) ) {
-			// Append notes.
-			$current_lead = $this->get_lead( $lead_id );
-			if ( $current_lead ) {
-				$update_data['notes'] = trim( $current_lead->notes . "\n\n" . $notes );
-			}
-		}
-
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional direct update.
 		$result = $wpdb->update(
 			$leads_table,
@@ -206,12 +198,92 @@ class AIAGENT_Leads_Manager {
 			[ 'id' => $lead_id ]
 		);
 
+		// Add note to the notes table if provided.
+		if ( ! empty( $notes ) ) {
+			$this->add_note( $lead_id, $notes );
+		}
+
 		if ( false !== $result ) {
 			$this->trigger_webhook( $lead_id, 'lead_updated' );
 			return true;
 		}
 
 		return false;
+	}
+
+	/**
+	 * Add a note to a lead.
+	 *
+	 * @param int    $lead_id The lead ID.
+	 * @param string $note    The note content.
+	 * @return int|false Note ID on success, false on failure.
+	 */
+	public function add_note( $lead_id, $note ) {
+		global $wpdb;
+
+		$notes_table = $wpdb->prefix . 'aiagent_lead_notes';
+
+		$current_user = wp_get_current_user();
+		$author_id    = $current_user->ID;
+		$author_name  = $current_user->display_name ? $current_user->display_name : $current_user->user_login;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Intentional direct insert.
+		$result = $wpdb->insert(
+			$notes_table,
+			[
+				'lead_id'     => $lead_id,
+				'note'        => $note,
+				'author_id'   => $author_id,
+				'author_name' => $author_name,
+				'created_at'  => current_time( 'mysql' ),
+			]
+		);
+
+		if ( ! $result ) {
+			return false;
+		}
+
+		return $wpdb->insert_id;
+	}
+
+	/**
+	 * Get notes for a lead.
+	 *
+	 * @param int $lead_id The lead ID.
+	 * @return array Array of notes.
+	 */
+	public function get_notes( $lead_id ) {
+		global $wpdb;
+
+		$notes_table = $wpdb->prefix . 'aiagent_lead_notes';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table lookup with safe table name.
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM $notes_table WHERE lead_id = %d ORDER BY created_at DESC",
+				$lead_id
+			)
+		);
+	}
+
+	/**
+	 * Delete a note.
+	 *
+	 * @param int $note_id The note ID.
+	 * @return bool True on success, false on failure.
+	 */
+	public function delete_note( $note_id ) {
+		global $wpdb;
+
+		$notes_table = $wpdb->prefix . 'aiagent_lead_notes';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional direct delete.
+		$result = $wpdb->delete(
+			$notes_table,
+			[ 'id' => $note_id ]
+		);
+
+		return false !== $result;
 	}
 
 	/**
@@ -546,10 +618,36 @@ class AIAGENT_Leads_Manager {
 						<p><?php echo esc_html( $lead->summary ); ?></p>
 					<?php endif; ?>
 
-					<?php if ( $lead->notes ) : ?>
-						<h3><?php esc_html_e( 'Notes', 'ai-agent-for-website' ); ?></h3>
-						<div class="aiagent-lead-notes">
-							<?php echo nl2br( esc_html( $lead->notes ) ); ?>
+					<h3><?php esc_html_e( 'Notes', 'ai-agent-for-website' ); ?></h3>
+					<?php
+					$notes = $this->get_notes( $lead->id );
+					if ( empty( $notes ) ) :
+						?>
+						<p class="aiagent-empty-notes"><?php esc_html_e( 'No notes yet. Add a note using the form on the right.', 'ai-agent-for-website' ); ?></p>
+					<?php else : ?>
+						<div class="aiagent-lead-notes-list">
+							<?php foreach ( $notes as $note ) : ?>
+								<div class="aiagent-note-item">
+									<div class="aiagent-note-header">
+										<span class="aiagent-note-author">
+											<strong><?php echo esc_html( $note->author_name ); ?></strong>
+										</span>
+										<span class="aiagent-note-date">
+											<?php
+											echo esc_html(
+												date_i18n(
+													get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
+													strtotime( $note->created_at )
+												)
+											);
+											?>
+										</span>
+									</div>
+									<div class="aiagent-note-content">
+										<?php echo nl2br( esc_html( $note->note ) ); ?>
+									</div>
+								</div>
+							<?php endforeach; ?>
 						</div>
 					<?php endif; ?>
 				</div>
