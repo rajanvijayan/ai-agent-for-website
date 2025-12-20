@@ -4,7 +4,7 @@ Tags: ai, chatbot, chat, groq, llama, assistant, customer support, live chat
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -150,6 +150,14 @@ Your Knowledge Base content stays on your WordPress server. Only conversation me
 6. Conversations view - review chat history
 
 == Changelog ==
+
+= 1.6.0 =
+* NEW: Integrations UI redesign with modern card-based grid layout
+* NEW: Modal settings - integration settings now open in popup modals
+* NEW: AJAX save - save individual integration settings independently
+* NEW: Categorized integrations (Knowledge Base, Conversation)
+* IMPROVED: Admin page header with icon and better alignment
+* IMPROVED: readme.txt with WordPress 6.7 compatibility
 
 = 1.5.0 =
 * NEW: Notification Center - centralized admin notifications for all events

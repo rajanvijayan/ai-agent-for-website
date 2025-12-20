@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2024-12-20
+
+### Added
+- **Integrations UI Redesign**: Modern card-based grid layout for integrations
+- **Modal Settings**: Integration settings now open in popup modals for cleaner UX
+- **AJAX Save**: Save individual integration settings without affecting others
+- **Categorized Integrations**: Integrations organized into Knowledge Base and Conversation categories
+- **Page Title Styling**: Improved admin page header with icon and better alignment
+
+### Changed
+- Integrations tab now displays all integrations in responsive grid format
+- Each integration has its own modal with dedicated Save/Cancel buttons
+- REST API endpoints added for saving individual integration settings
+- Updated readme.txt with WordPress 6.7 compatibility and enhanced content
+
 ## [1.5.0] - 2024-12-20
 
 ### Added
@@ -176,7 +191,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sanitization of user inputs
 - Capability checks for admin operations
 
-[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.2.0...v1.3.0
