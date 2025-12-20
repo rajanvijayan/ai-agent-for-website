@@ -1038,17 +1038,114 @@
 }
 
 .aiagent-preview-toggle {
-    width: 56px;
-    height: 56px;
+    width: 60px;
+    height: 60px;
     background: var(--aiagent-primary, #0073aa);
     border: none;
     border-radius: 50%;
-    cursor: default;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* Button Size Variations */
+.aiagent-preview-toggle.size-small {
+    width: 48px;
+    height: 48px;
+}
+
+.aiagent-preview-toggle.size-small svg {
+    width: 20px;
+    height: 20px;
+}
+
+.aiagent-preview-toggle.size-medium {
+    width: 60px;
+    height: 60px;
+}
+
+.aiagent-preview-toggle.size-large {
+    width: 72px;
+    height: 72px;
+}
+
+.aiagent-preview-toggle.size-large svg {
+    width: 28px;
+    height: 28px;
+}
+
+/* Sound indicator badge */
+.aiagent-preview-toggle .sound-indicator {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 16px;
+    height: 16px;
+    background: #4caf50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    border: 2px solid #fff;
+}
+
+.aiagent-preview-toggle .sound-indicator svg {
+    width: 10px;
+    height: 10px;
+}
+
+/* Animation Preview */
+.aiagent-preview-window {
+    transition: all 0.3s ease;
+}
+
+.aiagent-preview-window.animation-slide {
+    animation: previewSlideUp 0.4s ease-out;
+}
+
+.aiagent-preview-window.animation-fade {
+    animation: previewFadeIn 0.4s ease-out;
+}
+
+.aiagent-preview-window.animation-scale {
+    animation: previewScale 0.4s ease-out;
+}
+
+@keyframes previewSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes previewFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes previewScale {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .aiagent-preview-powered {

@@ -795,7 +795,7 @@ class AIAGENT_Admin_Settings {
 				<h2><?php esc_html_e( 'Live Preview', 'ai-agent-for-website' ); ?></h2>
 				<div class="aiagent-preview-container">
 					<div class="aiagent-preview-widget" id="aiagent-preview-widget" style="--aiagent-primary: <?php echo esc_attr( $settings['primary_color'] ?? '#0073aa' ); ?>;">
-						<div class="aiagent-preview-window">
+						<div class="aiagent-preview-window animation-<?php echo esc_attr( $settings['widget_animation'] ?? 'slide' ); ?>" id="preview-window">
 							<div class="aiagent-preview-header">
 								<div class="aiagent-preview-header-info">
 									<div class="aiagent-preview-avatar" id="preview-avatar">
@@ -848,10 +848,15 @@ class AIAGENT_Admin_Settings {
 								?>
 							</div>
 						</div>
-						<button type="button" class="aiagent-preview-toggle">
+						<button type="button" class="aiagent-preview-toggle size-<?php echo esc_attr( $settings['widget_button_size'] ?? 'medium' ); ?>" id="preview-toggle">
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
 								<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
 							</svg>
+							<span class="sound-indicator" id="preview-sound-indicator" <?php echo empty( $settings['widget_sound'] ) ? 'style="display:none;"' : ''; ?>>
+								<svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10">
+									<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+								</svg>
+							</span>
 						</button>
 					</div>
 				</div>

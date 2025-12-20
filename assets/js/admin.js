@@ -225,6 +225,37 @@
             }
         });
 
+        // Button Size - update preview
+        $('#widget_button_size').on('change', function () {
+            const size = $(this).val();
+            const $toggle = $('#preview-toggle');
+            $toggle.removeClass('size-small size-medium size-large').addClass('size-' + size);
+        });
+
+        // Open Animation - update preview
+        $('#widget_animation').on('change', function () {
+            const animation = $(this).val();
+            const $window = $('#preview-window');
+
+            // Remove current animation class
+            $window.removeClass('animation-slide animation-fade animation-scale animation-none');
+
+            // Add new animation class with a slight delay to trigger the animation
+            setTimeout(function () {
+                $window.addClass('animation-' + animation);
+            }, 50);
+        });
+
+        // Enable Sound - update preview
+        $('#widget_sound').on('change', function () {
+            const $indicator = $('#preview-sound-indicator');
+            if ($(this).is(':checked')) {
+                $indicator.fadeIn(200);
+            } else {
+                $indicator.fadeOut(200);
+            }
+        });
+
         // AI Suggestion Modal
         let currentSuggestTarget = null;
         let currentSuggestType = null;

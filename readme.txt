@@ -4,7 +4,7 @@ Tags: ai, chatbot, chat, groq, llama, assistant
 Requires at least: 5.8
 Tested up to: 6.4
 Requires PHP: 8.0
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -72,6 +72,18 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 == Changelog ==
 
 = 1.3.0 =
+* NEW: Leads management - convert conversations into leads
+* NEW: Admin review - review, close, or convert conversations to leads
+* NEW: Zapier integration - sync leads with external CRM platforms
+* NEW: Mailchimp integration - automatic newsletter subscription
+* NEW: Consent checkboxes (AI, Newsletter, Promotional) before chat
+* NEW: Editable "Powered By" text - customize branding at widget bottom
+* NEW: Widget customization - new color options for bubble, header, text, background
+* NEW: Live preview for button size, animation, and sound settings
+* CHANGED: Moved "AI Name" to Widget Appearance tab
+* DATABASE: Added leads table and consent fields
+
+= 1.3.0 =
 * NEW: Custom file upload - upload PDF, DOC, DOCX, TXT, CSV, MD, RTF to knowledge base
 * NEW: Google Drive integration - connect and import documents via OAuth 2.0
 * NEW: Confluence integration - connect and import wiki pages
@@ -116,6 +128,9 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 * Shortcode support
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+Leads & CRM integration! Convert conversations to leads, Zapier/Mailchimp integration, consent system, and enhanced widget customization.
 
 = 1.3.0 =
 Major knowledge base update! Upload files directly, connect Google Drive, and import from Confluence.
