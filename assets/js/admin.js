@@ -1056,6 +1056,46 @@
                 });
             }
         });
+
+        // ===============================
+        // Integration Configuration Modals
+        // ===============================
+
+        // Open integration modal
+        $(document).on('click', '.aiagent-integration-configure-btn', function (e) {
+            e.preventDefault();
+            const modalId = $(this).data('modal');
+            const $targetModal = $('#' + modalId);
+
+            if ($targetModal.length) {
+                $targetModal.fadeIn(200);
+                // Focus first input
+                setTimeout(function () {
+                    $targetModal.find('input:not([type="hidden"]):first').focus();
+                }, 200);
+            }
+        });
+
+        // Close integration modal
+        $(document).on(
+            'click',
+            '.aiagent-integration-modal .aiagent-modal-close, .aiagent-integration-modal .aiagent-modal-cancel, .aiagent-integration-modal .aiagent-modal-overlay',
+            function () {
+                $(this).closest('.aiagent-integration-modal').fadeOut(200);
+            }
+        );
+
+        // Prevent modal content click from closing
+        $(document).on('click', '.aiagent-integration-modal .aiagent-modal-content', function (e) {
+            e.stopPropagation();
+        });
+
+        // ESC key to close integration modals
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape') {
+                $('.aiagent-integration-modal:visible').fadeOut(200);
+            }
+        });
     });
 
     // Add spinning animation for loading state

@@ -225,398 +225,573 @@ class AIAGENT_Admin_Settings {
 	 * @param array $settings Current settings.
 	 */
 	private function render_integrations_tab( $settings ) {
-		?>
-		<div class="aiagent-card">
-			<h2>
-				<span class="dashicons dashicons-cloud" style="color: #0073aa;"></span>
-				<?php esc_html_e( 'AI Provider', 'ai-agent-for-website' ); ?>
-			</h2>
-			<p class="description">
-				<?php esc_html_e( 'Configure your AI provider API key to power the chat functionality.', 'ai-agent-for-website' ); ?>
-			</p>
-			
-			<table class="form-table">
-				<tr>
-					<th scope="row">
-						<label for="api_key"><?php esc_html_e( 'Groq API Key', 'ai-agent-for-website' ); ?></label>
-					</th>
-					<td>
-						<div class="aiagent-api-key-wrapper">
-							<input type="password" 
-									id="api_key" 
-									name="api_key" 
-									value="<?php echo esc_attr( $settings['api_key'] ?? '' ); ?>" 
-									class="regular-text"
-									autocomplete="off">
-							<button type="button" class="button aiagent-toggle-password">
-								<span class="dashicons dashicons-visibility"></span>
-							</button>
-						</div>
-						<p class="description">
-							<?php esc_html_e( 'Get your free API key from', 'ai-agent-for-website' ); ?>
-							<a href="https://console.groq.com" target="_blank">console.groq.com</a>
-						</p>
-						<div class="aiagent-api-test" style="margin-top: 10px;">
-							<button type="button" id="aiagent-test-api" class="button">
-								<span class="dashicons dashicons-yes-alt"></span>
-								<?php esc_html_e( 'Test Connection', 'ai-agent-for-website' ); ?>
-							</button>
-							<span id="aiagent-test-result" class="aiagent-test-result"></span>
-						</div>
-					</td>
-				</tr>
-			</table>
-		</div>
-
-		<?php
-		$gdrive_settings  = AIAGENT_Google_Drive_Integration::get_settings();
-		$gdrive_connected = AIAGENT_Google_Drive_Integration::is_connected();
-		$gdrive_user      = AIAGENT_Google_Drive_Integration::get_connected_user();
-		?>
-		<div class="aiagent-card aiagent-integration-card">
-			<h2>
-				<span class="dashicons dashicons-google" style="color: #4285f4;"></span>
-				<?php esc_html_e( 'Google Drive', 'ai-agent-for-website' ); ?>
-				<?php if ( $gdrive_connected ) : ?>
-					<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
-				<?php endif; ?>
-			</h2>
-			<p class="description">
-				<?php esc_html_e( 'Connect your Google Drive to import documents directly into your knowledge base.', 'ai-agent-for-website' ); ?>
-			</p>
-
-			<?php if ( $gdrive_connected && $gdrive_user ) : ?>
-				<div class="aiagent-integration-status aiagent-status-connected">
-					<span class="dashicons dashicons-yes-alt"></span>
-					<?php
-					/* translators: %s: User email */
-					printf( esc_html__( 'Connected as %s', 'ai-agent-for-website' ), esc_html( $gdrive_user['email'] ) );
-					?>
-					<button type="button" class="button button-small button-link-delete aiagent-gdrive-disconnect" style="margin-left: 10px;">
-						<?php esc_html_e( 'Disconnect', 'ai-agent-for-website' ); ?>
-					</button>
-				</div>
-				<div style="margin-top: 15px;">
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-knowledge' ) ); ?>" class="button button-primary">
-						<span class="dashicons dashicons-cloud-upload" style="margin-top: 3px;"></span>
-						<?php esc_html_e( 'Import from Google Drive', 'ai-agent-for-website' ); ?>
-					</a>
-				</div>
-			<?php else : ?>
-				<div class="aiagent-integration-setup">
-					<p class="description" style="margin-bottom: 15px;">
-						<?php esc_html_e( 'To connect Google Drive, you need to create OAuth credentials in the Google Cloud Console.', 'ai-agent-for-website' ); ?>
-						<a href="https://console.cloud.google.com/apis/credentials" target="_blank"><?php esc_html_e( 'Learn how →', 'ai-agent-for-website' ); ?></a>
-					</p>
-					<table class="form-table aiagent-compact-table">
-						<tr>
-							<th scope="row">
-								<label for="gdrive_client_id"><?php esc_html_e( 'Client ID', 'ai-agent-for-website' ); ?></label>
-							</th>
-							<td>
-								<input type="text" 
-										id="gdrive_client_id" 
-										name="gdrive_client_id" 
-										value="<?php echo esc_attr( $gdrive_settings['client_id'] ?? '' ); ?>" 
-										class="regular-text"
-										placeholder="xxxxxx.apps.googleusercontent.com">
-							</td>
-						</tr>
-						<tr>
-							<th scope="row">
-								<label for="gdrive_client_secret"><?php esc_html_e( 'Client Secret', 'ai-agent-for-website' ); ?></label>
-							</th>
-							<td>
-								<div class="aiagent-api-key-wrapper">
-									<input type="password" 
-											id="gdrive_client_secret" 
-											name="gdrive_client_secret" 
-											value="<?php echo esc_attr( $gdrive_settings['client_secret'] ?? '' ); ?>" 
-											class="regular-text"
-											autocomplete="off">
-									<button type="button" class="button aiagent-toggle-password">
-										<span class="dashicons dashicons-visibility"></span>
-									</button>
-								</div>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row">
-								<label><?php esc_html_e( 'Redirect URI', 'ai-agent-for-website' ); ?></label>
-							</th>
-							<td>
-								<code class="aiagent-copy-text" id="gdrive-redirect-uri"><?php echo esc_html( admin_url( 'admin.php?page=ai-agent-settings&tab=integrations&gdrive_callback=1' ) ); ?></code>
-								<button type="button" class="button button-small aiagent-copy-btn" data-target="gdrive-redirect-uri">
-									<span class="dashicons dashicons-clipboard"></span>
-								</button>
-								<p class="description"><?php esc_html_e( 'Add this URL to your OAuth consent screen authorized redirect URIs.', 'ai-agent-for-website' ); ?></p>
-							</td>
-						</tr>
-					</table>
-					<div class="aiagent-integration-actions">
-						<button type="button" id="aiagent-gdrive-connect" class="button button-primary" <?php disabled( empty( $gdrive_settings['client_id'] ) || empty( $gdrive_settings['client_secret'] ) ); ?>>
-							<span class="dashicons dashicons-admin-links" style="margin-top: 3px;"></span>
-							<?php esc_html_e( 'Connect Google Drive', 'ai-agent-for-website' ); ?>
-						</button>
-						<span class="aiagent-connection-status"></span>
-					</div>
-				</div>
-			<?php endif; ?>
-		</div>
-
-		<?php
+		$gdrive_settings      = AIAGENT_Google_Drive_Integration::get_settings();
+		$gdrive_connected     = AIAGENT_Google_Drive_Integration::is_connected();
+		$gdrive_user          = AIAGENT_Google_Drive_Integration::get_connected_user();
 		$confluence_settings  = AIAGENT_Confluence_Integration::get_settings();
 		$confluence_connected = AIAGENT_Confluence_Integration::is_connected();
-		?>
-		<div class="aiagent-card aiagent-integration-card">
-			<h2>
-				<span class="aiagent-integration-icon aiagent-icon-atlassian"></span>
-				<?php esc_html_e( 'Confluence', 'ai-agent-for-website' ); ?>
-				<?php if ( $confluence_connected ) : ?>
-					<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
-				<?php endif; ?>
-			</h2>
-			<p class="description">
-				<?php esc_html_e( 'Connect Confluence to import wiki pages and documentation into your knowledge base.', 'ai-agent-for-website' ); ?>
-			</p>
-
-			<?php if ( $confluence_connected ) : ?>
-				<div class="aiagent-integration-status aiagent-status-connected">
-					<span class="dashicons dashicons-yes-alt"></span>
-					<?php
-					/* translators: %s: Instance URL */
-					printf( esc_html__( 'Connected to %s', 'ai-agent-for-website' ), esc_html( $confluence_settings['instance_url'] ) );
-					?>
-					<button type="button" class="button button-small button-link-delete aiagent-confluence-disconnect" style="margin-left: 10px;">
-						<?php esc_html_e( 'Disconnect', 'ai-agent-for-website' ); ?>
-					</button>
-				</div>
-				<div style="margin-top: 15px;">
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-knowledge' ) ); ?>" class="button button-primary">
-						<span class="dashicons dashicons-cloud-upload" style="margin-top: 3px;"></span>
-						<?php esc_html_e( 'Import from Confluence', 'ai-agent-for-website' ); ?>
-					</a>
-				</div>
-			<?php else : ?>
-				<div class="aiagent-integration-setup">
-					<p class="description" style="margin-bottom: 15px;">
-						<?php esc_html_e( 'Enter your Confluence Cloud or Server credentials. For Cloud, use an API token from', 'ai-agent-for-website' ); ?>
-						<a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank"><?php esc_html_e( 'Atlassian API tokens', 'ai-agent-for-website' ); ?></a>
-					</p>
-					<table class="form-table aiagent-compact-table">
-						<tr>
-							<th scope="row">
-								<label for="confluence_url"><?php esc_html_e( 'Instance URL', 'ai-agent-for-website' ); ?></label>
-							</th>
-							<td>
-								<input type="url" 
-										id="confluence_url" 
-										name="confluence_url" 
-										value="<?php echo esc_attr( $confluence_settings['instance_url'] ?? '' ); ?>" 
-										class="regular-text"
-										placeholder="https://your-domain.atlassian.net">
-							</td>
-						</tr>
-						<tr>
-							<th scope="row">
-								<label for="confluence_email"><?php esc_html_e( 'Email', 'ai-agent-for-website' ); ?></label>
-							</th>
-							<td>
-								<input type="email" 
-										id="confluence_email" 
-										name="confluence_email" 
-										value="<?php echo esc_attr( $confluence_settings['email'] ?? '' ); ?>" 
-										class="regular-text"
-										placeholder="you@example.com">
-							</td>
-						</tr>
-						<tr>
-							<th scope="row">
-								<label for="confluence_token"><?php esc_html_e( 'API Token', 'ai-agent-for-website' ); ?></label>
-							</th>
-							<td>
-								<div class="aiagent-api-key-wrapper">
-									<input type="password" 
-											id="confluence_token" 
-											name="confluence_token" 
-											value="<?php echo esc_attr( $confluence_settings['api_token'] ?? '' ); ?>" 
-											class="regular-text"
-											autocomplete="off">
-									<button type="button" class="button aiagent-toggle-password">
-										<span class="dashicons dashicons-visibility"></span>
-									</button>
-								</div>
-							</td>
-						</tr>
-					</table>
-					<div class="aiagent-integration-actions">
-						<button type="button" id="aiagent-confluence-connect" class="button button-primary">
-							<span class="dashicons dashicons-admin-links" style="margin-top: 3px;"></span>
-							<?php esc_html_e( 'Connect Confluence', 'ai-agent-for-website' ); ?>
-						</button>
-						<span class="aiagent-confluence-status"></span>
-					</div>
-				</div>
-			<?php endif; ?>
-		</div>
-
-		<div class="aiagent-card aiagent-integration-card">
-			<h2>
-				<span class="dashicons dashicons-upload" style="color: #9b59b6;"></span>
-				<?php esc_html_e( 'File Upload', 'ai-agent-for-website' ); ?>
-				<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Available', 'ai-agent-for-website' ); ?></span>
-			</h2>
-			<p class="description">
-				<?php esc_html_e( 'Upload documents (PDF, DOC, DOCX, TXT, CSV, MD, RTF) directly to your knowledge base.', 'ai-agent-for-website' ); ?>
-			</p>
-			<div class="aiagent-integration-status aiagent-status-connected">
-				<span class="dashicons dashicons-yes-alt"></span>
-				<?php esc_html_e( 'This feature is available. Go to Knowledge Base to upload files.', 'ai-agent-for-website' ); ?>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-knowledge' ) ); ?>" class="button button-small" style="margin-left: 10px;">
-					<?php esc_html_e( 'Upload Files', 'ai-agent-for-website' ); ?>
-				</a>
-			</div>
-		</div>
-
-		<?php
 		$integration_settings = get_option( 'aiagent_integrations', [] );
 		$zapier_enabled       = ! empty( $integration_settings['zapier_enabled'] );
 		$zapier_url           = $integration_settings['zapier_webhook_url'] ?? '';
+		$mailchimp_settings   = AIAGENT_Mailchimp_Integration::get_settings();
+		$mailchimp_enabled    = ! empty( $mailchimp_settings['mailchimp_enabled'] );
+		$mailchimp_connected  = AIAGENT_Mailchimp_Integration::is_enabled();
 		?>
-		<div class="aiagent-card aiagent-integration-card">
-			<h2>
-				<span class="dashicons dashicons-randomize" style="color: #ff4a00;"></span>
-				<?php esc_html_e( 'Zapier', 'ai-agent-for-website' ); ?>
-				<?php if ( $zapier_enabled && $zapier_url ) : ?>
-					<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
-				<?php endif; ?>
-			</h2>
-			<p class="description">
-				<?php esc_html_e( 'Connect with Zapier to sync leads with any CRM platform like Salesforce, HubSpot, Pipedrive, and more.', 'ai-agent-for-website' ); ?>
-			</p>
+		<!-- AI Provider Section -->
+		<div class="aiagent-integration-section">
+			<div class="aiagent-section-header">
+				<span class="dashicons dashicons-cloud"></span>
+				<h2><?php esc_html_e( 'AI Provider', 'ai-agent-for-website' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Configure your AI provider to power the chat functionality.', 'ai-agent-for-website' ); ?></p>
+			</div>
 
-			<table class="form-table aiagent-compact-table">
-				<tr>
-					<th scope="row">
-						<label for="zapier_enabled"><?php esc_html_e( 'Enable Zapier', 'ai-agent-for-website' ); ?></label>
-					</th>
-					<td>
-						<label class="aiagent-switch">
-							<input type="checkbox" 
-									id="zapier_enabled" 
-									name="zapier_enabled" 
-									value="1" 
-									<?php checked( $zapier_enabled ); ?>>
-							<span class="slider"></span>
-						</label>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="zapier_webhook_url"><?php esc_html_e( 'Webhook URL', 'ai-agent-for-website' ); ?></label>
-					</th>
-					<td>
-						<input type="url" 
-								id="zapier_webhook_url" 
-								name="zapier_webhook_url" 
-								value="<?php echo esc_attr( $zapier_url ); ?>" 
-								class="regular-text"
-								placeholder="https://hooks.zapier.com/hooks/catch/...">
-						<p class="description">
-							<?php esc_html_e( 'Create a Zap with "Webhooks by Zapier" trigger and paste the URL here.', 'ai-agent-for-website' ); ?>
-						</p>
-					</td>
-				</tr>
-			</table>
-
-			<?php if ( $zapier_enabled && $zapier_url ) : ?>
-				<div class="aiagent-integration-status aiagent-status-connected" style="margin-top: 15px;">
-					<span class="dashicons dashicons-yes-alt"></span>
-					<?php esc_html_e( 'Zapier webhook is configured. New leads will be synced automatically.', 'ai-agent-for-website' ); ?>
+			<div class="aiagent-integration-grid">
+				<!-- Groq -->
+				<div class="aiagent-integration-box" data-integration="groq">
+					<div class="aiagent-integration-box-header">
+						<div class="aiagent-integration-box-icon" style="background: linear-gradient(135deg, #f55036 0%, #e42e12 100%);">
+							<svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+								<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+							</svg>
+						</div>
+						<div class="aiagent-integration-box-title">
+							<h3><?php esc_html_e( 'Groq', 'ai-agent-for-website' ); ?></h3>
+							<span class="aiagent-integration-box-desc"><?php esc_html_e( 'Ultra-fast Llama inference', 'ai-agent-for-website' ); ?></span>
+						</div>
+						<?php if ( ! empty( $settings['api_key'] ) ) : ?>
+							<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
+						<?php endif; ?>
+					</div>
+					<div class="aiagent-integration-box-footer">
+						<button type="button" class="button aiagent-integration-configure-btn" data-modal="groq-modal">
+							<span class="dashicons dashicons-admin-generic"></span>
+							<?php esc_html_e( 'Configure', 'ai-agent-for-website' ); ?>
+						</button>
+					</div>
 				</div>
-			<?php endif; ?>
+			</div>
 		</div>
 
-		<?php
-		$mailchimp_settings  = AIAGENT_Mailchimp_Integration::get_settings();
-		$mailchimp_enabled   = ! empty( $mailchimp_settings['mailchimp_enabled'] );
-		$mailchimp_connected = AIAGENT_Mailchimp_Integration::is_enabled();
-		?>
-		<div class="aiagent-card aiagent-integration-card">
-			<h2>
-				<span class="dashicons dashicons-email-alt" style="color: #FFE01B;"></span>
-				<?php esc_html_e( 'Mailchimp', 'ai-agent-for-website' ); ?>
-				<?php if ( $mailchimp_connected ) : ?>
-					<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
-				<?php endif; ?>
-			</h2>
-			<p class="description">
-				<?php esc_html_e( 'Connect Mailchimp to automatically subscribe users who opt-in for newsletters.', 'ai-agent-for-website' ); ?>
-			</p>
+		<!-- Knowledge Base Section -->
+		<div class="aiagent-integration-section">
+			<div class="aiagent-section-header">
+				<span class="dashicons dashicons-book-alt"></span>
+				<h2><?php esc_html_e( 'Knowledge Base', 'ai-agent-for-website' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Import documents and content to train your AI assistant.', 'ai-agent-for-website' ); ?></p>
+			</div>
 
-			<table class="form-table aiagent-compact-table">
-				<tr>
-					<th scope="row">
-						<label for="mailchimp_enabled"><?php esc_html_e( 'Enable Mailchimp', 'ai-agent-for-website' ); ?></label>
-					</th>
-					<td>
-						<label class="aiagent-switch">
-							<input type="checkbox" 
-									id="mailchimp_enabled" 
-									name="mailchimp_enabled" 
-									value="1" 
-									<?php checked( $mailchimp_enabled ); ?>>
-							<span class="slider"></span>
-						</label>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="mailchimp_api_key"><?php esc_html_e( 'API Key', 'ai-agent-for-website' ); ?></label>
-					</th>
-					<td>
-						<div class="aiagent-api-key-wrapper">
-							<input type="password" 
-									id="mailchimp_api_key" 
-									name="mailchimp_api_key" 
-									value="<?php echo esc_attr( $mailchimp_settings['mailchimp_api_key'] ?? '' ); ?>" 
-									class="regular-text"
-									autocomplete="off"
-									placeholder="xxxxxxxx-us1">
-							<button type="button" class="button aiagent-toggle-password">
-								<span class="dashicons dashicons-visibility"></span>
+			<div class="aiagent-integration-grid">
+				<!-- Google Drive -->
+				<div class="aiagent-integration-box" data-integration="gdrive">
+					<div class="aiagent-integration-box-header">
+						<div class="aiagent-integration-box-icon" style="background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);">
+							<svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+								<path d="M7.71 3.5L1.15 15l3.43 5.98h13.39L21.41 15H7.71L4.28 9.02 7.71 3.5zm1.43 0L12 9.02l2.86-5.52H9.14zm8.57 11.5L12 9.02 5.43 20.98H12l5.71-5.98z"/>
+							</svg>
+						</div>
+						<div class="aiagent-integration-box-title">
+							<h3><?php esc_html_e( 'Google Drive', 'ai-agent-for-website' ); ?></h3>
+							<span class="aiagent-integration-box-desc"><?php esc_html_e( 'Import from Google Docs & Drive', 'ai-agent-for-website' ); ?></span>
+						</div>
+						<?php if ( $gdrive_connected ) : ?>
+							<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
+						<?php endif; ?>
+					</div>
+					<div class="aiagent-integration-box-footer">
+						<?php if ( $gdrive_connected ) : ?>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-knowledge' ) ); ?>" class="button button-primary">
+								<span class="dashicons dashicons-cloud-upload"></span>
+								<?php esc_html_e( 'Import', 'ai-agent-for-website' ); ?>
+							</a>
+						<?php endif; ?>
+						<button type="button" class="button aiagent-integration-configure-btn" data-modal="gdrive-modal">
+							<span class="dashicons dashicons-admin-generic"></span>
+							<?php esc_html_e( 'Configure', 'ai-agent-for-website' ); ?>
+						</button>
+					</div>
+				</div>
+
+				<!-- Confluence -->
+				<div class="aiagent-integration-box" data-integration="confluence">
+					<div class="aiagent-integration-box-header">
+						<div class="aiagent-integration-box-icon" style="background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%);">
+							<svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+								<path d="M3.58 16.41c-.17.28-.33.57-.33.87 0 .79.91 1.42 2.03 1.42h13.44c.79 0 1.48-.39 1.83-.99l3.02-5.16c.22-.38.43-.78.43-1.19 0-.79-.91-1.42-2.03-1.42H8.53c-.79 0-1.48.39-1.83.99L3.58 16.41z"/>
+								<path d="M20.42 7.59c.17-.28.33-.57.33-.87 0-.79-.91-1.42-2.03-1.42H5.28c-.79 0-1.48.39-1.83.99L.43 11.45c-.22.38-.43.78-.43 1.19 0 .79.91 1.42 2.03 1.42h13.44c.79 0 1.48-.39 1.83-.99l3.12-5.48z"/>
+							</svg>
+						</div>
+						<div class="aiagent-integration-box-title">
+							<h3><?php esc_html_e( 'Confluence', 'ai-agent-for-website' ); ?></h3>
+							<span class="aiagent-integration-box-desc"><?php esc_html_e( 'Import wiki pages & docs', 'ai-agent-for-website' ); ?></span>
+						</div>
+						<?php if ( $confluence_connected ) : ?>
+							<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
+						<?php endif; ?>
+					</div>
+					<div class="aiagent-integration-box-footer">
+						<?php if ( $confluence_connected ) : ?>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-knowledge' ) ); ?>" class="button button-primary">
+								<span class="dashicons dashicons-cloud-upload"></span>
+								<?php esc_html_e( 'Import', 'ai-agent-for-website' ); ?>
+							</a>
+						<?php endif; ?>
+						<button type="button" class="button aiagent-integration-configure-btn" data-modal="confluence-modal">
+							<span class="dashicons dashicons-admin-generic"></span>
+							<?php esc_html_e( 'Configure', 'ai-agent-for-website' ); ?>
+						</button>
+					</div>
+				</div>
+
+				<!-- File Upload -->
+				<div class="aiagent-integration-box" data-integration="file-upload">
+					<div class="aiagent-integration-box-header">
+						<div class="aiagent-integration-box-icon" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">
+							<svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+								<path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 15.01l1.41 1.41L11 14.84V19h2v-4.16l1.59 1.59L16 15.01 12.01 11 8 15.01z"/>
+							</svg>
+						</div>
+						<div class="aiagent-integration-box-title">
+							<h3><?php esc_html_e( 'File Upload', 'ai-agent-for-website' ); ?></h3>
+							<span class="aiagent-integration-box-desc"><?php esc_html_e( 'PDF, DOC, DOCX, TXT, CSV, MD', 'ai-agent-for-website' ); ?></span>
+						</div>
+						<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Available', 'ai-agent-for-website' ); ?></span>
+					</div>
+					<div class="aiagent-integration-box-footer">
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-knowledge' ) ); ?>" class="button button-primary">
+							<span class="dashicons dashicons-upload"></span>
+							<?php esc_html_e( 'Upload Files', 'ai-agent-for-website' ); ?>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- CRM & Marketing Section -->
+		<div class="aiagent-integration-section">
+			<div class="aiagent-section-header">
+				<span class="dashicons dashicons-megaphone"></span>
+				<h2><?php esc_html_e( 'CRM & Marketing', 'ai-agent-for-website' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Sync leads and automate marketing workflows.', 'ai-agent-for-website' ); ?></p>
+			</div>
+
+			<div class="aiagent-integration-grid">
+				<!-- Zapier -->
+				<div class="aiagent-integration-box" data-integration="zapier">
+					<div class="aiagent-integration-box-header">
+						<div class="aiagent-integration-box-icon" style="background: linear-gradient(135deg, #ff4a00 0%, #e64100 100%);">
+							<svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+								<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+							</svg>
+						</div>
+						<div class="aiagent-integration-box-title">
+							<h3><?php esc_html_e( 'Zapier', 'ai-agent-for-website' ); ?></h3>
+							<span class="aiagent-integration-box-desc"><?php esc_html_e( 'Connect to 5000+ apps', 'ai-agent-for-website' ); ?></span>
+						</div>
+						<?php if ( $zapier_enabled && $zapier_url ) : ?>
+							<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
+						<?php endif; ?>
+					</div>
+					<div class="aiagent-integration-box-footer">
+						<button type="button" class="button aiagent-integration-configure-btn" data-modal="zapier-modal">
+							<span class="dashicons dashicons-admin-generic"></span>
+							<?php esc_html_e( 'Configure', 'ai-agent-for-website' ); ?>
+						</button>
+					</div>
+				</div>
+
+				<!-- Mailchimp -->
+				<div class="aiagent-integration-box" data-integration="mailchimp">
+					<div class="aiagent-integration-box-header">
+						<div class="aiagent-integration-box-icon" style="background: linear-gradient(135deg, #FFE01B 0%, #f0c800 100%);">
+							<svg viewBox="0 0 24 24" fill="#1e1e1e" width="24" height="24">
+								<path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+							</svg>
+						</div>
+						<div class="aiagent-integration-box-title">
+							<h3><?php esc_html_e( 'Mailchimp', 'ai-agent-for-website' ); ?></h3>
+							<span class="aiagent-integration-box-desc"><?php esc_html_e( 'Email marketing automation', 'ai-agent-for-website' ); ?></span>
+						</div>
+						<?php if ( $mailchimp_connected ) : ?>
+							<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
+						<?php endif; ?>
+					</div>
+					<div class="aiagent-integration-box-footer">
+						<button type="button" class="button aiagent-integration-configure-btn" data-modal="mailchimp-modal">
+							<span class="dashicons dashicons-admin-generic"></span>
+							<?php esc_html_e( 'Configure', 'ai-agent-for-website' ); ?>
+						</button>
+					</div>
+				</div>
+
+				<!-- Coming Soon Placeholder -->
+				<div class="aiagent-integration-box aiagent-integration-box-coming-soon">
+					<div class="aiagent-integration-box-header">
+						<div class="aiagent-integration-box-icon" style="background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);">
+							<svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+								<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+							</svg>
+						</div>
+						<div class="aiagent-integration-box-title">
+							<h3><?php esc_html_e( 'More Coming Soon', 'ai-agent-for-website' ); ?></h3>
+							<span class="aiagent-integration-box-desc"><?php esc_html_e( 'HubSpot, Salesforce & more', 'ai-agent-for-website' ); ?></span>
+						</div>
+						<span class="aiagent-badge aiagent-badge-soon"><?php esc_html_e( 'Soon', 'ai-agent-for-website' ); ?></span>
+					</div>
+					<div class="aiagent-integration-box-footer">
+						<span class="aiagent-coming-soon-text"><?php esc_html_e( 'Stay tuned!', 'ai-agent-for-website' ); ?></span>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Integration Configuration Modals -->
+		<?php $this->render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected ); ?>
+		<?php
+	}
+
+	/**
+	 * Render integration configuration modals.
+	 *
+	 * @param array  $settings             Main plugin settings.
+	 * @param array  $gdrive_settings      Google Drive settings.
+	 * @param bool   $gdrive_connected     Whether Google Drive is connected.
+	 * @param array  $gdrive_user          Connected Google Drive user.
+	 * @param array  $confluence_settings  Confluence settings.
+	 * @param bool   $confluence_connected Whether Confluence is connected.
+	 * @param bool   $zapier_enabled       Whether Zapier is enabled.
+	 * @param string $zapier_url           Zapier webhook URL.
+	 * @param array  $mailchimp_settings   Mailchimp settings.
+	 * @param bool   $mailchimp_enabled    Whether Mailchimp is enabled.
+	 * @param bool   $mailchimp_connected  Whether Mailchimp is connected.
+	 */
+	private function render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected ) {
+		?>
+		<!-- Groq Modal -->
+		<div id="groq-modal" class="aiagent-integration-modal" style="display: none;">
+			<div class="aiagent-modal-overlay"></div>
+			<div class="aiagent-modal-content">
+				<div class="aiagent-modal-header">
+					<div class="aiagent-modal-header-icon" style="background: linear-gradient(135deg, #f55036 0%, #e42e12 100%);">
+						<svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+							<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+						</svg>
+					</div>
+					<h3><?php esc_html_e( 'Configure Groq', 'ai-agent-for-website' ); ?></h3>
+					<button type="button" class="aiagent-modal-close">&times;</button>
+				</div>
+				<div class="aiagent-modal-body">
+					<p class="description"><?php esc_html_e( 'Enter your Groq API key to power the AI chat functionality.', 'ai-agent-for-website' ); ?></p>
+					<table class="form-table">
+						<tr>
+							<th scope="row"><label for="api_key"><?php esc_html_e( 'API Key', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<div class="aiagent-api-key-wrapper">
+									<input type="password" id="api_key" name="api_key" 
+										value="<?php echo esc_attr( $settings['api_key'] ?? '' ); ?>" 
+										class="large-text" autocomplete="off">
+									<button type="button" class="button aiagent-toggle-password">
+										<span class="dashicons dashicons-visibility"></span>
+									</button>
+								</div>
+								<p class="description">
+									<?php esc_html_e( 'Get your free API key from', 'ai-agent-for-website' ); ?>
+									<a href="https://console.groq.com" target="_blank">console.groq.com</a>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<div class="aiagent-modal-actions">
+						<button type="button" id="aiagent-test-api" class="button">
+							<span class="dashicons dashicons-yes-alt"></span>
+							<?php esc_html_e( 'Test Connection', 'ai-agent-for-website' ); ?>
+						</button>
+						<span id="aiagent-test-result" class="aiagent-test-result"></span>
+					</div>
+				</div>
+				<div class="aiagent-modal-footer">
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Close', 'ai-agent-for-website' ); ?></button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Google Drive Modal -->
+		<div id="gdrive-modal" class="aiagent-integration-modal" style="display: none;">
+			<div class="aiagent-modal-overlay"></div>
+			<div class="aiagent-modal-content">
+				<div class="aiagent-modal-header">
+					<div class="aiagent-modal-header-icon" style="background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);">
+						<svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+							<path d="M7.71 3.5L1.15 15l3.43 5.98h13.39L21.41 15H7.71L4.28 9.02 7.71 3.5zm1.43 0L12 9.02l2.86-5.52H9.14zm8.57 11.5L12 9.02 5.43 20.98H12l5.71-5.98z"/>
+						</svg>
+					</div>
+					<h3><?php esc_html_e( 'Configure Google Drive', 'ai-agent-for-website' ); ?></h3>
+					<button type="button" class="aiagent-modal-close">&times;</button>
+				</div>
+				<div class="aiagent-modal-body">
+					<?php if ( $gdrive_connected && $gdrive_user ) : ?>
+						<div class="aiagent-integration-status aiagent-status-connected">
+							<span class="dashicons dashicons-yes-alt"></span>
+							<?php
+							/* translators: %s: User email */
+							printf( esc_html__( 'Connected as %s', 'ai-agent-for-website' ), esc_html( $gdrive_user['email'] ) );
+							?>
+						</div>
+						<div class="aiagent-modal-actions" style="margin-top: 20px;">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-knowledge' ) ); ?>" class="button button-primary">
+								<span class="dashicons dashicons-cloud-upload"></span>
+								<?php esc_html_e( 'Import Files', 'ai-agent-for-website' ); ?>
+							</a>
+							<button type="button" class="button button-link-delete aiagent-gdrive-disconnect">
+								<?php esc_html_e( 'Disconnect', 'ai-agent-for-website' ); ?>
 							</button>
 						</div>
+					<?php else : ?>
 						<p class="description">
-							<?php esc_html_e( 'Get your API key from', 'ai-agent-for-website' ); ?>
-							<a href="https://admin.mailchimp.com/account/api/" target="_blank"><?php esc_html_e( 'Mailchimp Account Settings', 'ai-agent-for-website' ); ?></a>
+							<?php esc_html_e( 'Create OAuth credentials in the Google Cloud Console.', 'ai-agent-for-website' ); ?>
+							<a href="https://console.cloud.google.com/apis/credentials" target="_blank"><?php esc_html_e( 'Learn how →', 'ai-agent-for-website' ); ?></a>
 						</p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="mailchimp_list_id"><?php esc_html_e( 'Audience/List ID', 'ai-agent-for-website' ); ?></label>
-					</th>
-					<td>
-						<input type="text" 
-								id="mailchimp_list_id" 
-								name="mailchimp_list_id" 
-								value="<?php echo esc_attr( $mailchimp_settings['mailchimp_list_id'] ?? '' ); ?>" 
-								class="regular-text"
-								placeholder="e.g., abc123def4">
-						<p class="description">
-							<?php esc_html_e( 'Find your Audience ID in Mailchimp under Audience → Settings → Audience name and defaults.', 'ai-agent-for-website' ); ?>
-						</p>
-					</td>
-				</tr>
-			</table>
-
-			<?php if ( $mailchimp_connected ) : ?>
-				<div class="aiagent-integration-status aiagent-status-connected" style="margin-top: 15px;">
-					<span class="dashicons dashicons-yes-alt"></span>
-					<?php esc_html_e( 'Mailchimp is configured. Users who opt-in will be subscribed automatically.', 'ai-agent-for-website' ); ?>
+						<table class="form-table">
+							<tr>
+								<th scope="row"><label for="gdrive_client_id"><?php esc_html_e( 'Client ID', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<input type="text" id="gdrive_client_id" name="gdrive_client_id" 
+										value="<?php echo esc_attr( $gdrive_settings['client_id'] ?? '' ); ?>" 
+										class="large-text" placeholder="xxxxxx.apps.googleusercontent.com">
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="gdrive_client_secret"><?php esc_html_e( 'Client Secret', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<div class="aiagent-api-key-wrapper">
+										<input type="password" id="gdrive_client_secret" name="gdrive_client_secret" 
+											value="<?php echo esc_attr( $gdrive_settings['client_secret'] ?? '' ); ?>" 
+											class="large-text" autocomplete="off">
+										<button type="button" class="button aiagent-toggle-password">
+											<span class="dashicons dashicons-visibility"></span>
+										</button>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label><?php esc_html_e( 'Redirect URI', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<code class="aiagent-copy-text" id="gdrive-redirect-uri"><?php echo esc_html( admin_url( 'admin.php?page=ai-agent-settings&tab=integrations&gdrive_callback=1' ) ); ?></code>
+									<button type="button" class="button button-small aiagent-copy-btn" data-target="gdrive-redirect-uri">
+										<span class="dashicons dashicons-clipboard"></span>
+									</button>
+									<p class="description"><?php esc_html_e( 'Add this URL to your OAuth consent screen.', 'ai-agent-for-website' ); ?></p>
+								</td>
+							</tr>
+						</table>
+						<div class="aiagent-modal-actions">
+							<button type="button" id="aiagent-gdrive-connect" class="button button-primary" <?php disabled( empty( $gdrive_settings['client_id'] ) || empty( $gdrive_settings['client_secret'] ) ); ?>>
+								<span class="dashicons dashicons-admin-links"></span>
+								<?php esc_html_e( 'Connect Google Drive', 'ai-agent-for-website' ); ?>
+							</button>
+							<span class="aiagent-connection-status"></span>
+						</div>
+					<?php endif; ?>
 				</div>
-			<?php endif; ?>
+				<div class="aiagent-modal-footer">
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Close', 'ai-agent-for-website' ); ?></button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Confluence Modal -->
+		<div id="confluence-modal" class="aiagent-integration-modal" style="display: none;">
+			<div class="aiagent-modal-overlay"></div>
+			<div class="aiagent-modal-content">
+				<div class="aiagent-modal-header">
+					<div class="aiagent-modal-header-icon" style="background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%);">
+						<svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+							<path d="M3.58 16.41c-.17.28-.33.57-.33.87 0 .79.91 1.42 2.03 1.42h13.44c.79 0 1.48-.39 1.83-.99l3.02-5.16c.22-.38.43-.78.43-1.19 0-.79-.91-1.42-2.03-1.42H8.53c-.79 0-1.48.39-1.83.99L3.58 16.41z"/>
+							<path d="M20.42 7.59c.17-.28.33-.57.33-.87 0-.79-.91-1.42-2.03-1.42H5.28c-.79 0-1.48.39-1.83.99L.43 11.45c-.22.38-.43.78-.43 1.19 0 .79.91 1.42 2.03 1.42h13.44c.79 0 1.48-.39 1.83-.99l3.12-5.48z"/>
+						</svg>
+					</div>
+					<h3><?php esc_html_e( 'Configure Confluence', 'ai-agent-for-website' ); ?></h3>
+					<button type="button" class="aiagent-modal-close">&times;</button>
+				</div>
+				<div class="aiagent-modal-body">
+					<?php if ( $confluence_connected ) : ?>
+						<div class="aiagent-integration-status aiagent-status-connected">
+							<span class="dashicons dashicons-yes-alt"></span>
+							<?php
+							/* translators: %s: Instance URL */
+							printf( esc_html__( 'Connected to %s', 'ai-agent-for-website' ), esc_html( $confluence_settings['instance_url'] ) );
+							?>
+						</div>
+						<div class="aiagent-modal-actions" style="margin-top: 20px;">
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-knowledge' ) ); ?>" class="button button-primary">
+								<span class="dashicons dashicons-cloud-upload"></span>
+								<?php esc_html_e( 'Import Pages', 'ai-agent-for-website' ); ?>
+							</a>
+							<button type="button" class="button button-link-delete aiagent-confluence-disconnect">
+								<?php esc_html_e( 'Disconnect', 'ai-agent-for-website' ); ?>
+							</button>
+						</div>
+					<?php else : ?>
+						<p class="description">
+							<?php esc_html_e( 'For Cloud, use an API token from', 'ai-agent-for-website' ); ?>
+							<a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank"><?php esc_html_e( 'Atlassian API tokens', 'ai-agent-for-website' ); ?></a>
+						</p>
+						<table class="form-table">
+							<tr>
+								<th scope="row"><label for="confluence_url"><?php esc_html_e( 'Instance URL', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<input type="url" id="confluence_url" name="confluence_url" 
+										value="<?php echo esc_attr( $confluence_settings['instance_url'] ?? '' ); ?>" 
+										class="large-text" placeholder="https://your-domain.atlassian.net">
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="confluence_email"><?php esc_html_e( 'Email', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<input type="email" id="confluence_email" name="confluence_email" 
+										value="<?php echo esc_attr( $confluence_settings['email'] ?? '' ); ?>" 
+										class="large-text" placeholder="you@example.com">
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="confluence_token"><?php esc_html_e( 'API Token', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<div class="aiagent-api-key-wrapper">
+										<input type="password" id="confluence_token" name="confluence_token" 
+											value="<?php echo esc_attr( $confluence_settings['api_token'] ?? '' ); ?>" 
+											class="large-text" autocomplete="off">
+										<button type="button" class="button aiagent-toggle-password">
+											<span class="dashicons dashicons-visibility"></span>
+										</button>
+									</div>
+								</td>
+							</tr>
+						</table>
+						<div class="aiagent-modal-actions">
+							<button type="button" id="aiagent-confluence-connect" class="button button-primary">
+								<span class="dashicons dashicons-admin-links"></span>
+								<?php esc_html_e( 'Connect Confluence', 'ai-agent-for-website' ); ?>
+							</button>
+							<span class="aiagent-confluence-status"></span>
+						</div>
+					<?php endif; ?>
+				</div>
+				<div class="aiagent-modal-footer">
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Close', 'ai-agent-for-website' ); ?></button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Zapier Modal -->
+		<div id="zapier-modal" class="aiagent-integration-modal" style="display: none;">
+			<div class="aiagent-modal-overlay"></div>
+			<div class="aiagent-modal-content">
+				<div class="aiagent-modal-header">
+					<div class="aiagent-modal-header-icon" style="background: linear-gradient(135deg, #ff4a00 0%, #e64100 100%);">
+						<svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+							<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+						</svg>
+					</div>
+					<h3><?php esc_html_e( 'Configure Zapier', 'ai-agent-for-website' ); ?></h3>
+					<button type="button" class="aiagent-modal-close">&times;</button>
+				</div>
+				<div class="aiagent-modal-body">
+					<p class="description"><?php esc_html_e( 'Connect with Zapier to sync leads with any CRM platform like Salesforce, HubSpot, Pipedrive, and more.', 'ai-agent-for-website' ); ?></p>
+					<table class="form-table">
+						<tr>
+							<th scope="row"><label for="zapier_enabled"><?php esc_html_e( 'Enable Zapier', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label class="aiagent-switch">
+									<input type="checkbox" id="zapier_enabled" name="zapier_enabled" value="1" <?php checked( $zapier_enabled ); ?>>
+									<span class="slider"></span>
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="zapier_webhook_url"><?php esc_html_e( 'Webhook URL', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<input type="url" id="zapier_webhook_url" name="zapier_webhook_url" 
+									value="<?php echo esc_attr( $zapier_url ); ?>" 
+									class="large-text" placeholder="https://hooks.zapier.com/hooks/catch/...">
+								<p class="description"><?php esc_html_e( 'Create a Zap with "Webhooks by Zapier" trigger and paste the URL here.', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+					</table>
+					<?php if ( $zapier_enabled && $zapier_url ) : ?>
+						<div class="aiagent-integration-status aiagent-status-connected">
+							<span class="dashicons dashicons-yes-alt"></span>
+							<?php esc_html_e( 'Zapier webhook is configured. New leads will be synced automatically.', 'ai-agent-for-website' ); ?>
+						</div>
+					<?php endif; ?>
+				</div>
+				<div class="aiagent-modal-footer">
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Close', 'ai-agent-for-website' ); ?></button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Mailchimp Modal -->
+		<div id="mailchimp-modal" class="aiagent-integration-modal" style="display: none;">
+			<div class="aiagent-modal-overlay"></div>
+			<div class="aiagent-modal-content">
+				<div class="aiagent-modal-header">
+					<div class="aiagent-modal-header-icon" style="background: linear-gradient(135deg, #FFE01B 0%, #f0c800 100%);">
+						<svg viewBox="0 0 24 24" fill="#1e1e1e" width="20" height="20">
+							<path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+						</svg>
+					</div>
+					<h3><?php esc_html_e( 'Configure Mailchimp', 'ai-agent-for-website' ); ?></h3>
+					<button type="button" class="aiagent-modal-close">&times;</button>
+				</div>
+				<div class="aiagent-modal-body">
+					<p class="description"><?php esc_html_e( 'Connect Mailchimp to automatically subscribe users who opt-in for newsletters.', 'ai-agent-for-website' ); ?></p>
+					<table class="form-table">
+						<tr>
+							<th scope="row"><label for="mailchimp_enabled"><?php esc_html_e( 'Enable Mailchimp', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label class="aiagent-switch">
+									<input type="checkbox" id="mailchimp_enabled" name="mailchimp_enabled" value="1" <?php checked( $mailchimp_enabled ); ?>>
+									<span class="slider"></span>
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="mailchimp_api_key"><?php esc_html_e( 'API Key', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<div class="aiagent-api-key-wrapper">
+									<input type="password" id="mailchimp_api_key" name="mailchimp_api_key" 
+										value="<?php echo esc_attr( $mailchimp_settings['mailchimp_api_key'] ?? '' ); ?>" 
+										class="large-text" autocomplete="off" placeholder="xxxxxxxx-us1">
+									<button type="button" class="button aiagent-toggle-password">
+										<span class="dashicons dashicons-visibility"></span>
+									</button>
+								</div>
+								<p class="description">
+									<?php esc_html_e( 'Get your API key from', 'ai-agent-for-website' ); ?>
+									<a href="https://admin.mailchimp.com/account/api/" target="_blank"><?php esc_html_e( 'Mailchimp Account Settings', 'ai-agent-for-website' ); ?></a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="mailchimp_list_id"><?php esc_html_e( 'Audience/List ID', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<input type="text" id="mailchimp_list_id" name="mailchimp_list_id" 
+									value="<?php echo esc_attr( $mailchimp_settings['mailchimp_list_id'] ?? '' ); ?>" 
+									class="large-text" placeholder="e.g., abc123def4">
+								<p class="description"><?php esc_html_e( 'Find your Audience ID in Mailchimp under Audience → Settings → Audience name and defaults.', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+					</table>
+					<?php if ( $mailchimp_connected ) : ?>
+						<div class="aiagent-integration-status aiagent-status-connected">
+							<span class="dashicons dashicons-yes-alt"></span>
+							<?php esc_html_e( 'Mailchimp is configured. Users who opt-in will be subscribed automatically.', 'ai-agent-for-website' ); ?>
+						</div>
+					<?php endif; ?>
+				</div>
+				<div class="aiagent-modal-footer">
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Close', 'ai-agent-for-website' ); ?></button>
+				</div>
+			</div>
 		</div>
 		<?php
 	}

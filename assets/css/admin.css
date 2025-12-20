@@ -115,8 +115,371 @@
 }
 
 /* ===============================
-   Integration Cards
+   Integration Sections & Grid
    =============================== */
+.aiagent-integration-section {
+    margin-bottom: 30px;
+}
+
+.aiagent-section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.aiagent-section-header .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: #0073aa;
+}
+
+.aiagent-section-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.aiagent-section-header .description {
+    width: 100%;
+    margin: 5px 0 0 34px;
+    color: #666;
+}
+
+.aiagent-integration-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+}
+
+@media (max-width: 782px) {
+    .aiagent-integration-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Integration Box */
+.aiagent-integration-box {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.aiagent-integration-box:hover {
+    border-color: #c0c0c0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.aiagent-integration-box-coming-soon {
+    opacity: 0.7;
+    background: #f9f9f9;
+}
+
+.aiagent-integration-box-coming-soon:hover {
+    opacity: 0.85;
+}
+
+.aiagent-integration-box-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: #fafafa;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.aiagent-integration-box-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.aiagent-integration-box-title {
+    flex: 1;
+    min-width: 0;
+}
+
+.aiagent-integration-box-title h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e1e1e;
+    line-height: 1.3;
+}
+
+.aiagent-integration-box-desc {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.aiagent-integration-box-content {
+    padding: 20px;
+}
+
+.aiagent-integration-box-content .form-table {
+    margin: 0;
+}
+
+.aiagent-integration-box-content .form-table th {
+    width: 100px;
+    padding: 8px 10px 8px 0;
+    font-size: 13px;
+}
+
+.aiagent-integration-box-content .form-table td {
+    padding: 8px 0;
+}
+
+.aiagent-integration-box-content .regular-text {
+    width: 100%;
+    max-width: none;
+}
+
+.aiagent-integration-box-content .description {
+    margin-top: 4px;
+}
+
+/* Integration Box Footer */
+.aiagent-integration-box-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    background: #fff;
+    border-top: 1px solid #e5e5e5;
+}
+
+.aiagent-integration-box-footer .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.aiagent-integration-box-footer .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 1;
+    margin-top: -1px;
+}
+
+.aiagent-integration-configure-btn {
+    margin-left: auto !important;
+}
+
+.aiagent-coming-soon-text {
+    color: #666;
+    font-style: italic;
+    font-size: 13px;
+}
+
+.aiagent-integration-box-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e5e5;
+    flex-wrap: wrap;
+}
+
+.aiagent-integration-box-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.aiagent-integration-box-actions .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+    margin-top: -1px;
+}
+
+/* ===============================
+   Integration Modal Styles
+   =============================== */
+.aiagent-integration-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aiagent-integration-modal .aiagent-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+}
+
+.aiagent-integration-modal .aiagent-modal-content {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    width: 560px;
+    max-width: 90%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    animation: aiagent-modal-slide-in 0.25s ease-out;
+}
+
+@keyframes aiagent-modal-slide-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.aiagent-integration-modal .aiagent-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e5e5;
+    background: #fafafa;
+    border-radius: 12px 12px 0 0;
+}
+
+.aiagent-modal-header-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.aiagent-integration-modal .aiagent-modal-header h3 {
+    flex: 1;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.aiagent-integration-modal .aiagent-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+.aiagent-integration-modal .aiagent-modal-close:hover {
+    background: #f0f0f0;
+    color: #1e1e1e;
+}
+
+.aiagent-integration-modal .aiagent-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.aiagent-integration-modal .aiagent-modal-body > .description:first-child {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #50575e;
+}
+
+.aiagent-integration-modal .form-table {
+    margin: 0;
+}
+
+.aiagent-integration-modal .form-table th {
+    width: 130px;
+    padding: 12px 15px 12px 0;
+    vertical-align: top;
+}
+
+.aiagent-integration-modal .form-table td {
+    padding: 12px 0;
+}
+
+.aiagent-integration-modal .large-text {
+    width: 100%;
+}
+
+.aiagent-modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.aiagent-modal-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aiagent-modal-actions .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+    margin-top: -1px;
+}
+
+.aiagent-integration-modal .aiagent-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid #e5e5e5;
+    background: #fafafa;
+    border-radius: 0 0 12px 12px;
+}
+
+.aiagent-integration-modal .aiagent-integration-status {
+    margin-top: 20px;
+}
+
+/* Legacy Integration Cards */
 .aiagent-integration-card {
     position: relative;
 }
@@ -148,7 +511,7 @@
     gap: 8px;
     padding: 12px 16px;
     background: #f9f9f9;
-    border-radius: 4px;
+    border-radius: 6px;
     margin-top: 15px;
     font-size: 13px;
     color: #666;
