@@ -229,4 +229,69 @@ class AIAGENT_Mailchimp_Integration {
 
 		return true;
 	}
+
+	/**
+	 * Update tags for a subscriber.
+	 *
+	 * @param string $email Email address.
+	 * @param array  $tags  Tags to add.
+	 * @return bool|WP_Error True on success, WP_Error on failure.
+	 */
+	public static function update_subscriber_tags( $email, $tags = [] ) {
+		if ( empty( $tags ) || empty( $email ) ) {
+			return true;
+		}
+
+		$settings = self::get_settings();
+
+		if ( ! self::is_enabled() ) {
+			return new WP_Error( 'mailchimp_disabled', __( 'Mailchimp integration is not enabled.', 'ai-agent-for-website' ) );
+		}
+
+		$server          = self::get_server_from_api_key( $settings['mailchimp_api_key'] );
+		$list_id         = $settings['mailchimp_list_id'];
+		$subscriber_hash = md5( strtolower( $email ) );
+
+		$url = sprintf(
+			'https://%s.api.mailchimp.com/3.0/lists/%s/members/%s/tags',
+			$server,
+			$list_id,
+			$subscriber_hash
+		);
+
+		$tag_data = [];
+		foreach ( $tags as $tag ) {
+			$tag_data[] = [
+				'name'   => $tag,
+				'status' => 'active',
+			];
+		}
+
+		$response = wp_remote_post(
+			$url,
+			[
+				'body'    => wp_json_encode( [ 'tags' => $tag_data ] ),
+				'headers' => [
+					'Authorization' => 'Basic ' . base64_encode( 'anystring:' . $settings['mailchimp_api_key'] ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Required for API auth.
+					'Content-Type'  => 'application/json',
+				],
+				'timeout' => 15,
+			]
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+
+		// 204 = No content (success for tags).
+		if ( 204 === $code || 200 === $code ) {
+			return true;
+		}
+
+		$body          = json_decode( wp_remote_retrieve_body( $response ), true );
+		$error_message = isset( $body['detail'] ) ? $body['detail'] : __( 'Failed to update subscriber tags.', 'ai-agent-for-website' );
+		return new WP_Error( 'mailchimp_error', $error_message );
+	}
 }

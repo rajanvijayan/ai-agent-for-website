@@ -65,6 +65,9 @@ class AIAGENT_Admin_Settings {
 						case 'user-info':
 							$this->render_user_info_tab( $settings );
 							break;
+						case 'notifications':
+							$this->render_notifications_tab();
+							break;
 						default:
 							$this->render_general_tab( $settings );
 							break;
@@ -90,21 +93,25 @@ class AIAGENT_Admin_Settings {
 	 */
 	private function render_tabs() {
 		$tabs = [
-			'general'      => [
+			'general'       => [
 				'label' => __( 'General', 'ai-agent-for-website' ),
 				'icon'  => 'dashicons-admin-settings',
 			],
-			'integrations' => [
+			'integrations'  => [
 				'label' => __( 'Integrations', 'ai-agent-for-website' ),
 				'icon'  => 'dashicons-admin-plugins',
 			],
-			'appearance'   => [
+			'appearance'    => [
 				'label' => __( 'Appearance', 'ai-agent-for-website' ),
 				'icon'  => 'dashicons-admin-appearance',
 			],
-			'user-info'    => [
+			'user-info'     => [
 				'label' => __( 'User Information', 'ai-agent-for-website' ),
 				'icon'  => 'dashicons-admin-users',
+			],
+			'notifications' => [
+				'label' => __( 'Notifications & Logs', 'ai-agent-for-website' ),
+				'icon'  => 'dashicons-bell',
 			],
 		];
 
@@ -1068,6 +1075,354 @@ class AIAGENT_Admin_Settings {
 	}
 
 	/**
+	 * Render the Notifications & Logs tab content.
+	 */
+	private function render_notifications_tab() {
+		$notification_settings = AIAGENT_Notification_Manager::get_settings();
+		$log_settings          = AIAGENT_Activity_Log_Manager::get_settings();
+		?>
+		<div class="aiagent-card">
+			<h2>
+				<span class="dashicons dashicons-bell" style="color: #e74c3c;"></span>
+				<?php esc_html_e( 'Notification Settings', 'ai-agent-for-website' ); ?>
+			</h2>
+			<p class="description">
+				<?php esc_html_e( 'Configure admin notifications for new conversations, leads, and AI validations.', 'ai-agent-for-website' ); ?>
+			</p>
+
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="notifications_enabled"><?php esc_html_e( 'Enable Notifications', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="notifications_enabled" 
+									name="notifications_enabled" 
+									value="1" 
+									<?php checked( $notification_settings['enabled'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Enable the notification system for admin alerts', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="email_notifications"><?php esc_html_e( 'Email Notifications', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="email_notifications" 
+									name="email_notifications" 
+									value="1" 
+									<?php checked( $notification_settings['email_notifications'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Send email notifications for important events', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="email_recipients"><?php esc_html_e( 'Email Recipients', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="text" 
+								id="email_recipients" 
+								name="email_recipients" 
+								value="<?php echo esc_attr( $notification_settings['email_recipients'] ); ?>" 
+								class="regular-text"
+								placeholder="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>">
+						<p class="description">
+							<?php esc_html_e( 'Comma-separated list of email addresses to receive notifications', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+
+			<h3><?php esc_html_e( 'Notification Events', 'ai-agent-for-website' ); ?></h3>
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="notify_new_conversation"><?php esc_html_e( 'New Conversation', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="notify_new_conversation" 
+									name="notify_new_conversation" 
+									value="1" 
+									<?php checked( $notification_settings['notify_new_conversation'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Notify when a new conversation is started', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="notify_lead_converted"><?php esc_html_e( 'Lead Converted', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="notify_lead_converted" 
+									name="notify_lead_converted" 
+									value="1" 
+									<?php checked( $notification_settings['notify_lead_converted'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Notify when a conversation is converted to a lead', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="notify_conversation_closed"><?php esc_html_e( 'Conversation Closed', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="notify_conversation_closed" 
+									name="notify_conversation_closed" 
+									value="1" 
+									<?php checked( $notification_settings['notify_conversation_closed'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Notify when a conversation is closed', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+
+			<h3><?php esc_html_e( 'AI Validation Settings', 'ai-agent-for-website' ); ?></h3>
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="auto_validate_leads"><?php esc_html_e( 'Enable AI Validation', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="auto_validate_leads" 
+									name="auto_validate_leads" 
+									value="1" 
+									<?php checked( $notification_settings['auto_validate_leads'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Use AI to validate conversations and identify qualified leads', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="validation_prompt"><?php esc_html_e( 'Custom Validation Prompt', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<textarea id="validation_prompt" 
+								name="validation_prompt" 
+								rows="3" 
+								class="large-text"
+								placeholder="<?php esc_attr_e( 'Add custom instructions for AI lead validation...', 'ai-agent-for-website' ); ?>"><?php echo esc_textarea( $notification_settings['validation_prompt'] ); ?></textarea>
+						<p class="description">
+							<?php esc_html_e( 'Optional: Add custom criteria for the AI to use when validating leads', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="aiagent-card">
+			<h2>
+				<span class="dashicons dashicons-list-view" style="color: #3498db;"></span>
+				<?php esc_html_e( 'Activity Log Settings', 'ai-agent-for-website' ); ?>
+			</h2>
+			<p class="description">
+				<?php esc_html_e( 'Configure activity logging for tracking system events and actions.', 'ai-agent-for-website' ); ?>
+			</p>
+
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="logs_enabled"><?php esc_html_e( 'Enable Activity Logging', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="logs_enabled" 
+									name="logs_enabled" 
+									value="1" 
+									<?php checked( $log_settings['enabled'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Track all activities in the system', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="retention_days"><?php esc_html_e( 'Log Retention (Days)', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="number" 
+								id="retention_days" 
+								name="retention_days" 
+								value="<?php echo esc_attr( $log_settings['retention_days'] ); ?>" 
+								min="1"
+								max="365"
+								style="width: 100px;">
+						<p class="description">
+							<?php esc_html_e( 'Number of days to keep log entries before automatic cleanup', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+
+			<h3><?php esc_html_e( 'Log Categories', 'ai-agent-for-website' ); ?></h3>
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="log_conversations"><?php esc_html_e( 'Log Conversations', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="log_conversations" 
+									name="log_conversations" 
+									value="1" 
+									<?php checked( $log_settings['log_conversations'] ); ?>>
+							<span class="slider"></span>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="log_leads"><?php esc_html_e( 'Log Leads', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="log_leads" 
+									name="log_leads" 
+									value="1" 
+									<?php checked( $log_settings['log_leads'] ); ?>>
+							<span class="slider"></span>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="log_ai_validations"><?php esc_html_e( 'Log AI Validations', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="log_ai_validations" 
+									name="log_ai_validations" 
+									value="1" 
+									<?php checked( $log_settings['log_ai_validations'] ); ?>>
+							<span class="slider"></span>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="log_integrations"><?php esc_html_e( 'Log Integrations', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="log_integrations" 
+									name="log_integrations" 
+									value="1" 
+									<?php checked( $log_settings['log_integrations'] ); ?>>
+							<span class="slider"></span>
+						</label>
+					</td>
+				</tr>
+			</table>
+
+			<h3><?php esc_html_e( 'Log Export to External Services', 'ai-agent-for-website' ); ?></h3>
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="export_to_zapier"><?php esc_html_e( 'Export to Zapier', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="export_to_zapier" 
+									name="export_to_zapier" 
+									value="1" 
+									<?php checked( $log_settings['export_to_zapier'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Send activity logs to a separate Zapier webhook for external tracking', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="zapier_log_webhook"><?php esc_html_e( 'Zapier Log Webhook URL', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="url" 
+								id="zapier_log_webhook" 
+								name="zapier_log_webhook" 
+								value="<?php echo esc_attr( $log_settings['zapier_log_webhook'] ); ?>" 
+								class="regular-text"
+								placeholder="https://hooks.zapier.com/hooks/catch/...">
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="export_to_mailchimp"><?php esc_html_e( 'Tag Mailchimp Contacts', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="export_to_mailchimp" 
+									name="export_to_mailchimp" 
+									value="1" 
+									<?php checked( $log_settings['export_to_mailchimp'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Add activity-based tags to Mailchimp contacts for lead/user events', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="aiagent-card">
+			<h2><?php esc_html_e( 'Quick Links', 'ai-agent-for-website' ); ?></h2>
+			<p>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-notifications' ) ); ?>" class="button">
+					<span class="dashicons dashicons-bell" style="margin-top: 3px;"></span>
+					<?php esc_html_e( 'View Notification Center', 'ai-agent-for-website' ); ?>
+				</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-logs' ) ); ?>" class="button" style="margin-left: 10px;">
+					<span class="dashicons dashicons-list-view" style="margin-top: 3px;"></span>
+					<?php esc_html_e( 'View Activity Logs', 'ai-agent-for-website' ); ?>
+				</a>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
 	 * Render the AI suggestion modal.
 	 */
 	private function render_ai_modal() {
@@ -1202,6 +1557,39 @@ class AIAGENT_Admin_Settings {
 				$settings['consent_newsletter_text']  = isset( $_POST['consent_newsletter_text'] ) ? sanitize_text_field( wp_unslash( $_POST['consent_newsletter_text'] ) ) : ( $settings['consent_newsletter_text'] ?? 'Subscribe to our newsletter' );
 				$settings['consent_promotional']      = ! empty( $_POST['consent_promotional'] );
 				$settings['consent_promotional_text'] = isset( $_POST['consent_promotional_text'] ) ? sanitize_text_field( wp_unslash( $_POST['consent_promotional_text'] ) ) : ( $settings['consent_promotional_text'] ?? 'Receive promotional updates' );
+				break;
+
+			case 'notifications':
+				// Save notification settings.
+				$notification_settings = [
+					'enabled'                    => ! empty( $_POST['notifications_enabled'] ),
+					'email_notifications'        => ! empty( $_POST['email_notifications'] ),
+					'email_recipients'           => isset( $_POST['email_recipients'] ) ? sanitize_text_field( wp_unslash( $_POST['email_recipients'] ) ) : get_option( 'admin_email' ),
+					'notify_new_conversation'    => ! empty( $_POST['notify_new_conversation'] ),
+					'notify_lead_validated'      => ! empty( $_POST['notify_lead_validated'] ),
+					'notify_lead_converted'      => ! empty( $_POST['notify_lead_converted'] ),
+					'notify_conversation_closed' => ! empty( $_POST['notify_conversation_closed'] ),
+					'auto_validate_leads'        => ! empty( $_POST['auto_validate_leads'] ),
+					'validation_prompt'          => isset( $_POST['validation_prompt'] ) ? sanitize_textarea_field( wp_unslash( $_POST['validation_prompt'] ) ) : '',
+				];
+				AIAGENT_Notification_Manager::update_settings( $notification_settings );
+
+				// Save log settings.
+				$log_settings = [
+					'enabled'             => ! empty( $_POST['logs_enabled'] ),
+					'log_conversations'   => ! empty( $_POST['log_conversations'] ),
+					'log_leads'           => ! empty( $_POST['log_leads'] ),
+					'log_notifications'   => ! empty( $_POST['log_notifications'] ),
+					'log_ai_validations'  => ! empty( $_POST['log_ai_validations'] ),
+					'log_integrations'    => ! empty( $_POST['log_integrations'] ),
+					'log_user_actions'    => ! empty( $_POST['log_user_actions'] ),
+					'log_system_events'   => ! empty( $_POST['log_system_events'] ),
+					'retention_days'      => isset( $_POST['retention_days'] ) ? absint( $_POST['retention_days'] ) : 90,
+					'export_to_zapier'    => ! empty( $_POST['export_to_zapier'] ),
+					'zapier_log_webhook'  => isset( $_POST['zapier_log_webhook'] ) ? esc_url_raw( wp_unslash( $_POST['zapier_log_webhook'] ) ) : '',
+					'export_to_mailchimp' => ! empty( $_POST['export_to_mailchimp'] ),
+				];
+				AIAGENT_Activity_Log_Manager::update_settings( $log_settings );
 				break;
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing

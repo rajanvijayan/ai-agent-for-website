@@ -3,7 +3,7 @@
  * Plugin Name: AI Agent for Website
  * Plugin URI: https://github.com/rajanvijayan/ai-agent-for-website
  * Description: Add an AI-powered chat agent to your website using Groq API. Train it with your website content.
- * Version: 1.4.0
+ * Version: 1.5.0
  * Author: Rajan Vijayan
  * Author URI: https://rajanvijayan.com
  * License: GPL v2 or later
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'AIAGENT_VERSION', '1.4.0' );
+define( 'AIAGENT_VERSION', '1.5.0' );
 define( 'AIAGENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -82,6 +82,10 @@ class AI_Agent_For_Website {
 
 		// Load leads manager.
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-leads-manager.php';
+
+		// Load notification and log managers.
+		require_once AIAGENT_PLUGIN_DIR . 'includes/class-notification-manager.php';
+		require_once AIAGENT_PLUGIN_DIR . 'includes/class-activity-log-manager.php';
 	}
 
 	/**
@@ -123,7 +127,7 @@ class AI_Agent_For_Website {
 		$db_version = get_option( 'aiagent_db_version', '0' );
 
 		// Check if we need to create/update tables.
-		if ( version_compare( $db_version, '1.4.1', '<' ) ) {
+		if ( version_compare( $db_version, '1.5.0', '<' ) ) {
 			$this->create_tables();
 		}
 
@@ -321,6 +325,40 @@ class AI_Agent_For_Website {
             KEY consent_type (consent_type)
         ) $charset_collate;";
 
+		// Notifications table.
+		$notifications_table = $wpdb->prefix . 'aiagent_notifications';
+		$notifications_sql   = "CREATE TABLE $notifications_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            type varchar(50) NOT NULL,
+            title varchar(255) NOT NULL,
+            message text NOT NULL,
+            meta longtext DEFAULT NULL,
+            status varchar(20) DEFAULT 'unread',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY type (type),
+            KEY status (status),
+            KEY created_at (created_at)
+        ) $charset_collate;";
+
+		// Activity logs table.
+		$logs_table = $wpdb->prefix . 'aiagent_activity_logs';
+		$logs_sql   = "CREATE TABLE $logs_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            category varchar(50) NOT NULL,
+            action varchar(100) NOT NULL,
+            message text NOT NULL,
+            meta longtext DEFAULT NULL,
+            user_id bigint(20) unsigned DEFAULT NULL,
+            ip_address varchar(45) DEFAULT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY category (category),
+            KEY action (action),
+            KEY user_id (user_id),
+            KEY created_at (created_at)
+        ) $charset_collate;";
+
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $users_sql );
 		dbDelta( $conversations_sql );
@@ -329,9 +367,11 @@ class AI_Agent_For_Website {
 		dbDelta( $leads_sql );
 		dbDelta( $lead_notes_sql );
 		dbDelta( $consents_sql );
+		dbDelta( $notifications_sql );
+		dbDelta( $logs_sql );
 
 		// Store DB version.
-		update_option( 'aiagent_db_version', '1.4.1' );
+		update_option( 'aiagent_db_version', '1.5.0' );
 	}
 
 	/**
@@ -401,6 +441,32 @@ class AI_Agent_For_Website {
 			'ai-agent-leads',
 			[ $this, 'render_leads_page' ]
 		);
+
+		// Add Notification Center menu with unread count badge.
+		$notification_manager = new AIAGENT_Notification_Manager();
+		$unread_count         = $notification_manager->get_unread_count();
+		$notification_title   = __( 'Notifications', 'ai-agent-for-website' );
+		if ( $unread_count > 0 ) {
+			$notification_title .= sprintf( ' <span class="awaiting-mod">%d</span>', $unread_count );
+		}
+
+		add_submenu_page(
+			'ai-agent-settings',
+			__( 'Notification Center', 'ai-agent-for-website' ),
+			$notification_title,
+			'manage_options',
+			'ai-agent-notifications',
+			[ $this, 'render_notifications_page' ]
+		);
+
+		add_submenu_page(
+			'ai-agent-settings',
+			__( 'Activity Logs', 'ai-agent-for-website' ),
+			__( 'Activity Logs', 'ai-agent-for-website' ),
+			'manage_options',
+			'ai-agent-logs',
+			[ $this, 'render_logs_page' ]
+		);
 	}
 
 	/**
@@ -408,6 +474,22 @@ class AI_Agent_For_Website {
 	 */
 	public function render_leads_page() {
 		$manager = new AIAGENT_Leads_Manager();
+		$manager->render_admin_page();
+	}
+
+	/**
+	 * Render notifications page.
+	 */
+	public function render_notifications_page() {
+		$manager = new AIAGENT_Notification_Manager();
+		$manager->render_admin_page();
+	}
+
+	/**
+	 * Render activity logs page.
+	 */
+	public function render_logs_page() {
+		$manager = new AIAGENT_Activity_Log_Manager();
 		$manager->render_admin_page();
 	}
 

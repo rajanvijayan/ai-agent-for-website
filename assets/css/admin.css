@@ -1684,6 +1684,224 @@
 }
 
 /* ===============================
+   Notification Center Styles
+   =============================== */
+.aiagent-notification-unread {
+    background: #f0f6fc;
+}
+
+.aiagent-status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ccc;
+}
+
+.aiagent-status-dot.aiagent-status-unread {
+    background: #0073aa;
+}
+
+.aiagent-status-dot.aiagent-status-read {
+    background: #ccc;
+}
+
+.aiagent-notification-type {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.aiagent-type-new_conversation {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.aiagent-type-lead_converted {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.aiagent-type-conversation_closed {
+    background: #fce4ec;
+    color: #c62828;
+}
+
+.aiagent-type-lead_validated {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+/* ===============================
+   Activity Log Styles
+   =============================== */
+.aiagent-logs-table {
+    font-size: 13px;
+}
+
+.aiagent-log-time {
+    color: #757575;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.aiagent-log-category {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.aiagent-category-conversation {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.aiagent-category-lead {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.aiagent-category-notification {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.aiagent-category-ai_validation {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.aiagent-category-integration {
+    background: #fce4ec;
+    color: #c62828;
+}
+
+.aiagent-category-user {
+    background: #e0f7fa;
+    color: #00838f;
+}
+
+.aiagent-category-system {
+    background: #eceff1;
+    color: #455a64;
+}
+
+.aiagent-log-action {
+    color: #50575e;
+}
+
+.aiagent-log-message {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Filter Form Styles */
+.aiagent-filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.aiagent-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+    width: 100%;
+}
+
+.aiagent-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.aiagent-filter-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #50575e;
+}
+
+.aiagent-filter-field select,
+.aiagent-filter-field input[type="date"] {
+    min-width: 150px;
+}
+
+.aiagent-export-bar {
+    display: flex;
+    gap: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+/* Modal for Log Details */
+.aiagent-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100000;
+}
+
+.aiagent-modal-content {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: auto;
+    position: relative;
+}
+
+.aiagent-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #757575;
+    background: none;
+    border: none;
+}
+
+.aiagent-modal-close:hover {
+    color: #1e1e1e;
+}
+
+.aiagent-modal-content pre {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* Header badge for unread notifications */
+h1 .aiagent-badge {
+    font-size: 14px;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+
+/* ===============================
    Responsive Adjustments
    =============================== */
 @media (max-width: 782px) {
@@ -1721,5 +1939,19 @@
 
     .aiagent-compact-table th {
         width: auto;
+    }
+
+    .aiagent-filter-form,
+    .aiagent-filter-row {
+        flex-direction: column;
+    }
+
+    .aiagent-filter-field {
+        width: 100%;
+    }
+
+    .aiagent-filter-field select,
+    .aiagent-filter-field input[type="date"] {
+        width: 100%;
     }
 }

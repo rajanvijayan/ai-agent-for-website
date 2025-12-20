@@ -170,6 +170,26 @@ class AIAGENT_Leads_Manager {
 		// Trigger webhook for new lead.
 		$this->trigger_webhook( $lead_id, 'lead_created' );
 
+		// Log lead creation.
+		if ( class_exists( 'AIAGENT_Activity_Log_Manager' ) ) {
+			$log_manager = new AIAGENT_Activity_Log_Manager();
+			$log_manager->log(
+				'lead',
+				'created',
+				sprintf(
+					/* translators: 1: Lead ID, 2: User email */
+					__( 'Lead #%1$d created from conversation for %2$s', 'ai-agent-for-website' ),
+					$lead_id,
+					$conversation->email ? $conversation->email : 'Unknown'
+				),
+				[
+					'lead_id'         => $lead_id,
+					'conversation_id' => $conversation_id,
+					'user_email'      => $conversation->email,
+				]
+			);
+		}
+
 		return $lead_id;
 	}
 
@@ -205,6 +225,26 @@ class AIAGENT_Leads_Manager {
 
 		if ( false !== $result ) {
 			$this->trigger_webhook( $lead_id, 'lead_updated' );
+
+			// Log lead status update.
+			if ( class_exists( 'AIAGENT_Activity_Log_Manager' ) ) {
+				$log_manager = new AIAGENT_Activity_Log_Manager();
+				$log_manager->log(
+					'lead',
+					'status_updated',
+					sprintf(
+						/* translators: 1: Lead ID, 2: Status */
+						__( 'Lead #%1$d status updated to %2$s', 'ai-agent-for-website' ),
+						$lead_id,
+						$status
+					),
+					[
+						'lead_id' => $lead_id,
+						'status'  => $status,
+					]
+				);
+			}
+
 			return true;
 		}
 
