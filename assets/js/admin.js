@@ -348,25 +348,14 @@
             hideModal();
         });
 
-        // Cancel/Close buttons
-        $('#aiagent-modal-cancel, .aiagent-modal-close, .aiagent-modal-overlay').on(
+        // Cancel/Close buttons for AI suggestion modal only
+        $(document).on(
             'click',
+            '#aiagent-modal-cancel, #aiagent-suggest-modal .aiagent-modal-close, #aiagent-suggest-modal .aiagent-modal-overlay',
             function () {
                 hideModal();
             }
         );
-
-        // Prevent modal content click from closing
-        $('.aiagent-modal-content').on('click', function (e) {
-            e.stopPropagation();
-        });
-
-        // ESC key to close modal
-        $(document).on('keydown', function (e) {
-            if (e.key === 'Escape' && $modal.is(':visible')) {
-                hideModal();
-            }
-        });
 
         // Character count for knowledge base text
         $('#kb_text').on('input', function () {
