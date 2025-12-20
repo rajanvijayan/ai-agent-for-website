@@ -642,8 +642,28 @@ class AIAGENT_REST_API {
 			);
 		}
 
+		// Log user registration.
+		if ( class_exists( 'AIAGENT_Activity_Log_Manager' ) ) {
+			$log_manager = new AIAGENT_Activity_Log_Manager();
+			$log_manager->log(
+				'user',
+				'registered',
+				sprintf(
+					/* translators: %s: User email */
+					__( 'User registered: %s', 'ai-agent-for-website' ),
+					$email
+				),
+				[
+					'user_id' => $user_id,
+					'name'    => $name,
+					'email'   => $email,
+					'phone'   => $phone,
+				]
+			);
+		}
+
 		// Create a new conversation for this user.
-		$this->create_conversation( $user_id, $session_id );
+		$this->create_conversation( $user_id, $session_id, $name, $email );
 
 		return rest_ensure_response(
 			[
@@ -1155,9 +1175,11 @@ Do not include any explanation, just the JSON array.',
 	 *
 	 * @param int    $user_id    The user ID.
 	 * @param string $session_id The session ID.
+	 * @param string $user_name  Optional user name for notification.
+	 * @param string $user_email Optional user email for notification.
 	 * @return int|null The conversation ID or null.
 	 */
-	private function create_conversation( $user_id, $session_id ) {
+	private function create_conversation( $user_id, $session_id, $user_name = '', $user_email = '' ) {
 		global $wpdb;
 
 		if ( ! $user_id ) {
@@ -1176,7 +1198,46 @@ Do not include any explanation, just the JSON array.',
 			]
 		);
 
-		return $wpdb->insert_id;
+		$conversation_id = $wpdb->insert_id;
+
+		// Trigger notification for new conversation.
+		if ( $conversation_id && class_exists( 'AIAGENT_Notification_Manager' ) ) {
+			// Get user info if not provided.
+			if ( empty( $user_name ) || empty( $user_email ) ) {
+				$users_table = $wpdb->prefix . 'aiagent_users';
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table lookup.
+				$user = $wpdb->get_row( $wpdb->prepare( "SELECT name, email FROM $users_table WHERE id = %d", $user_id ) );
+				if ( $user ) {
+					$user_name  = $user->name;
+					$user_email = $user->email;
+				}
+			}
+
+			$notification_manager = new AIAGENT_Notification_Manager();
+			$notification_manager->notify_new_conversation( $conversation_id, $user_name, $user_email );
+		}
+
+		// Log the conversation creation.
+		if ( $conversation_id && class_exists( 'AIAGENT_Activity_Log_Manager' ) ) {
+			$log_manager = new AIAGENT_Activity_Log_Manager();
+			$log_manager->log(
+				'conversation',
+				'started',
+				sprintf(
+					/* translators: 1: Conversation ID, 2: User name */
+					__( 'Conversation #%1$d started by %2$s', 'ai-agent-for-website' ),
+					$conversation_id,
+					$user_name ? $user_name : 'Unknown'
+				),
+				[
+					'conversation_id' => $conversation_id,
+					'user_id'         => $user_id,
+					'session_id'      => $session_id,
+				]
+			);
+		}
+
+		return $conversation_id;
 	}
 
 	/**
@@ -1220,6 +1281,10 @@ Do not include any explanation, just the JSON array.',
 
 		$conversations_table = $wpdb->prefix . 'aiagent_conversations';
 
+		// Get conversation ID before ending.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table lookup.
+		$conversation = $wpdb->get_row( $wpdb->prepare( "SELECT id FROM $conversations_table WHERE session_id = %s AND status = 'active'", $session_id ) );
+
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional direct update.
 		$wpdb->update(
 			$conversations_table,
@@ -1229,6 +1294,24 @@ Do not include any explanation, just the JSON array.',
 			],
 			[ 'session_id' => $session_id ]
 		);
+
+		// Log conversation end.
+		if ( $conversation && class_exists( 'AIAGENT_Activity_Log_Manager' ) ) {
+			$log_manager = new AIAGENT_Activity_Log_Manager();
+			$log_manager->log(
+				'conversation',
+				'ended',
+				sprintf(
+					/* translators: %d: Conversation ID */
+					__( 'Conversation #%d ended', 'ai-agent-for-website' ),
+					$conversation->id
+				),
+				[
+					'conversation_id' => $conversation->id,
+					'session_id'      => $session_id,
+				]
+			);
+		}
 	}
 
 	/**

@@ -36,6 +36,49 @@ class AIAGENT_Activity_Log_Manager {
 	const CATEGORY_SYSTEM        = 'system';
 
 	/**
+	 * Constructor - ensure table exists.
+	 */
+	public function __construct() {
+		$this->maybe_create_table();
+	}
+
+	/**
+	 * Create activity logs table if it doesn't exist.
+	 */
+	private function maybe_create_table() {
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'aiagent_activity_logs';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Check if table exists.
+		$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) );
+
+		if ( $table_exists !== $table_name ) {
+			$charset_collate = $wpdb->get_charset_collate();
+
+			$sql = "CREATE TABLE $table_name (
+				id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+				category varchar(50) NOT NULL,
+				type varchar(50) NOT NULL,
+				title varchar(255) NOT NULL,
+				message text DEFAULT NULL,
+				meta longtext DEFAULT NULL,
+				user_id bigint(20) unsigned DEFAULT NULL,
+				ip_address varchar(45) DEFAULT NULL,
+				created_at datetime DEFAULT CURRENT_TIMESTAMP,
+				PRIMARY KEY (id),
+				KEY category (category),
+				KEY type (type),
+				KEY user_id (user_id),
+				KEY created_at (created_at)
+			) $charset_collate;";
+
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+			dbDelta( $sql );
+		}
+	}
+
+	/**
 	 * Get log settings.
 	 *
 	 * @return array Settings array.
