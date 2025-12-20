@@ -389,7 +389,7 @@ class AIAGENT_Admin_Settings {
 							</svg>
 						</div>
 						<div class="aiagent-integration-box-title">
-							<h3><?php esc_html_e( 'WooCommerce', 'ai-agent-for-website' ); ?></h3>
+							<h3><?php esc_html_e( 'WooCommerce', 'ai-agent-for-website' ); ?> <span class="aiagent-badge aiagent-badge-beta"><?php esc_html_e( 'Beta', 'ai-agent-for-website' ); ?></span></h3>
 							<span class="aiagent-integration-box-desc"><?php esc_html_e( 'Product search & add to cart', 'ai-agent-for-website' ); ?></span>
 						</div>
 						<?php if ( ! $woo_active ) : ?>
@@ -875,7 +875,7 @@ class AIAGENT_Admin_Settings {
 							<path d="M2 3h20c.6 0 1 .4 1 1v1c0 .6-.4 1-1 1H2c-.6 0-1-.4-1-1V4c0-.6.4-1 1-1zm0 4h20l-1.5 11c-.1.6-.5 1-1 1H4.5c-.5 0-.9-.4-1-1L2 7zm4 3c0 .6.4 1 1 1s1-.4 1-1-.4-1-1-1-1 .4-1 1zm4 0c0 .6.4 1 1 1s1-.4 1-1-.4-1-1-1-1 .4-1 1zm4 0c0 .6.4 1 1 1s1-.4 1-1-.4-1-1-1-1 .4-1 1z"/>
 						</svg>
 					</div>
-					<h3><?php esc_html_e( 'Configure WooCommerce Integration', 'ai-agent-for-website' ); ?></h3>
+					<h3><?php esc_html_e( 'Configure WooCommerce Integration', 'ai-agent-for-website' ); ?> <span class="aiagent-badge aiagent-badge-beta"><?php esc_html_e( 'Beta', 'ai-agent-for-website' ); ?></span></h3>
 					<button type="button" class="aiagent-modal-close">&times;</button>
 				</div>
 				<div class="aiagent-modal-body">
