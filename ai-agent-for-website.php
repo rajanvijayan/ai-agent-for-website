@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'AIAGENT_VERSION', '1.3.0' );
+define( 'AIAGENT_VERSION', '1.4.0' );
 define( 'AIAGENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -77,6 +77,11 @@ class AI_Agent_For_Website {
 		// Load integrations.
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-google-drive-integration.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-confluence-integration.php';
+		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-zapier-integration.php';
+		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-mailchimp-integration.php';
+
+		// Load leads manager.
+		require_once AIAGENT_PLUGIN_DIR . 'includes/class-leads-manager.php';
 	}
 
 	/**
@@ -118,7 +123,7 @@ class AI_Agent_For_Website {
 		$db_version = get_option( 'aiagent_db_version', '0' );
 
 		// Check if we need to create/update tables.
-		if ( version_compare( $db_version, '1.3.0', '<' ) ) {
+		if ( version_compare( $db_version, '1.4.0', '<' ) ) {
 			$this->create_tables();
 		}
 
@@ -135,11 +140,20 @@ class AI_Agent_For_Website {
 
 		// Default values for new settings.
 		$defaults = [
-			'avatar_url'        => '',
-			'require_user_info' => true,
-			'require_phone'     => false,
-			'phone_required'    => false,
-			'show_powered_by'   => true,
+			'avatar_url'               => '',
+			'require_user_info'        => true,
+			'require_phone'            => false,
+			'phone_required'           => false,
+			'show_powered_by'          => true,
+			'consent_ai_enabled'       => true,
+			'consent_ai_text'          => 'I agree to interact with AI assistance',
+			'consent_newsletter'       => false,
+			'consent_newsletter_text'  => 'Subscribe to our newsletter',
+			'consent_promotional'      => false,
+			'consent_promotional_text' => 'Receive promotional updates',
+			'widget_button_size'       => 'medium',
+			'widget_animation'         => 'slide',
+			'widget_sound'             => false,
 		];
 
 		foreach ( $defaults as $key => $default ) {
@@ -261,14 +275,48 @@ class AI_Agent_For_Website {
             KEY file_type (file_type)
         ) $charset_collate;";
 
+		// Leads table.
+		$leads_table = $wpdb->prefix . 'aiagent_leads';
+		$leads_sql   = "CREATE TABLE $leads_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            user_id bigint(20) unsigned NOT NULL,
+            conversation_id bigint(20) unsigned DEFAULT NULL,
+            status varchar(20) DEFAULT 'new',
+            source varchar(50) DEFAULT 'chat',
+            summary text DEFAULT NULL,
+            notes text DEFAULT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY user_id (user_id),
+            KEY status (status),
+            KEY conversation_id (conversation_id)
+        ) $charset_collate;";
+
+		// User consents table.
+		$consents_table = $wpdb->prefix . 'aiagent_user_consents';
+		$consents_sql   = "CREATE TABLE $consents_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            user_id bigint(20) unsigned NOT NULL,
+            consent_type varchar(50) NOT NULL,
+            consented tinyint(1) DEFAULT 0,
+            ip_address varchar(45) DEFAULT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY user_id (user_id),
+            KEY consent_type (consent_type)
+        ) $charset_collate;";
+
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $users_sql );
 		dbDelta( $conversations_sql );
 		dbDelta( $messages_sql );
 		dbDelta( $files_sql );
+		dbDelta( $leads_sql );
+		dbDelta( $consents_sql );
 
 		// Store DB version.
-		update_option( 'aiagent_db_version', '1.3.0' );
+		update_option( 'aiagent_db_version', '1.4.0' );
 	}
 
 	/**
@@ -329,6 +377,23 @@ class AI_Agent_For_Website {
 			'ai-agent-conversations',
 			[ $this, 'render_conversations_page' ]
 		);
+
+		add_submenu_page(
+			'ai-agent-settings',
+			__( 'Leads', 'ai-agent-for-website' ),
+			__( 'Leads', 'ai-agent-for-website' ),
+			'manage_options',
+			'ai-agent-leads',
+			[ $this, 'render_leads_page' ]
+		);
+	}
+
+	/**
+	 * Render leads page.
+	 */
+	public function render_leads_page() {
+		$manager = new AIAGENT_Leads_Manager();
+		$manager->render_admin_page();
 	}
 
 	/**
@@ -435,14 +500,24 @@ class AI_Agent_For_Website {
 			'aiagent-chat',
 			'aiagentConfig',
 			[
-				'restUrl'         => rest_url( 'ai-agent/v1/' ),
-				'nonce'           => wp_create_nonce( 'wp_rest' ),
-				'aiName'          => $settings['ai_name'] ?? 'AI Assistant',
-				'welcomeMessage'  => $settings['welcome_message'] ?? 'Hello! How can I help you?',
-				'position'        => $settings['widget_position'] ?? 'bottom-right',
-				'primaryColor'    => $settings['primary_color'] ?? '#0073aa',
-				'avatarUrl'       => $settings['avatar_url'] ?? '',
-				'requireUserInfo' => (bool) $require_user_info,
+				'restUrl'                => rest_url( 'ai-agent/v1/' ),
+				'nonce'                  => wp_create_nonce( 'wp_rest' ),
+				'aiName'                 => $settings['ai_name'] ?? 'AI Assistant',
+				'welcomeMessage'         => $settings['welcome_message'] ?? 'Hello! How can I help you?',
+				'position'               => $settings['widget_position'] ?? 'bottom-right',
+				'primaryColor'           => $settings['primary_color'] ?? '#0073aa',
+				'avatarUrl'              => $settings['avatar_url'] ?? '',
+				'requireUserInfo'        => (bool) $require_user_info,
+				'requirePhone'           => ! empty( $settings['require_phone'] ),
+				'phoneRequired'          => ! empty( $settings['phone_required'] ),
+				'consentAiEnabled'       => $settings['consent_ai_enabled'] ?? true,
+				'consentAiText'          => $settings['consent_ai_text'] ?? 'I agree to interact with AI assistance',
+				'consentNewsletter'      => ! empty( $settings['consent_newsletter'] ),
+				'consentNewsletterText'  => $settings['consent_newsletter_text'] ?? 'Subscribe to our newsletter',
+				'consentPromotional'     => ! empty( $settings['consent_promotional'] ),
+				'consentPromotionalText' => $settings['consent_promotional_text'] ?? 'Receive promotional updates',
+				'widgetButtonSize'       => $settings['widget_button_size'] ?? 'medium',
+				'widgetAnimation'        => $settings['widget_animation'] ?? 'slide',
 			]
 		);
 	}

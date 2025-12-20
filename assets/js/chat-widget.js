@@ -242,6 +242,9 @@
             const nameInput = form.querySelector('input[name="user_name"]');
             const emailInput = form.querySelector('input[name="user_email"]');
             const phoneInput = form.querySelector('input[name="user_phone"]');
+            const consentAiInput = form.querySelector('input[name="consent_ai"]');
+            const consentNewsletterInput = form.querySelector('input[name="consent_newsletter"]');
+            const consentPromotionalInput = form.querySelector('input[name="consent_promotional"]');
             const submitBtn = form.querySelector('button[type="submit"]');
 
             const name = nameInput.value.trim();
@@ -252,6 +255,9 @@
 
             // Check if phone is required
             if (phoneInput && phoneInput.required && !phone) return;
+
+            // Check if AI consent is required but not checked
+            if (consentAiInput && consentAiInput.required && !consentAiInput.checked) return;
 
             // Disable form
             submitBtn.disabled = true;
@@ -269,6 +275,13 @@
                         email: email,
                         phone: phone,
                         session_id: this.sessionId,
+                        consent_ai: consentAiInput ? consentAiInput.checked : false,
+                        consent_newsletter: consentNewsletterInput
+                            ? consentNewsletterInput.checked
+                            : false,
+                        consent_promotional: consentPromotionalInput
+                            ? consentPromotionalInput.checked
+                            : false,
                     }),
                 });
 

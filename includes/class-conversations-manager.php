@@ -37,6 +37,11 @@ class AIAGENT_Conversations_Manager {
 			}
 		}
 
+		// Handle conversation actions.
+		if ( isset( $_POST['aiagent_conversation_action'] ) && check_admin_referer( 'aiagent_conversation_action' ) ) {
+			$this->handle_conversation_action();
+		}
+
 		// Check if viewing a specific conversation.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only operation.
 		$view_conversation = isset( $_GET['conversation'] ) ? absint( $_GET['conversation'] ) : null;
@@ -202,12 +207,21 @@ class AIAGENT_Conversations_Manager {
 											<span style="color: #999;">●</span> <?php esc_html_e( 'Ended', 'ai-agent-for-website' ); ?>
 										<?php endif; ?>
 									</td>
-									<td>
-										<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-conversations&conversation=' . $conv->id ) ); ?>" class="button button-small">
-											<?php esc_html_e( 'View', 'ai-agent-for-website' ); ?>
-										</a>
-									</td>
-								</tr>
+								<td>
+									<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-conversations&conversation=' . $conv->id ) ); ?>" class="button button-small">
+										<?php esc_html_e( 'View', 'ai-agent-for-website' ); ?>
+									</a>
+									<?php
+									// Check if already converted to lead.
+									$leads_table = $wpdb->prefix . 'aiagent_leads';
+									// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table lookup.
+									$is_lead = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $leads_table WHERE conversation_id = %d", $conv->id ) );
+									if ( $is_lead ) :
+										?>
+										<span class="aiagent-badge" style="background: #46b450; margin-left: 5px;"><?php esc_html_e( 'Lead', 'ai-agent-for-website' ); ?></span>
+									<?php endif; ?>
+								</td>
+							</tr>
 							<?php endforeach; ?>
 						</tbody>
 					</table>
@@ -311,6 +325,50 @@ class AIAGENT_Conversations_Manager {
 						</td>
 					</tr>
 				</table>
+			</div>
+
+			<div class="aiagent-card">
+				<h2><?php esc_html_e( 'Actions', 'ai-agent-for-website' ); ?></h2>
+				
+				<form method="post" style="display: flex; gap: 10px; flex-wrap: wrap;">
+					<?php wp_nonce_field( 'aiagent_conversation_action' ); ?>
+					<input type="hidden" name="conversation_id" value="<?php echo esc_attr( $conversation_id ); ?>">
+					
+					<?php
+					// Check if already converted to lead.
+					$leads_table = $wpdb->prefix . 'aiagent_leads';
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table lookup.
+					$existing_lead = $wpdb->get_row(
+						// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Safe table name from wpdb prefix.
+						$wpdb->prepare( "SELECT id FROM $leads_table WHERE conversation_id = %d", $conversation_id )
+					);
+					// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					?>
+					
+					<?php if ( $existing_lead ) : ?>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-agent-leads&lead=' . $existing_lead->id ) ); ?>" class="button button-primary">
+							<span class="dashicons dashicons-businessman" style="margin-top: 3px;"></span>
+							<?php esc_html_e( 'View Lead', 'ai-agent-for-website' ); ?>
+						</a>
+					<?php else : ?>
+						<button type="submit" name="aiagent_conversation_action" value="convert_to_lead" class="button button-primary">
+							<span class="dashicons dashicons-businessman" style="margin-top: 3px;"></span>
+							<?php esc_html_e( 'Convert to Lead', 'ai-agent-for-website' ); ?>
+						</button>
+					<?php endif; ?>
+					
+					<?php if ( 'active' === $conversation->status ) : ?>
+						<button type="submit" name="aiagent_conversation_action" value="close" class="button">
+							<span class="dashicons dashicons-dismiss" style="margin-top: 3px;"></span>
+							<?php esc_html_e( 'Close Conversation', 'ai-agent-for-website' ); ?>
+						</button>
+					<?php else : ?>
+						<button type="submit" name="aiagent_conversation_action" value="reopen" class="button">
+							<span class="dashicons dashicons-undo" style="margin-top: 3px;"></span>
+							<?php esc_html_e( 'Reopen Conversation', 'ai-agent-for-website' ); ?>
+						</button>
+					<?php endif; ?>
+				</form>
 			</div>
 
 			<div class="aiagent-card">
@@ -428,6 +486,61 @@ class AIAGENT_Conversations_Manager {
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Safe table name from wpdb prefix.
 			$wpdb->prepare( "SELECT * FROM $table WHERE conversation_id = %d ORDER BY created_at ASC", $conversation_id )
 		);
+	}
+
+	/**
+	 * Handle conversation action.
+	 */
+	private function handle_conversation_action() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in caller.
+		$action = isset( $_POST['aiagent_conversation_action'] ) ? sanitize_key( $_POST['aiagent_conversation_action'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in caller.
+		$conversation_id = isset( $_POST['conversation_id'] ) ? absint( $_POST['conversation_id'] ) : 0;
+
+		if ( ! $conversation_id ) {
+			return;
+		}
+
+		global $wpdb;
+		$conversations_table = $wpdb->prefix . 'aiagent_conversations';
+
+		switch ( $action ) {
+			case 'convert_to_lead':
+				$leads_manager = new AIAGENT_Leads_Manager();
+				$lead_id       = $leads_manager->convert_conversation_to_lead( $conversation_id );
+				if ( $lead_id ) {
+					echo '<div class="notice notice-success"><p>' . esc_html__( 'Conversation converted to lead successfully!', 'ai-agent-for-website' ) . '</p></div>';
+				} else {
+					echo '<div class="notice notice-error"><p>' . esc_html__( 'Failed to convert conversation to lead.', 'ai-agent-for-website' ) . '</p></div>';
+				}
+				break;
+
+			case 'close':
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional direct update.
+				$wpdb->update(
+					$conversations_table,
+					[
+						'status'   => 'ended',
+						'ended_at' => current_time( 'mysql' ),
+					],
+					[ 'id' => $conversation_id ]
+				);
+				echo '<div class="notice notice-success"><p>' . esc_html__( 'Conversation closed.', 'ai-agent-for-website' ) . '</p></div>';
+				break;
+
+			case 'reopen':
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional direct update.
+				$wpdb->update(
+					$conversations_table,
+					[
+						'status'   => 'active',
+						'ended_at' => null,
+					],
+					[ 'id' => $conversation_id ]
+				);
+				echo '<div class="notice notice-success"><p>' . esc_html__( 'Conversation reopened.', 'ai-agent-for-website' ) . '</p></div>';
+				break;
+		}
 	}
 
 	/**

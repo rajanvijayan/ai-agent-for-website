@@ -1458,6 +1458,85 @@
 }
 
 /* ===============================
+   Leads Styles
+   =============================== */
+.aiagent-lead-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.aiagent-status-new {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.aiagent-status-contacted {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.aiagent-status-qualified {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.aiagent-status-converted {
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+
+.aiagent-status-closed {
+    background: #f5f5f5;
+    color: #616161;
+}
+
+.aiagent-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.aiagent-filter-label {
+    font-weight: 500;
+    color: #1e1e1e;
+}
+
+.aiagent-lead-detail-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 1024px) {
+    .aiagent-lead-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aiagent-lead-notes {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.aiagent-pagination {
+    display: flex;
+    gap: 5px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* ===============================
    Responsive Adjustments
    =============================== */
 @media (max-width: 782px) {

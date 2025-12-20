@@ -73,25 +73,40 @@ class AIAGENT_REST_API {
 				'callback'            => [ $this, 'handle_register_user' ],
 				'permission_callback' => '__return_true',
 				'args'                => [
-					'name'       => [
+					'name'                => [
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					],
-					'email'      => [
+					'email'               => [
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_email',
 					],
-					'phone'      => [
+					'phone'               => [
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					],
-					'session_id' => [
+					'session_id'          => [
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
+					],
+					'consent_ai'          => [
+						'required'          => false,
+						'type'              => 'boolean',
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					],
+					'consent_newsletter'  => [
+						'required'          => false,
+						'type'              => 'boolean',
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					],
+					'consent_promotional' => [
+						'required'          => false,
+						'type'              => 'boolean',
+						'sanitize_callback' => 'rest_sanitize_boolean',
 					],
 				],
 			]
@@ -413,11 +428,14 @@ class AIAGENT_REST_API {
 	public function handle_register_user( $request ) {
 		global $wpdb;
 
-		$name          = $request->get_param( 'name' );
-		$email         = $request->get_param( 'email' );
-		$phone         = $request->get_param( 'phone' );
-		$param_session = $request->get_param( 'session_id' );
-		$session_id    = ! empty( $param_session ) ? $param_session : $this->generate_session_id();
+		$name                = $request->get_param( 'name' );
+		$email               = $request->get_param( 'email' );
+		$phone               = $request->get_param( 'phone' );
+		$param_session       = $request->get_param( 'session_id' );
+		$session_id          = ! empty( $param_session ) ? $param_session : $this->generate_session_id();
+		$consent_ai          = $request->get_param( 'consent_ai' );
+		$consent_newsletter  = $request->get_param( 'consent_newsletter' );
+		$consent_promotional = $request->get_param( 'consent_promotional' );
 
 		// Validate email.
 		if ( ! is_email( $email ) ) {
@@ -471,6 +489,33 @@ class AIAGENT_REST_API {
 			return new WP_Error( 'db_error', __( 'Could not register user.', 'ai-agent-for-website' ), [ 'status' => 500 ] );
 		}
 
+		// Save user consents.
+		$this->save_user_consents( $user_id, $consent_ai, $consent_newsletter, $consent_promotional );
+
+		// If newsletter consent, subscribe to Mailchimp.
+		if ( $consent_newsletter && AIAGENT_Mailchimp_Integration::is_enabled() ) {
+			$name_parts = explode( ' ', $name, 2 );
+			$first_name = $name_parts[0] ?? '';
+			$last_name  = $name_parts[1] ?? '';
+			AIAGENT_Mailchimp_Integration::subscribe( $email, $first_name, $last_name, [ 'AI Agent Chat' ] );
+		}
+
+		// Trigger Zapier webhook for new user.
+		if ( AIAGENT_Zapier_Integration::is_enabled() ) {
+			AIAGENT_Zapier_Integration::send_webhook(
+				[
+					'user_id'             => $user_id,
+					'name'                => $name,
+					'email'               => $email,
+					'phone'               => $phone,
+					'consent_ai'          => $consent_ai,
+					'consent_newsletter'  => $consent_newsletter,
+					'consent_promotional' => $consent_promotional,
+				],
+				'user_registered'
+			);
+		}
+
 		// Create a new conversation for this user.
 		$this->create_conversation( $user_id, $session_id );
 
@@ -481,6 +526,61 @@ class AIAGENT_REST_API {
 				'session_id' => $session_id,
 			]
 		);
+	}
+
+	/**
+	 * Save user consents to database.
+	 *
+	 * @param int  $user_id             User ID.
+	 * @param bool $consent_ai          AI consent.
+	 * @param bool $consent_newsletter  Newsletter consent.
+	 * @param bool $consent_promotional Promotional consent.
+	 */
+	private function save_user_consents( $user_id, $consent_ai, $consent_newsletter, $consent_promotional ) {
+		global $wpdb;
+
+		$consents_table = $wpdb->prefix . 'aiagent_user_consents';
+		$ip_address     = $this->get_client_ip();
+
+		$consents = [
+			'ai'          => $consent_ai,
+			'newsletter'  => $consent_newsletter,
+			'promotional' => $consent_promotional,
+		];
+
+		foreach ( $consents as $type => $value ) {
+			if ( null !== $value ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Intentional direct insert.
+				$wpdb->insert(
+					$consents_table,
+					[
+						'user_id'      => $user_id,
+						'consent_type' => $type,
+						'consented'    => $value ? 1 : 0,
+						'ip_address'   => $ip_address,
+					]
+				);
+			}
+		}
+	}
+
+	/**
+	 * Get client IP address.
+	 *
+	 * @return string IP address.
+	 */
+	private function get_client_ip() {
+		$ip = '';
+
+		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+			$ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
+		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+			$ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
+		} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+			$ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+		}
+
+		return $ip;
 	}
 
 	/**
