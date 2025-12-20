@@ -495,6 +495,57 @@ class AIAGENT_REST_API {
 				'permission_callback' => [ $this, 'admin_permission_check' ],
 			]
 		);
+
+		// Save integration settings endpoints.
+		register_rest_route(
+			$this->namespace,
+			'/settings/groq',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_save_groq_settings' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/settings/gdrive',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_save_gdrive_settings' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/settings/confluence',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_save_confluence_settings' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/settings/zapier',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_save_zapier_settings' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/settings/mailchimp',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_save_mailchimp_settings' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
 	}
 
 	/**
@@ -1817,6 +1868,123 @@ Do not include any explanation, just the JSON array.',
 			[
 				'success' => true,
 				'stats'   => $stats,
+			]
+		);
+	}
+
+	/**
+	 * Handle save Groq settings request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_save_groq_settings( $request ) {
+		$api_key = sanitize_text_field( $request->get_param( 'api_key' ) );
+
+		$settings            = AI_Agent_For_Website::get_settings();
+		$settings['api_key'] = $api_key;
+		AI_Agent_For_Website::update_settings( $settings );
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'message' => __( 'Groq settings saved successfully.', 'ai-agent-for-website' ),
+			]
+		);
+	}
+
+	/**
+	 * Handle save Google Drive settings request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_save_gdrive_settings( $request ) {
+		$client_id     = sanitize_text_field( $request->get_param( 'client_id' ) );
+		$client_secret = sanitize_text_field( $request->get_param( 'client_secret' ) );
+
+		$gdrive_settings                  = AIAGENT_Google_Drive_Integration::get_settings();
+		$gdrive_settings['client_id']     = $client_id;
+		$gdrive_settings['client_secret'] = $client_secret;
+		AIAGENT_Google_Drive_Integration::update_settings( $gdrive_settings );
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'message' => __( 'Google Drive settings saved successfully.', 'ai-agent-for-website' ),
+			]
+		);
+	}
+
+	/**
+	 * Handle save Confluence settings request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_save_confluence_settings( $request ) {
+		$instance_url = esc_url_raw( $request->get_param( 'instance_url' ) );
+		$email        = sanitize_email( $request->get_param( 'email' ) );
+		$api_token    = sanitize_text_field( $request->get_param( 'api_token' ) );
+
+		$confluence_settings                 = AIAGENT_Confluence_Integration::get_settings();
+		$confluence_settings['instance_url'] = $instance_url;
+		$confluence_settings['email']        = $email;
+		$confluence_settings['api_token']    = $api_token;
+		AIAGENT_Confluence_Integration::update_settings( $confluence_settings );
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'message' => __( 'Confluence settings saved successfully.', 'ai-agent-for-website' ),
+			]
+		);
+	}
+
+	/**
+	 * Handle save Zapier settings request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_save_zapier_settings( $request ) {
+		$enabled     = rest_sanitize_boolean( $request->get_param( 'enabled' ) );
+		$webhook_url = esc_url_raw( $request->get_param( 'webhook_url' ) );
+
+		$integration_settings                       = get_option( 'aiagent_integrations', [] );
+		$integration_settings['zapier_enabled']     = $enabled;
+		$integration_settings['zapier_webhook_url'] = $webhook_url;
+		update_option( 'aiagent_integrations', $integration_settings );
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'message' => __( 'Zapier settings saved successfully.', 'ai-agent-for-website' ),
+			]
+		);
+	}
+
+	/**
+	 * Handle save Mailchimp settings request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_save_mailchimp_settings( $request ) {
+		$enabled = rest_sanitize_boolean( $request->get_param( 'enabled' ) );
+		$api_key = sanitize_text_field( $request->get_param( 'api_key' ) );
+		$list_id = sanitize_text_field( $request->get_param( 'list_id' ) );
+
+		$integration_settings                      = get_option( 'aiagent_integrations', [] );
+		$integration_settings['mailchimp_enabled'] = $enabled;
+		$integration_settings['mailchimp_api_key'] = $api_key;
+		$integration_settings['mailchimp_list_id'] = $list_id;
+		update_option( 'aiagent_integrations', $integration_settings );
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'message' => __( 'Mailchimp settings saved successfully.', 'ai-agent-for-website' ),
 			]
 		);
 	}

@@ -509,7 +509,10 @@ class AIAGENT_Admin_Settings {
 					</div>
 				</div>
 				<div class="aiagent-modal-footer">
-					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Close', 'ai-agent-for-website' ); ?></button>
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Cancel', 'ai-agent-for-website' ); ?></button>
+					<button type="button" class="button button-primary aiagent-modal-save" data-integration="groq">
+						<?php esc_html_e( 'Save', 'ai-agent-for-website' ); ?>
+					</button>
 				</div>
 			</div>
 		</div>
@@ -593,7 +596,12 @@ class AIAGENT_Admin_Settings {
 					<?php endif; ?>
 				</div>
 				<div class="aiagent-modal-footer">
-					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Close', 'ai-agent-for-website' ); ?></button>
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Cancel', 'ai-agent-for-website' ); ?></button>
+					<?php if ( ! $gdrive_connected ) : ?>
+						<button type="button" class="button button-primary aiagent-modal-save" data-integration="gdrive">
+							<?php esc_html_e( 'Save', 'ai-agent-for-website' ); ?>
+						</button>
+					<?php endif; ?>
 				</div>
 			</div>
 		</div>
@@ -676,7 +684,12 @@ class AIAGENT_Admin_Settings {
 					<?php endif; ?>
 				</div>
 				<div class="aiagent-modal-footer">
-					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Close', 'ai-agent-for-website' ); ?></button>
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Cancel', 'ai-agent-for-website' ); ?></button>
+					<?php if ( ! $confluence_connected ) : ?>
+						<button type="button" class="button button-primary aiagent-modal-save" data-integration="confluence">
+							<?php esc_html_e( 'Save', 'ai-agent-for-website' ); ?>
+						</button>
+					<?php endif; ?>
 				</div>
 			</div>
 		</div>
@@ -724,7 +737,10 @@ class AIAGENT_Admin_Settings {
 					<?php endif; ?>
 				</div>
 				<div class="aiagent-modal-footer">
-					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Close', 'ai-agent-for-website' ); ?></button>
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Cancel', 'ai-agent-for-website' ); ?></button>
+					<button type="button" class="button button-primary aiagent-modal-save" data-integration="zapier">
+						<?php esc_html_e( 'Save', 'ai-agent-for-website' ); ?>
+					</button>
 				</div>
 			</div>
 		</div>
@@ -789,7 +805,10 @@ class AIAGENT_Admin_Settings {
 					<?php endif; ?>
 				</div>
 				<div class="aiagent-modal-footer">
-					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Close', 'ai-agent-for-website' ); ?></button>
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Cancel', 'ai-agent-for-website' ); ?></button>
+					<button type="button" class="button button-primary aiagent-modal-save" data-integration="mailchimp">
+						<?php esc_html_e( 'Save', 'ai-agent-for-website' ); ?>
+					</button>
 				</div>
 			</div>
 		</div>

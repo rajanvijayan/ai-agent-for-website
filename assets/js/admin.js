@@ -1087,6 +1087,93 @@
                 $('.aiagent-integration-modal:visible').fadeOut(200);
             }
         });
+
+        // Save integration settings via AJAX
+        $(document).on('click', '.aiagent-modal-save', function (e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const integration = $btn.data('integration');
+            const $modal = $btn.closest('.aiagent-integration-modal');
+
+            // Disable button and show loading
+            const originalText = $btn.text();
+            $btn.prop('disabled', true).text('Saving...');
+
+            let endpoint = '';
+            let data = {};
+
+            // Collect data based on integration type
+            switch (integration) {
+                case 'groq':
+                    endpoint = 'settings/groq';
+                    data = {
+                        api_key: $modal.find('#api_key').val(),
+                    };
+                    break;
+
+                case 'gdrive':
+                    endpoint = 'settings/gdrive';
+                    data = {
+                        client_id: $modal.find('#gdrive_client_id').val(),
+                        client_secret: $modal.find('#gdrive_client_secret').val(),
+                    };
+                    break;
+
+                case 'confluence':
+                    endpoint = 'settings/confluence';
+                    data = {
+                        instance_url: $modal.find('#confluence_url').val(),
+                        email: $modal.find('#confluence_email').val(),
+                        api_token: $modal.find('#confluence_token').val(),
+                    };
+                    break;
+
+                case 'zapier':
+                    endpoint = 'settings/zapier';
+                    data = {
+                        enabled: $modal.find('#zapier_enabled').is(':checked'),
+                        webhook_url: $modal.find('#zapier_webhook_url').val(),
+                    };
+                    break;
+
+                case 'mailchimp':
+                    endpoint = 'settings/mailchimp';
+                    data = {
+                        enabled: $modal.find('#mailchimp_enabled').is(':checked'),
+                        api_key: $modal.find('#mailchimp_api_key').val(),
+                        list_id: $modal.find('#mailchimp_list_id').val(),
+                    };
+                    break;
+
+                default:
+                    $btn.prop('disabled', false).text(originalText);
+                    return;
+            }
+
+            $.ajax({
+                url: aiagentAdmin.restUrl + endpoint,
+                method: 'POST',
+                headers: {
+                    'X-WP-Nonce': aiagentAdmin.nonce,
+                    'Content-Type': 'application/json',
+                },
+                data: JSON.stringify(data),
+                success: function (response) {
+                    $btn.text('✓ Saved!');
+                    setTimeout(function () {
+                        $btn.prop('disabled', false).text(originalText);
+                        // Close modal and refresh page to show updated status
+                        $modal.fadeOut(200);
+                        location.reload();
+                    }, 1000);
+                },
+                error: function (xhr) {
+                    const error = xhr.responseJSON?.message || 'Failed to save settings';
+                    alert('Error: ' + error);
+                    $btn.prop('disabled', false).text(originalText);
+                },
+            });
+        });
     });
 
     // Add spinning animation for loading state
