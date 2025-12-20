@@ -754,3 +754,523 @@
     background: var(--aiagent-bg-light);
     color: var(--aiagent-text);
 }
+
+/* WooCommerce Product Styles */
+.aiagent-message-products {
+    max-width: 100% !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+.aiagent-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    padding: 8px;
+}
+
+.aiagent-product-card {
+    background: var(--aiagent-bg);
+    border: 1px solid var(--aiagent-border);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
+}
+
+.aiagent-product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.aiagent-product-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    z-index: 2;
+}
+
+.aiagent-product-badge.sale {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.aiagent-product-badge.out-of-stock {
+    background: #95a5a6;
+    color: #fff;
+}
+
+.aiagent-product-image {
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--aiagent-bg-light);
+}
+
+.aiagent-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+    background-color: #f5f5f5;
+}
+
+.aiagent-product-image img[src*="data:image/svg"] {
+    object-fit: contain;
+    padding: 10px;
+}
+
+.aiagent-product-card:hover .aiagent-product-image img {
+    transform: scale(1.05);
+}
+
+.aiagent-product-info {
+    padding: 10px;
+}
+
+.aiagent-product-name {
+    margin: 0 0 4px 0;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.aiagent-product-name a {
+    color: var(--aiagent-text);
+    text-decoration: none;
+}
+
+.aiagent-product-name a:hover {
+    color: var(--aiagent-primary);
+}
+
+.aiagent-product-desc {
+    margin: 0 0 6px 0;
+    font-size: 11px;
+    color: var(--aiagent-text-light);
+    line-height: 1.3;
+}
+
+.aiagent-product-price {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--aiagent-primary);
+    margin-bottom: 4px;
+}
+
+.aiagent-product-price del {
+    color: var(--aiagent-text-light);
+    font-weight: 400;
+    font-size: 12px;
+}
+
+.aiagent-product-price ins {
+    text-decoration: none;
+    color: #e74c3c;
+}
+
+.aiagent-product-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+}
+
+.aiagent-stars {
+    color: #f39c12;
+}
+
+.aiagent-review-count {
+    color: var(--aiagent-text-light);
+}
+
+.aiagent-product-actions {
+    display: flex;
+    gap: 6px;
+    padding: 8px 10px;
+    border-top: 1px solid var(--aiagent-border);
+    background: var(--aiagent-bg-light);
+}
+
+.aiagent-add-to-cart-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background: var(--aiagent-primary);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+        background 0.2s,
+        transform 0.2s;
+}
+
+.aiagent-add-to-cart-btn:hover {
+    filter: brightness(1.1);
+    transform: scale(1.02);
+}
+
+.aiagent-add-to-cart-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.aiagent-add-to-cart-btn.success {
+    background: #27ae60;
+}
+
+.aiagent-add-to-cart-btn.error {
+    background: #e74c3c;
+}
+
+.aiagent-compare-toggle {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--aiagent-bg);
+    border: 1px solid var(--aiagent-border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.aiagent-compare-toggle:hover {
+    border-color: var(--aiagent-primary);
+    color: var(--aiagent-primary);
+}
+
+.aiagent-compare-toggle.active {
+    background: var(--aiagent-primary);
+    border-color: var(--aiagent-primary);
+    color: #fff;
+}
+
+.aiagent-view-product-btn {
+    padding: 6px 10px;
+    background: var(--aiagent-bg);
+    border: 1px solid var(--aiagent-border);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--aiagent-text);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.aiagent-view-product-btn:hover {
+    border-color: var(--aiagent-primary);
+    color: var(--aiagent-primary);
+}
+
+/* Compare Actions */
+.aiagent-compare-actions {
+    padding: 8px;
+    text-align: center;
+}
+
+.aiagent-compare-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--aiagent-bg);
+    border: 1px solid var(--aiagent-primary);
+    border-radius: 20px;
+    color: var(--aiagent-primary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.aiagent-compare-btn:hover:not(:disabled) {
+    background: var(--aiagent-primary);
+    color: #fff;
+}
+
+.aiagent-compare-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Cart Notification */
+.aiagent-cart-notification {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    background: var(--aiagent-bg);
+    border-radius: 12px;
+    box-shadow: var(--aiagent-shadow);
+    padding: 16px;
+    z-index: 1000000;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    max-width: 300px;
+}
+
+.aiagent-cart-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.aiagent-cart-notification-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    color: #27ae60;
+}
+
+.aiagent-cart-notification-content span {
+    color: var(--aiagent-text);
+    font-size: 14px;
+}
+
+.aiagent-cart-notification-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.aiagent-cart-link,
+.aiagent-checkout-link {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.aiagent-cart-link {
+    background: var(--aiagent-bg-light);
+    color: var(--aiagent-text);
+    border: 1px solid var(--aiagent-border);
+}
+
+.aiagent-cart-link:hover {
+    background: var(--aiagent-border);
+}
+
+.aiagent-checkout-link {
+    background: var(--aiagent-primary);
+    color: #fff;
+}
+
+.aiagent-checkout-link:hover {
+    filter: brightness(1.1);
+}
+
+/* Error notification */
+.aiagent-cart-notification.aiagent-cart-error .aiagent-cart-notification-content {
+    color: #e74c3c;
+    margin-bottom: 0;
+}
+
+.aiagent-cart-notification.aiagent-cart-error {
+    border-left: 4px solid #e74c3c;
+}
+
+/* Comparison Modal */
+.aiagent-comparison-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aiagent-comparison-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.aiagent-comparison-content {
+    position: relative;
+    background: var(--aiagent-bg);
+    border-radius: 16px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.aiagent-comparison-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--aiagent-border);
+}
+
+.aiagent-comparison-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.aiagent-comparison-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--aiagent-bg-light);
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.aiagent-comparison-close:hover {
+    background: var(--aiagent-border);
+}
+
+.aiagent-comparison-body {
+    overflow: auto;
+    padding: 20px;
+}
+
+.aiagent-comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.aiagent-comparison-table th,
+.aiagent-comparison-table td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--aiagent-border);
+    min-width: 120px;
+}
+
+.aiagent-comparison-table th {
+    background: var(--aiagent-bg-light);
+    font-weight: 600;
+}
+
+.aiagent-comparison-table th img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto 8px;
+}
+
+.aiagent-comparison-table td:first-child {
+    text-align: left;
+    background: var(--aiagent-bg-light);
+    font-weight: 500;
+}
+
+.aiagent-comparison-table .in-stock {
+    color: #27ae60;
+}
+
+.aiagent-comparison-table .out-of-stock {
+    color: #e74c3c;
+}
+
+.aiagent-comparison-actions-row td {
+    padding: 16px 12px;
+}
+
+.aiagent-comparison-actions-row .aiagent-add-to-cart-btn,
+.aiagent-comparison-actions-row .aiagent-view-product-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+/* Spinner */
+.aiagent-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: aiagent-spin 0.8s linear infinite;
+}
+
+@keyframes aiagent-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Mobile responsive for products */
+@media (max-width: 480px) {
+    .aiagent-products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .aiagent-product-name {
+        font-size: 12px;
+    }
+
+    .aiagent-product-price {
+        font-size: 13px;
+    }
+
+    .aiagent-product-actions {
+        flex-wrap: wrap;
+    }
+
+    .aiagent-add-to-cart-btn {
+        flex: 1 1 100%;
+    }
+
+    .aiagent-comparison-content {
+        max-width: 95vw;
+        max-height: 90vh;
+    }
+
+    .aiagent-comparison-table {
+        font-size: 11px;
+    }
+
+    .aiagent-comparison-table th,
+    .aiagent-comparison-table td {
+        padding: 8px;
+        min-width: 80px;
+    }
+
+    .aiagent-comparison-table th img {
+        width: 50px;
+        height: 50px;
+    }
+}

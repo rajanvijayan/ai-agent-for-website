@@ -1145,6 +1145,42 @@
                     };
                     break;
 
+                case 'woocommerce':
+                    endpoint = 'settings/woocommerce';
+                    data = {
+                        enabled: $modal.find('#woo_enabled').is(':checked'),
+                        show_prices: $modal.find('#woo_show_prices').is(':checked'),
+                        show_add_to_cart: $modal.find('#woo_show_add_to_cart').is(':checked'),
+                        show_related_products: $modal
+                            .find('#woo_show_related_products')
+                            .is(':checked'),
+                        show_product_comparison: $modal
+                            .find('#woo_show_product_comparison')
+                            .is(':checked'),
+                        max_products_display:
+                            parseInt($modal.find('#woo_max_products_display').val()) || 6,
+                        include_out_of_stock: $modal
+                            .find('#woo_include_out_of_stock')
+                            .is(':checked'),
+                        // Knowledge base sync settings.
+                        sync_to_kb: $modal.find('#woo_sync_to_kb').is(':checked'),
+                        auto_sync: $modal.find('#woo_auto_sync').is(':checked'),
+                        kb_include_descriptions: $modal
+                            .find('#woo_kb_include_descriptions')
+                            .is(':checked'),
+                        kb_include_prices: $modal.find('#woo_kb_include_prices').is(':checked'),
+                        kb_include_categories: $modal
+                            .find('#woo_kb_include_categories')
+                            .is(':checked'),
+                        kb_include_attributes: $modal
+                            .find('#woo_kb_include_attributes')
+                            .is(':checked'),
+                        kb_include_stock_status: $modal
+                            .find('#woo_kb_include_stock_status')
+                            .is(':checked'),
+                    };
+                    break;
+
                 default:
                     $btn.prop('disabled', false).text(originalText);
                     return;
@@ -1171,6 +1207,51 @@
                     const error = xhr.responseJSON?.message || 'Failed to save settings';
                     alert('Error: ' + error);
                     $btn.prop('disabled', false).text(originalText);
+                },
+            });
+        });
+
+        // ===============================
+        // WooCommerce Sync Button Handler
+        // ===============================
+        $('#woo_sync_now_btn').on('click', function () {
+            const $btn = $(this);
+            const $status = $('#woo_sync_status');
+            const originalHtml = $btn.html();
+
+            $btn.prop('disabled', true).html(
+                '<span class="dashicons dashicons-update spin" style="margin-top: 4px;"></span> Syncing...'
+            );
+            $status.text('');
+
+            $.ajax({
+                url: aiagentAdmin.restUrl + 'woocommerce/sync-to-kb',
+                method: 'POST',
+                headers: {
+                    'X-WP-Nonce': aiagentAdmin.nonce,
+                },
+                success: function (response) {
+                    $btn.html(
+                        '<span class="dashicons dashicons-yes-alt" style="margin-top: 4px; color: #46b450;"></span> Synced!'
+                    );
+                    $status
+                        .css('color', '#46b450')
+                        .text(response.product_count + ' products synced successfully');
+
+                    setTimeout(function () {
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }, 3000);
+                },
+                error: function (xhr) {
+                    const error = xhr.responseJSON?.message || 'Sync failed';
+                    $btn.html(
+                        '<span class="dashicons dashicons-warning" style="margin-top: 4px; color: #dc3232;"></span> Failed'
+                    );
+                    $status.css('color', '#dc3232').text('Error: ' + error);
+
+                    setTimeout(function () {
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }, 3000);
                 },
             });
         });

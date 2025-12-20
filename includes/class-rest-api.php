@@ -546,6 +546,257 @@ class AIAGENT_REST_API {
 				'permission_callback' => [ $this, 'admin_permission_check' ],
 			]
 		);
+
+		// WooCommerce integration endpoints.
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/status',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_woocommerce_status' ],
+				'permission_callback' => '__return_true',
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/search',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_woocommerce_search' ],
+				'permission_callback' => '__return_true',
+				'args'                => [
+					'query' => [
+						'required'          => false,
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+					'limit' => [
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 10,
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/product/(?P<id>\d+)',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_woocommerce_product' ],
+				'permission_callback' => '__return_true',
+				'args'                => [
+					'id' => [
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/related/(?P<id>\d+)',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_woocommerce_related' ],
+				'permission_callback' => '__return_true',
+				'args'                => [
+					'id'    => [
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+					'limit' => [
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 4,
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/compare',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_woocommerce_compare' ],
+				'permission_callback' => '__return_true',
+				'args'                => [
+					'product_ids' => [
+						'required'          => true,
+						'type'              => 'array',
+						'sanitize_callback' => function ( $ids ) {
+							return array_map( 'absint', $ids );
+						},
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/add-to-cart',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_woocommerce_add_to_cart' ],
+				'permission_callback' => '__return_true',
+				'args'                => [
+					'product_id'   => [
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+					'quantity'     => [
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 1,
+						'sanitize_callback' => 'absint',
+					],
+					'variation_id' => [
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 0,
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/cart',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_woocommerce_cart' ],
+				'permission_callback' => '__return_true',
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/remove-from-cart',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_woocommerce_remove_from_cart' ],
+				'permission_callback' => '__return_true',
+				'args'                => [
+					'cart_item_key' => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/categories',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_woocommerce_categories' ],
+				'permission_callback' => '__return_true',
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/featured',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_woocommerce_featured' ],
+				'permission_callback' => '__return_true',
+				'args'                => [
+					'limit' => [
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 6,
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/sale',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_woocommerce_sale' ],
+				'permission_callback' => '__return_true',
+				'args'                => [
+					'limit' => [
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 6,
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/bestsellers',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_woocommerce_bestsellers' ],
+				'permission_callback' => '__return_true',
+				'args'                => [
+					'limit' => [
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 6,
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/variations/(?P<id>\d+)',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_woocommerce_variations' ],
+				'permission_callback' => '__return_true',
+				'args'                => [
+					'id' => [
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/settings/woocommerce',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_save_woocommerce_settings' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/woocommerce/sync-to-kb',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_woocommerce_sync_to_kb' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
 	}
 
 	/**
@@ -1987,5 +2238,425 @@ Do not include any explanation, just the JSON array.',
 				'message' => __( 'Mailchimp settings saved successfully.', 'ai-agent-for-website' ),
 			]
 		);
+	}
+
+	/**
+	 * Handle WooCommerce status request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_woocommerce_status( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$is_active  = AIAGENT_WooCommerce_Integration::is_woocommerce_active();
+		$is_enabled = AIAGENT_WooCommerce_Integration::is_enabled();
+		$settings   = AIAGENT_WooCommerce_Integration::get_settings();
+
+		return rest_ensure_response(
+			[
+				'success'             => true,
+				'woocommerce_active'  => $is_active,
+				'integration_enabled' => $is_enabled,
+				'settings'            => $settings,
+			]
+		);
+	}
+
+	/**
+	 * Handle WooCommerce search request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_search( $request ) {
+		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$query = $request->get_param( 'query' );
+		$limit = $request->get_param( 'limit' ) ?? 10;
+
+		$woo      = new AIAGENT_WooCommerce_Integration();
+		$settings = AIAGENT_WooCommerce_Integration::get_settings();
+
+		// If query is empty, get all products.
+		if ( empty( $query ) ) {
+			$products = $woo->get_all_products( $limit );
+		} else {
+			$products = $woo->search_products( $query, $limit );
+		}
+
+		// Get related products from first result if enabled.
+		$related = [];
+		if ( ! empty( $products ) && $settings['show_related_products'] ) {
+			$related = $woo->get_related_products( $products[0]['id'], 3 );
+		}
+
+		return rest_ensure_response(
+			[
+				'success'  => true,
+				'products' => $products,
+				'related'  => $related,
+				'query'    => $query,
+				'count'    => count( $products ),
+			]
+		);
+	}
+
+	/**
+	 * Handle WooCommerce product request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_product( $request ) {
+		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$product_id = $request->get_param( 'id' );
+
+		$woo     = new AIAGENT_WooCommerce_Integration();
+		$product = $woo->get_product( $product_id );
+
+		if ( ! $product ) {
+			return new WP_Error( 'product_not_found', __( 'Product not found.', 'ai-agent-for-website' ), [ 'status' => 404 ] );
+		}
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'product' => $product,
+			]
+		);
+	}
+
+	/**
+	 * Handle WooCommerce related products request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_related( $request ) {
+		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$product_id = $request->get_param( 'id' );
+		$limit      = $request->get_param( 'limit' ) ?? 4;
+
+		$woo        = new AIAGENT_WooCommerce_Integration();
+		$related    = $woo->get_related_products( $product_id, $limit );
+		$upsells    = $woo->get_upsell_products( $product_id, $limit );
+		$crosssells = $woo->get_crosssell_products( $product_id, $limit );
+
+		return rest_ensure_response(
+			[
+				'success'     => true,
+				'related'     => $related,
+				'upsells'     => $upsells,
+				'cross_sells' => $crosssells,
+			]
+		);
+	}
+
+	/**
+	 * Handle WooCommerce compare request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_compare( $request ) {
+		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$settings = AIAGENT_WooCommerce_Integration::get_settings();
+		if ( empty( $settings['show_product_comparison'] ) ) {
+			return new WP_Error( 'comparison_disabled', __( 'Product comparison is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$product_ids = $request->get_param( 'product_ids' );
+
+		if ( count( $product_ids ) < 2 ) {
+			return new WP_Error( 'insufficient_products', __( 'Please select at least 2 products to compare.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$woo        = new AIAGENT_WooCommerce_Integration();
+		$comparison = $woo->compare_products( $product_ids );
+
+		return rest_ensure_response(
+			[
+				'success'    => true,
+				'comparison' => $comparison,
+			]
+		);
+	}
+
+	/**
+	 * Handle WooCommerce add to cart request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_add_to_cart( $request ) {
+		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$settings = AIAGENT_WooCommerce_Integration::get_settings();
+		if ( empty( $settings['show_add_to_cart'] ) ) {
+			return new WP_Error( 'add_to_cart_disabled', __( 'Add to cart is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$product_id   = $request->get_param( 'product_id' );
+		$quantity     = $request->get_param( 'quantity' ) ?? 1;
+		$variation_id = $request->get_param( 'variation_id' ) ?? 0;
+		$variation    = $request->get_param( 'variation' ) ?? [];
+
+		$woo    = new AIAGENT_WooCommerce_Integration();
+		$result = $woo->add_to_cart( $product_id, $quantity, $variation_id, $variation );
+
+		if ( ! $result['success'] ) {
+			return new WP_Error( 'add_to_cart_failed', $result['message'], [ 'status' => 400 ] );
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle WooCommerce cart request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_cart( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$woo  = new AIAGENT_WooCommerce_Integration();
+		$cart = $woo->get_cart();
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'cart'    => $cart,
+			]
+		);
+	}
+
+	/**
+	 * Handle WooCommerce remove from cart request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_remove_from_cart( $request ) {
+		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$cart_item_key = $request->get_param( 'cart_item_key' );
+
+		$woo    = new AIAGENT_WooCommerce_Integration();
+		$result = $woo->remove_from_cart( $cart_item_key );
+
+		if ( ! $result['success'] ) {
+			return new WP_Error( 'remove_failed', $result['message'], [ 'status' => 400 ] );
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle WooCommerce categories request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_categories( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$woo        = new AIAGENT_WooCommerce_Integration();
+		$categories = $woo->get_categories();
+
+		return rest_ensure_response(
+			[
+				'success'    => true,
+				'categories' => $categories,
+			]
+		);
+	}
+
+	/**
+	 * Handle WooCommerce featured products request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_featured( $request ) {
+		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$limit = $request->get_param( 'limit' ) ?? 6;
+
+		$woo      = new AIAGENT_WooCommerce_Integration();
+		$products = $woo->get_featured_products( $limit );
+
+		return rest_ensure_response(
+			[
+				'success'  => true,
+				'products' => $products,
+			]
+		);
+	}
+
+	/**
+	 * Handle WooCommerce sale products request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_sale( $request ) {
+		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$limit = $request->get_param( 'limit' ) ?? 6;
+
+		$woo      = new AIAGENT_WooCommerce_Integration();
+		$products = $woo->get_sale_products( $limit );
+
+		return rest_ensure_response(
+			[
+				'success'  => true,
+				'products' => $products,
+			]
+		);
+	}
+
+	/**
+	 * Handle WooCommerce bestsellers request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_bestsellers( $request ) {
+		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$limit = $request->get_param( 'limit' ) ?? 6;
+
+		$woo      = new AIAGENT_WooCommerce_Integration();
+		$products = $woo->get_bestsellers( $limit );
+
+		return rest_ensure_response(
+			[
+				'success'  => true,
+				'products' => $products,
+			]
+		);
+	}
+
+	/**
+	 * Handle WooCommerce variations request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_variations( $request ) {
+		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$product_id = $request->get_param( 'id' );
+
+		$woo        = new AIAGENT_WooCommerce_Integration();
+		$variations = $woo->get_product_variations( $product_id );
+
+		return rest_ensure_response(
+			[
+				'success'    => true,
+				'variations' => $variations,
+			]
+		);
+	}
+
+	/**
+	 * Handle save WooCommerce settings request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_save_woocommerce_settings( $request ) {
+		$settings = [
+			'enabled'                 => rest_sanitize_boolean( $request->get_param( 'enabled' ) ),
+			'show_prices'             => rest_sanitize_boolean( $request->get_param( 'show_prices' ) ),
+			'show_add_to_cart'        => rest_sanitize_boolean( $request->get_param( 'show_add_to_cart' ) ),
+			'show_related_products'   => rest_sanitize_boolean( $request->get_param( 'show_related_products' ) ),
+			'show_product_comparison' => rest_sanitize_boolean( $request->get_param( 'show_product_comparison' ) ),
+			'max_products_display'    => absint( $request->get_param( 'max_products_display' ) ) > 0 ? absint( $request->get_param( 'max_products_display' ) ) : 6,
+			'search_in_description'   => rest_sanitize_boolean( $request->get_param( 'search_in_description' ) ),
+			'include_out_of_stock'    => rest_sanitize_boolean( $request->get_param( 'include_out_of_stock' ) ),
+			// Knowledge base sync settings.
+			'sync_to_kb'              => rest_sanitize_boolean( $request->get_param( 'sync_to_kb' ) ),
+			'auto_sync'               => rest_sanitize_boolean( $request->get_param( 'auto_sync' ) ),
+			'kb_include_descriptions' => rest_sanitize_boolean( $request->get_param( 'kb_include_descriptions' ) ),
+			'kb_include_prices'       => rest_sanitize_boolean( $request->get_param( 'kb_include_prices' ) ),
+			'kb_include_categories'   => rest_sanitize_boolean( $request->get_param( 'kb_include_categories' ) ),
+			'kb_include_attributes'   => rest_sanitize_boolean( $request->get_param( 'kb_include_attributes' ) ),
+			'kb_include_stock_status' => rest_sanitize_boolean( $request->get_param( 'kb_include_stock_status' ) ),
+		];
+
+		AIAGENT_WooCommerce_Integration::update_settings( $settings );
+
+		// If sync_to_kb is enabled and this is a new enable, trigger sync.
+		if ( $settings['sync_to_kb'] && $settings['enabled'] ) {
+			$sync_result = AIAGENT_WooCommerce_Integration::sync_products_to_knowledge_base();
+		}
+
+		return rest_ensure_response(
+			[
+				'success'     => true,
+				'message'     => __( 'WooCommerce settings saved successfully.', 'ai-agent-for-website' ),
+				'sync_result' => $sync_result ?? null,
+			]
+		);
+	}
+
+	/**
+	 * Handle WooCommerce sync to knowledge base request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_woocommerce_sync_to_kb( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		if ( ! AIAGENT_WooCommerce_Integration::is_woocommerce_active() ) {
+			return new WP_Error( 'woocommerce_not_active', __( 'WooCommerce is not active.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$result = AIAGENT_WooCommerce_Integration::sync_products_to_knowledge_base();
+
+		if ( $result['success'] ) {
+			return rest_ensure_response( $result );
+		} else {
+			return new WP_Error( 'sync_failed', $result['message'], [ 'status' => 400 ] );
+		}
 	}
 }

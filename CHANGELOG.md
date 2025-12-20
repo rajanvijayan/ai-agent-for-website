@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2024-12-20
+
+### Added
+- **WooCommerce Integration**: Full e-commerce integration with AI chat agent
+  - Automatic WooCommerce detection and configuration
+  - Product search through chat interface with natural language queries
+  - Display relevant products with images, prices, and descriptions
+  - Related products and smart suggestions based on user queries
+  - Product comparison feature to compare multiple products side-by-side
+  - Add to cart functionality directly from chat widget
+  - Configurable display options (show prices, show add to cart, etc.)
+- **Product Knowledge Base Sync**: Sync WooCommerce products to AI knowledge base
+  - Configurable sync options (descriptions, prices, categories, attributes, stock status)
+  - Manual "Sync Now" button for on-demand synchronization
+  - Auto-sync option to automatically update KB when products change
+  - Last sync timestamp and product count display
+- New REST API endpoints for WooCommerce product operations and KB sync
+- WooCommerce integration modal in admin settings with KB sync section
+- Product card and comparison UI components in chat widget
+
+### Changed
+- Enhanced chat widget JavaScript with product display capabilities
+- Extended admin settings with WooCommerce integration category
+- Added WooCommerce-specific CSS styles for product display
+- AI assistant can now answer questions about products from knowledge base
+
 ## [1.6.0] - 2024-12-20
 
 ### Added
@@ -191,7 +217,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sanitization of user inputs
 - Capability checks for admin operations
 
-[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.3.0...v1.4.0

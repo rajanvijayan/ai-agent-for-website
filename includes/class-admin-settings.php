@@ -366,6 +366,54 @@ class AIAGENT_Admin_Settings {
 			</div>
 		</div>
 
+		<!-- E-Commerce Section -->
+		<?php
+		$woo_active   = AIAGENT_WooCommerce_Integration::is_woocommerce_active();
+		$woo_enabled  = AIAGENT_WooCommerce_Integration::is_enabled();
+		$woo_settings = AIAGENT_WooCommerce_Integration::get_settings();
+		?>
+		<div class="aiagent-integration-section">
+			<div class="aiagent-section-header">
+				<span class="dashicons dashicons-cart"></span>
+				<h2><?php esc_html_e( 'E-Commerce', 'ai-agent-for-website' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Enable product search, comparison, and add-to-cart functionality in chat.', 'ai-agent-for-website' ); ?></p>
+			</div>
+
+			<div class="aiagent-integration-grid">
+				<!-- WooCommerce -->
+				<div class="aiagent-integration-box" data-integration="woocommerce">
+					<div class="aiagent-integration-box-header">
+						<div class="aiagent-integration-box-icon" style="background: linear-gradient(135deg, #96588a 0%, #7b4b7e 100%);">
+							<svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+								<path d="M2 3h20c.6 0 1 .4 1 1v1c0 .6-.4 1-1 1H2c-.6 0-1-.4-1-1V4c0-.6.4-1 1-1zm0 4h20l-1.5 11c-.1.6-.5 1-1 1H4.5c-.5 0-.9-.4-1-1L2 7zm4 3c0 .6.4 1 1 1s1-.4 1-1-.4-1-1-1-1 .4-1 1zm4 0c0 .6.4 1 1 1s1-.4 1-1-.4-1-1-1-1 .4-1 1zm4 0c0 .6.4 1 1 1s1-.4 1-1-.4-1-1-1-1 .4-1 1z"/>
+							</svg>
+						</div>
+						<div class="aiagent-integration-box-title">
+							<h3><?php esc_html_e( 'WooCommerce', 'ai-agent-for-website' ); ?> <span class="aiagent-badge aiagent-badge-beta"><?php esc_html_e( 'Beta', 'ai-agent-for-website' ); ?></span></h3>
+							<span class="aiagent-integration-box-desc"><?php esc_html_e( 'Product search & add to cart', 'ai-agent-for-website' ); ?></span>
+						</div>
+						<?php if ( ! $woo_active ) : ?>
+							<span class="aiagent-badge aiagent-badge-inactive"><?php esc_html_e( 'Not Installed', 'ai-agent-for-website' ); ?></span>
+						<?php elseif ( $woo_enabled ) : ?>
+							<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Enabled', 'ai-agent-for-website' ); ?></span>
+						<?php else : ?>
+							<span class="aiagent-badge aiagent-badge-available"><?php esc_html_e( 'Available', 'ai-agent-for-website' ); ?></span>
+						<?php endif; ?>
+					</div>
+					<div class="aiagent-integration-box-footer">
+						<?php if ( $woo_active ) : ?>
+							<button type="button" class="button aiagent-integration-configure-btn" data-modal="woocommerce-modal">
+								<span class="dashicons dashicons-admin-generic"></span>
+								<?php esc_html_e( 'Configure', 'ai-agent-for-website' ); ?>
+							</button>
+						<?php else : ?>
+							<span class="aiagent-not-installed-text"><?php esc_html_e( 'Install WooCommerce to enable', 'ai-agent-for-website' ); ?></span>
+						<?php endif; ?>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- CRM & Marketing Section -->
 		<div class="aiagent-integration-section">
 			<div class="aiagent-section-header">
@@ -445,7 +493,7 @@ class AIAGENT_Admin_Settings {
 		</div>
 
 		<!-- Integration Configuration Modals -->
-		<?php $this->render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected ); ?>
+		<?php $this->render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected, $woo_active, $woo_enabled, $woo_settings ); ?>
 		<?php
 	}
 
@@ -463,8 +511,11 @@ class AIAGENT_Admin_Settings {
 	 * @param array  $mailchimp_settings   Mailchimp settings.
 	 * @param bool   $mailchimp_enabled    Whether Mailchimp is enabled.
 	 * @param bool   $mailchimp_connected  Whether Mailchimp is connected.
+	 * @param bool   $woo_active           Whether WooCommerce is active.
+	 * @param bool   $woo_enabled          Whether WooCommerce integration is enabled.
+	 * @param array  $woo_settings         WooCommerce integration settings.
 	 */
-	private function render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected ) {
+	private function render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected, $woo_active = false, $woo_enabled = false, $woo_settings = [] ) {
 		?>
 		<!-- Groq Modal -->
 		<div id="groq-modal" class="aiagent-integration-modal" style="display: none;">
@@ -812,6 +863,200 @@ class AIAGENT_Admin_Settings {
 				</div>
 			</div>
 		</div>
+
+		<!-- WooCommerce Modal -->
+		<?php if ( $woo_active ) : ?>
+		<div id="woocommerce-modal" class="aiagent-integration-modal" style="display: none;">
+			<div class="aiagent-modal-overlay"></div>
+			<div class="aiagent-modal-content">
+				<div class="aiagent-modal-header">
+					<div class="aiagent-modal-header-icon" style="background: linear-gradient(135deg, #96588a 0%, #7b4b7e 100%);">
+						<svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+							<path d="M2 3h20c.6 0 1 .4 1 1v1c0 .6-.4 1-1 1H2c-.6 0-1-.4-1-1V4c0-.6.4-1 1-1zm0 4h20l-1.5 11c-.1.6-.5 1-1 1H4.5c-.5 0-.9-.4-1-1L2 7zm4 3c0 .6.4 1 1 1s1-.4 1-1-.4-1-1-1-1 .4-1 1zm4 0c0 .6.4 1 1 1s1-.4 1-1-.4-1-1-1-1 .4-1 1zm4 0c0 .6.4 1 1 1s1-.4 1-1-.4-1-1-1-1 .4-1 1z"/>
+						</svg>
+					</div>
+					<h3><?php esc_html_e( 'Configure WooCommerce Integration', 'ai-agent-for-website' ); ?> <span class="aiagent-badge aiagent-badge-beta"><?php esc_html_e( 'Beta', 'ai-agent-for-website' ); ?></span></h3>
+					<button type="button" class="aiagent-modal-close">&times;</button>
+				</div>
+				<div class="aiagent-modal-body">
+					<p class="description"><?php esc_html_e( 'Enable customers to search products, compare items, and add to cart directly from the chat widget.', 'ai-agent-for-website' ); ?></p>
+					<table class="form-table">
+						<tr>
+							<th scope="row"><label for="woo_enabled"><?php esc_html_e( 'Enable WooCommerce Integration', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label class="aiagent-switch">
+									<input type="checkbox" id="woo_enabled" name="woo_enabled" value="1" <?php checked( $woo_enabled ); ?>>
+									<span class="slider"></span>
+								</label>
+								<p class="description"><?php esc_html_e( 'Allow customers to search and browse products in chat', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="woo_show_prices"><?php esc_html_e( 'Show Prices', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label class="aiagent-switch">
+									<input type="checkbox" id="woo_show_prices" name="woo_show_prices" value="1" <?php checked( $woo_settings['show_prices'] ?? true ); ?>>
+									<span class="slider"></span>
+								</label>
+								<p class="description"><?php esc_html_e( 'Display product prices in search results', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="woo_show_add_to_cart"><?php esc_html_e( 'Show Add to Cart', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label class="aiagent-switch">
+									<input type="checkbox" id="woo_show_add_to_cart" name="woo_show_add_to_cart" value="1" <?php checked( $woo_settings['show_add_to_cart'] ?? true ); ?>>
+									<span class="slider"></span>
+								</label>
+								<p class="description"><?php esc_html_e( 'Allow customers to add products to cart from chat', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="woo_show_related_products"><?php esc_html_e( 'Show Related Products', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label class="aiagent-switch">
+									<input type="checkbox" id="woo_show_related_products" name="woo_show_related_products" value="1" <?php checked( $woo_settings['show_related_products'] ?? true ); ?>>
+									<span class="slider"></span>
+								</label>
+								<p class="description"><?php esc_html_e( 'Suggest related products based on search', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="woo_show_product_comparison"><?php esc_html_e( 'Enable Product Comparison', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label class="aiagent-switch">
+									<input type="checkbox" id="woo_show_product_comparison" name="woo_show_product_comparison" value="1" <?php checked( $woo_settings['show_product_comparison'] ?? true ); ?>>
+									<span class="slider"></span>
+								</label>
+								<p class="description"><?php esc_html_e( 'Allow customers to compare multiple products', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="woo_max_products_display"><?php esc_html_e( 'Max Products Display', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<input type="number" id="woo_max_products_display" name="woo_max_products_display" 
+									value="<?php echo esc_attr( $woo_settings['max_products_display'] ?? 6 ); ?>" 
+									min="1" max="20" style="width: 80px;">
+								<p class="description"><?php esc_html_e( 'Maximum number of products to show in search results', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="woo_include_out_of_stock"><?php esc_html_e( 'Include Out of Stock', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label class="aiagent-switch">
+									<input type="checkbox" id="woo_include_out_of_stock" name="woo_include_out_of_stock" value="1" <?php checked( $woo_settings['include_out_of_stock'] ?? false ); ?>>
+									<span class="slider"></span>
+								</label>
+								<p class="description"><?php esc_html_e( 'Show out of stock products in search results', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+					</table>
+
+					<!-- Knowledge Base Sync Section -->
+					<h4 style="margin: 20px 0 10px; border-top: 1px solid #ddd; padding-top: 20px;">
+						<span class="dashicons dashicons-database" style="margin-right: 5px;"></span>
+						<?php esc_html_e( 'Knowledge Base Sync', 'ai-agent-for-website' ); ?>
+					</h4>
+					<p class="description" style="margin-bottom: 15px;">
+						<?php esc_html_e( 'Sync your product catalog to the AI knowledge base so the assistant can answer questions about your products.', 'ai-agent-for-website' ); ?>
+					</p>
+
+					<table class="form-table">
+						<tr>
+							<th scope="row"><label for="woo_sync_to_kb"><?php esc_html_e( 'Sync Products to Knowledge Base', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label class="aiagent-switch">
+									<input type="checkbox" id="woo_sync_to_kb" name="woo_sync_to_kb" value="1" <?php checked( $woo_settings['sync_to_kb'] ?? true ); ?>>
+									<span class="slider"></span>
+								</label>
+								<p class="description"><?php esc_html_e( 'Add product information to AI knowledge base', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="woo_auto_sync"><?php esc_html_e( 'Auto-Sync on Product Changes', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label class="aiagent-switch">
+									<input type="checkbox" id="woo_auto_sync" name="woo_auto_sync" value="1" <?php checked( $woo_settings['auto_sync'] ?? false ); ?>>
+									<span class="slider"></span>
+								</label>
+								<p class="description"><?php esc_html_e( 'Automatically update knowledge base when products are added, updated, or deleted', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Include in Knowledge Base', 'ai-agent-for-website' ); ?></th>
+							<td>
+								<fieldset>
+									<label style="display: block; margin-bottom: 8px;">
+										<input type="checkbox" id="woo_kb_include_descriptions" name="woo_kb_include_descriptions" value="1" <?php checked( $woo_settings['kb_include_descriptions'] ?? true ); ?>>
+										<?php esc_html_e( 'Product descriptions', 'ai-agent-for-website' ); ?>
+									</label>
+									<label style="display: block; margin-bottom: 8px;">
+										<input type="checkbox" id="woo_kb_include_prices" name="woo_kb_include_prices" value="1" <?php checked( $woo_settings['kb_include_prices'] ?? true ); ?>>
+										<?php esc_html_e( 'Product prices', 'ai-agent-for-website' ); ?>
+									</label>
+									<label style="display: block; margin-bottom: 8px;">
+										<input type="checkbox" id="woo_kb_include_categories" name="woo_kb_include_categories" value="1" <?php checked( $woo_settings['kb_include_categories'] ?? true ); ?>>
+										<?php esc_html_e( 'Product categories', 'ai-agent-for-website' ); ?>
+									</label>
+									<label style="display: block; margin-bottom: 8px;">
+										<input type="checkbox" id="woo_kb_include_attributes" name="woo_kb_include_attributes" value="1" <?php checked( $woo_settings['kb_include_attributes'] ?? true ); ?>>
+										<?php esc_html_e( 'Product attributes (size, color, etc.)', 'ai-agent-for-website' ); ?>
+									</label>
+									<label style="display: block;">
+										<input type="checkbox" id="woo_kb_include_stock_status" name="woo_kb_include_stock_status" value="1" <?php checked( $woo_settings['kb_include_stock_status'] ?? true ); ?>>
+										<?php esc_html_e( 'Stock availability', 'ai-agent-for-website' ); ?>
+									</label>
+								</fieldset>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Manual Sync', 'ai-agent-for-website' ); ?></th>
+							<td>
+								<button type="button" class="button" id="woo_sync_now_btn">
+									<span class="dashicons dashicons-update" style="margin-top: 4px;"></span>
+									<?php esc_html_e( 'Sync Products Now', 'ai-agent-for-website' ); ?>
+								</button>
+								<span id="woo_sync_status" style="margin-left: 10px;"></span>
+								<?php
+								$last_sync    = AIAGENT_WooCommerce_Integration::get_last_sync_time();
+								$synced_count = AIAGENT_WooCommerce_Integration::get_synced_product_count();
+								if ( $last_sync ) :
+									?>
+									<p class="description" style="margin-top: 8px;">
+										<?php
+										printf(
+											/* translators: 1: product count, 2: last sync time */
+											esc_html__( 'Last synced: %1$d products on %2$s', 'ai-agent-for-website' ),
+											intval( $synced_count ),
+											esc_html( $last_sync )
+										);
+										?>
+									</p>
+								<?php else : ?>
+									<p class="description" style="margin-top: 8px;">
+										<?php esc_html_e( 'Products have not been synced yet.', 'ai-agent-for-website' ); ?>
+									</p>
+								<?php endif; ?>
+							</td>
+						</tr>
+					</table>
+
+					<?php if ( $woo_enabled ) : ?>
+						<div class="aiagent-integration-status aiagent-status-connected" style="margin-top: 15px;">
+							<span class="dashicons dashicons-yes-alt"></span>
+							<?php esc_html_e( 'WooCommerce integration is enabled. Customers can search and shop from chat.', 'ai-agent-for-website' ); ?>
+						</div>
+					<?php endif; ?>
+				</div>
+				<div class="aiagent-modal-footer">
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Cancel', 'ai-agent-for-website' ); ?></button>
+					<button type="button" class="button button-primary aiagent-modal-save" data-integration="woocommerce">
+						<?php esc_html_e( 'Save', 'ai-agent-for-website' ); ?>
+					</button>
+				</div>
+			</div>
+		</div>
+		<?php endif; ?>
 		<?php
 	}
 
