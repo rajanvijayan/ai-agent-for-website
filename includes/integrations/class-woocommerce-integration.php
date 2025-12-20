@@ -132,16 +132,17 @@ class AIAGENT_WooCommerce_Integration {
 
 		// Exclude out of stock if configured.
 		if ( empty( $settings['include_out_of_stock'] ) ) {
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required for stock filtering.
-			$stock_filter             = [
+			$stock_filter = [
 				[
 					'key'     => '_stock_status',
 					'value'   => 'instock',
 					'compare' => '=',
 				],
 			];
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required for stock filtering.
 			$exact_args['meta_query'] = $stock_filter;
-			$like_args['meta_query']  = $stock_filter;
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required for stock filtering.
+			$like_args['meta_query'] = $stock_filter;
 		}
 
 		// Run both queries.
@@ -329,6 +330,7 @@ class AIAGENT_WooCommerce_Integration {
 			'post_type'      => 'product',
 			'post_status'    => 'publish',
 			'posts_per_page' => $limit,
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Required for category filtering.
 			'tax_query'      => [
 				[
 					'taxonomy' => 'product_cat',
@@ -342,6 +344,7 @@ class AIAGENT_WooCommerce_Integration {
 
 		// Exclude out of stock if configured.
 		if ( empty( $settings['include_out_of_stock'] ) ) {
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required for stock filtering.
 			$args['meta_query'] = [
 				[
 					'key'     => '_stock_status',
@@ -876,10 +879,13 @@ class AIAGENT_WooCommerce_Integration {
 	 * AI-powered product recommendation based on user query.
 	 *
 	 * @param string $query User query.
-	 * @param array  $context Conversation context.
+	 * @param array  $context Conversation context (reserved for future use).
 	 * @return array Recommended products and suggestions.
 	 */
 	public function get_ai_recommendations( $query, $context = [] ) {
+		// Context parameter reserved for future AI context-aware recommendations.
+		unset( $context );
+
 		if ( ! self::is_enabled() ) {
 			return [];
 		}
@@ -1018,6 +1024,7 @@ class AIAGENT_WooCommerce_Integration {
 			'post_type'      => 'product',
 			'post_status'    => 'publish',
 			'posts_per_page' => $limit,
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Required for featured product filtering.
 			'tax_query'      => [
 				[
 					'taxonomy' => 'product_visibility',
@@ -1084,6 +1091,7 @@ class AIAGENT_WooCommerce_Integration {
 			'post_type'      => 'product',
 			'post_status'    => 'publish',
 			'posts_per_page' => $limit,
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for best-seller ordering.
 			'meta_key'       => 'total_sales',
 			'orderby'        => 'meta_value_num',
 			'order'          => 'DESC',

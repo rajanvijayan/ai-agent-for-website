@@ -2644,6 +2644,9 @@ Do not include any explanation, just the JSON array.',
 	 * @return WP_REST_Response|WP_Error Response object or error.
 	 */
 	public function handle_woocommerce_sync_to_kb( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
 		if ( ! AIAGENT_WooCommerce_Integration::is_woocommerce_active() ) {
 			return new WP_Error( 'woocommerce_not_active', __( 'WooCommerce is not active.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
 		}
