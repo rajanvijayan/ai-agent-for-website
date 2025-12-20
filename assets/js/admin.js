@@ -348,25 +348,14 @@
             hideModal();
         });
 
-        // Cancel/Close buttons
-        $('#aiagent-modal-cancel, .aiagent-modal-close, .aiagent-modal-overlay').on(
+        // Cancel/Close buttons for AI suggestion modal only
+        $(document).on(
             'click',
+            '#aiagent-modal-cancel, #aiagent-suggest-modal .aiagent-modal-close, #aiagent-suggest-modal .aiagent-modal-overlay',
             function () {
                 hideModal();
             }
         );
-
-        // Prevent modal content click from closing
-        $('.aiagent-modal-content').on('click', function (e) {
-            e.stopPropagation();
-        });
-
-        // ESC key to close modal
-        $(document).on('keydown', function (e) {
-            if (e.key === 'Escape' && $modal.is(':visible')) {
-                hideModal();
-            }
-        });
 
         // Character count for knowledge base text
         $('#kb_text').on('input', function () {
@@ -1055,6 +1044,135 @@
                     }, 1500);
                 });
             }
+        });
+
+        // ===============================
+        // Integration Configuration Modals
+        // ===============================
+
+        // Open integration modal
+        $(document).on('click', '.aiagent-integration-configure-btn', function (e) {
+            e.preventDefault();
+            const modalId = $(this).data('modal');
+            const $targetModal = $('#' + modalId);
+
+            if ($targetModal.length) {
+                $targetModal.fadeIn(200);
+                // Focus first input
+                setTimeout(function () {
+                    $targetModal.find('input:not([type="hidden"]):first').focus();
+                }, 200);
+            }
+        });
+
+        // Close integration modal - close button and cancel button
+        $(document).on(
+            'click',
+            '.aiagent-integration-modal .aiagent-modal-close, .aiagent-integration-modal .aiagent-modal-cancel',
+            function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).closest('.aiagent-integration-modal').fadeOut(200);
+            }
+        );
+
+        // Close integration modal - overlay click
+        $(document).on('click', '.aiagent-integration-modal .aiagent-modal-overlay', function () {
+            $(this).closest('.aiagent-integration-modal').fadeOut(200);
+        });
+
+        // ESC key to close integration modals
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape') {
+                $('.aiagent-integration-modal:visible').fadeOut(200);
+            }
+        });
+
+        // Save integration settings via AJAX
+        $(document).on('click', '.aiagent-modal-save', function (e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const integration = $btn.data('integration');
+            const $modal = $btn.closest('.aiagent-integration-modal');
+
+            // Disable button and show loading
+            const originalText = $btn.text();
+            $btn.prop('disabled', true).text('Saving...');
+
+            let endpoint = '';
+            let data = {};
+
+            // Collect data based on integration type
+            switch (integration) {
+                case 'groq':
+                    endpoint = 'settings/groq';
+                    data = {
+                        api_key: $modal.find('#api_key').val(),
+                    };
+                    break;
+
+                case 'gdrive':
+                    endpoint = 'settings/gdrive';
+                    data = {
+                        client_id: $modal.find('#gdrive_client_id').val(),
+                        client_secret: $modal.find('#gdrive_client_secret').val(),
+                    };
+                    break;
+
+                case 'confluence':
+                    endpoint = 'settings/confluence';
+                    data = {
+                        instance_url: $modal.find('#confluence_url').val(),
+                        email: $modal.find('#confluence_email').val(),
+                        api_token: $modal.find('#confluence_token').val(),
+                    };
+                    break;
+
+                case 'zapier':
+                    endpoint = 'settings/zapier';
+                    data = {
+                        enabled: $modal.find('#zapier_enabled').is(':checked'),
+                        webhook_url: $modal.find('#zapier_webhook_url').val(),
+                    };
+                    break;
+
+                case 'mailchimp':
+                    endpoint = 'settings/mailchimp';
+                    data = {
+                        enabled: $modal.find('#mailchimp_enabled').is(':checked'),
+                        api_key: $modal.find('#mailchimp_api_key').val(),
+                        list_id: $modal.find('#mailchimp_list_id').val(),
+                    };
+                    break;
+
+                default:
+                    $btn.prop('disabled', false).text(originalText);
+                    return;
+            }
+
+            $.ajax({
+                url: aiagentAdmin.restUrl + endpoint,
+                method: 'POST',
+                headers: {
+                    'X-WP-Nonce': aiagentAdmin.nonce,
+                    'Content-Type': 'application/json',
+                },
+                data: JSON.stringify(data),
+                success: function (response) {
+                    $btn.text('✓ Saved!');
+                    setTimeout(function () {
+                        $btn.prop('disabled', false).text(originalText);
+                        // Close modal and refresh page to show updated status
+                        $modal.fadeOut(200);
+                        location.reload();
+                    }, 1000);
+                },
+                error: function (xhr) {
+                    const error = xhr.responseJSON?.message || 'Failed to save settings';
+                    alert('Error: ' + error);
+                    $btn.prop('disabled', false).text(originalText);
+                },
+            });
         });
     });
 
