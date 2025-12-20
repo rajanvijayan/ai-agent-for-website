@@ -4,6 +4,31 @@
 
 .aiagent-admin {
     max-width: 1200px;
+    margin-right: 20px;
+}
+
+.aiagent-admin h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 23px;
+    font-weight: 400;
+    margin: 0;
+    padding: 20px 0 10px;
+    line-height: 1.3;
+}
+
+.aiagent-admin h1::before {
+    content: "";
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+    border-radius: 6px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/%3E%3C/svg%3E");
+    background-size: 18px;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .aiagent-card {
