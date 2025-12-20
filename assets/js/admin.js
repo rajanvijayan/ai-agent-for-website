@@ -178,20 +178,30 @@
             }
         })();
 
-        // Show Powered By toggle - update preview
+        // Show Powered By toggle - update preview and text field visibility
         $('#show_powered_by').on('change', function () {
             const $powered = $('#preview-powered');
+            const $textRow = $('.powered-by-text-row');
             if ($(this).is(':checked')) {
                 $powered.removeClass('hidden');
+                $textRow.slideDown(200);
             } else {
                 $powered.addClass('hidden');
+                $textRow.slideUp(200);
             }
+        });
+
+        // Powered By text - update preview in real-time
+        $('#powered_by_text').on('input', function () {
+            const text = $(this).val() || $(this).attr('placeholder');
+            $('#preview-powered').text(text);
         });
 
         // Initialize powered by state on page load
         (function () {
             if (!$('#show_powered_by').is(':checked')) {
                 $('#preview-powered').addClass('hidden');
+                $('.powered-by-text-row').hide();
             }
         })();
 
@@ -212,6 +222,37 @@
                 $requiredStar.show();
             } else {
                 $requiredStar.hide();
+            }
+        });
+
+        // Button Size - update preview
+        $('#widget_button_size').on('change', function () {
+            const size = $(this).val();
+            const $toggle = $('#preview-toggle');
+            $toggle.removeClass('size-small size-medium size-large').addClass('size-' + size);
+        });
+
+        // Open Animation - update preview
+        $('#widget_animation').on('change', function () {
+            const animation = $(this).val();
+            const $window = $('#preview-window');
+
+            // Remove current animation class
+            $window.removeClass('animation-slide animation-fade animation-scale animation-none');
+
+            // Add new animation class with a slight delay to trigger the animation
+            setTimeout(function () {
+                $window.addClass('animation-' + animation);
+            }, 50);
+        });
+
+        // Enable Sound - update preview
+        $('#widget_sound').on('change', function () {
+            const $indicator = $('#preview-sound-indicator');
+            if ($(this).is(':checked')) {
+                $indicator.fadeIn(200);
+            } else {
+                $indicator.fadeOut(200);
             }
         });
 

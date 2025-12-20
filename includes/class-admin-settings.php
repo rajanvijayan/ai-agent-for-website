@@ -160,21 +160,6 @@ class AIAGENT_Admin_Settings {
 			<table class="form-table">
 				<tr>
 					<th scope="row">
-						<label for="ai_name"><?php esc_html_e( 'AI Name', 'ai-agent-for-website' ); ?></label>
-					</th>
-					<td>
-						<input type="text" 
-								id="ai_name" 
-								name="ai_name" 
-								value="<?php echo esc_attr( $settings['ai_name'] ?? 'AI Assistant' ); ?>" 
-								class="regular-text">
-						<p class="description">
-							<?php esc_html_e( 'The name shown in the chat widget', 'ai-agent-for-website' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
 						<label for="welcome_message"><?php esc_html_e( 'Welcome Message', 'ai-agent-for-website' ); ?></label>
 					</th>
 					<td>
@@ -485,6 +470,147 @@ class AIAGENT_Admin_Settings {
 				</a>
 			</div>
 		</div>
+
+		<?php
+		$integration_settings = get_option( 'aiagent_integrations', [] );
+		$zapier_enabled       = ! empty( $integration_settings['zapier_enabled'] );
+		$zapier_url           = $integration_settings['zapier_webhook_url'] ?? '';
+		?>
+		<div class="aiagent-card aiagent-integration-card">
+			<h2>
+				<span class="dashicons dashicons-randomize" style="color: #ff4a00;"></span>
+				<?php esc_html_e( 'Zapier', 'ai-agent-for-website' ); ?>
+				<?php if ( $zapier_enabled && $zapier_url ) : ?>
+					<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
+				<?php endif; ?>
+			</h2>
+			<p class="description">
+				<?php esc_html_e( 'Connect with Zapier to sync leads with any CRM platform like Salesforce, HubSpot, Pipedrive, and more.', 'ai-agent-for-website' ); ?>
+			</p>
+
+			<table class="form-table aiagent-compact-table">
+				<tr>
+					<th scope="row">
+						<label for="zapier_enabled"><?php esc_html_e( 'Enable Zapier', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="zapier_enabled" 
+									name="zapier_enabled" 
+									value="1" 
+									<?php checked( $zapier_enabled ); ?>>
+							<span class="slider"></span>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="zapier_webhook_url"><?php esc_html_e( 'Webhook URL', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="url" 
+								id="zapier_webhook_url" 
+								name="zapier_webhook_url" 
+								value="<?php echo esc_attr( $zapier_url ); ?>" 
+								class="regular-text"
+								placeholder="https://hooks.zapier.com/hooks/catch/...">
+						<p class="description">
+							<?php esc_html_e( 'Create a Zap with "Webhooks by Zapier" trigger and paste the URL here.', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+
+			<?php if ( $zapier_enabled && $zapier_url ) : ?>
+				<div class="aiagent-integration-status aiagent-status-connected" style="margin-top: 15px;">
+					<span class="dashicons dashicons-yes-alt"></span>
+					<?php esc_html_e( 'Zapier webhook is configured. New leads will be synced automatically.', 'ai-agent-for-website' ); ?>
+				</div>
+			<?php endif; ?>
+		</div>
+
+		<?php
+		$mailchimp_settings  = AIAGENT_Mailchimp_Integration::get_settings();
+		$mailchimp_enabled   = ! empty( $mailchimp_settings['mailchimp_enabled'] );
+		$mailchimp_connected = AIAGENT_Mailchimp_Integration::is_enabled();
+		?>
+		<div class="aiagent-card aiagent-integration-card">
+			<h2>
+				<span class="dashicons dashicons-email-alt" style="color: #FFE01B;"></span>
+				<?php esc_html_e( 'Mailchimp', 'ai-agent-for-website' ); ?>
+				<?php if ( $mailchimp_connected ) : ?>
+					<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
+				<?php endif; ?>
+			</h2>
+			<p class="description">
+				<?php esc_html_e( 'Connect Mailchimp to automatically subscribe users who opt-in for newsletters.', 'ai-agent-for-website' ); ?>
+			</p>
+
+			<table class="form-table aiagent-compact-table">
+				<tr>
+					<th scope="row">
+						<label for="mailchimp_enabled"><?php esc_html_e( 'Enable Mailchimp', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="mailchimp_enabled" 
+									name="mailchimp_enabled" 
+									value="1" 
+									<?php checked( $mailchimp_enabled ); ?>>
+							<span class="slider"></span>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="mailchimp_api_key"><?php esc_html_e( 'API Key', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<div class="aiagent-api-key-wrapper">
+							<input type="password" 
+									id="mailchimp_api_key" 
+									name="mailchimp_api_key" 
+									value="<?php echo esc_attr( $mailchimp_settings['mailchimp_api_key'] ?? '' ); ?>" 
+									class="regular-text"
+									autocomplete="off"
+									placeholder="xxxxxxxx-us1">
+							<button type="button" class="button aiagent-toggle-password">
+								<span class="dashicons dashicons-visibility"></span>
+							</button>
+						</div>
+						<p class="description">
+							<?php esc_html_e( 'Get your API key from', 'ai-agent-for-website' ); ?>
+							<a href="https://admin.mailchimp.com/account/api/" target="_blank"><?php esc_html_e( 'Mailchimp Account Settings', 'ai-agent-for-website' ); ?></a>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="mailchimp_list_id"><?php esc_html_e( 'Audience/List ID', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="text" 
+								id="mailchimp_list_id" 
+								name="mailchimp_list_id" 
+								value="<?php echo esc_attr( $mailchimp_settings['mailchimp_list_id'] ?? '' ); ?>" 
+								class="regular-text"
+								placeholder="e.g., abc123def4">
+						<p class="description">
+							<?php esc_html_e( 'Find your Audience ID in Mailchimp under Audience → Settings → Audience name and defaults.', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+
+			<?php if ( $mailchimp_connected ) : ?>
+				<div class="aiagent-integration-status aiagent-status-connected" style="margin-top: 15px;">
+					<span class="dashicons dashicons-yes-alt"></span>
+					<?php esc_html_e( 'Mailchimp is configured. Users who opt-in will be subscribed automatically.', 'ai-agent-for-website' ); ?>
+				</div>
+			<?php endif; ?>
+		</div>
 		<?php
 	}
 
@@ -500,6 +626,21 @@ class AIAGENT_Admin_Settings {
 				<h2><?php esc_html_e( 'Widget Appearance', 'ai-agent-for-website' ); ?></h2>
 				
 				<table class="form-table">
+					<tr>
+						<th scope="row">
+							<label for="ai_name"><?php esc_html_e( 'AI Name', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<input type="text" 
+									id="ai_name" 
+									name="ai_name" 
+									value="<?php echo esc_attr( $settings['ai_name'] ?? 'AI Assistant' ); ?>" 
+									class="regular-text">
+							<p class="description">
+								<?php esc_html_e( 'The name shown in the chat widget header', 'ai-agent-for-website' ); ?>
+							</p>
+						</td>
+					</tr>
 					<tr>
 						<th scope="row">
 							<label for="avatar_url"><?php esc_html_e( 'Avatar Image', 'ai-agent-for-website' ); ?></label>
@@ -570,7 +711,80 @@ class AIAGENT_Admin_Settings {
 								<span class="slider"></span>
 							</label>
 							<p class="description">
-								<?php esc_html_e( 'Show site name at the bottom of chat widget', 'ai-agent-for-website' ); ?>
+								<?php esc_html_e( 'Show branding text at the bottom of chat widget', 'ai-agent-for-website' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr class="powered-by-text-row" <?php echo empty( $settings['show_powered_by'] ) ? 'style="display:none;"' : ''; ?>>
+						<th scope="row">
+							<label for="powered_by_text"><?php esc_html_e( 'Powered By Text', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<input type="text" 
+									id="powered_by_text" 
+									name="powered_by_text" 
+									class="regular-text"
+									value="<?php echo esc_attr( $settings['powered_by_text'] ?? get_bloginfo( 'name' ) ); ?>"
+									placeholder="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+							<p class="description">
+								<?php esc_html_e( 'Custom text to display at the bottom of the chat widget. Leave empty to use site name.', 'ai-agent-for-website' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="widget_button_size"><?php esc_html_e( 'Button Size', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<select id="widget_button_size" name="widget_button_size">
+								<option value="small" <?php selected( $settings['widget_button_size'] ?? '', 'small' ); ?>>
+									<?php esc_html_e( 'Small (48px)', 'ai-agent-for-website' ); ?>
+								</option>
+								<option value="medium" <?php selected( $settings['widget_button_size'] ?? 'medium', 'medium' ); ?>>
+									<?php esc_html_e( 'Medium (60px)', 'ai-agent-for-website' ); ?>
+								</option>
+								<option value="large" <?php selected( $settings['widget_button_size'] ?? '', 'large' ); ?>>
+									<?php esc_html_e( 'Large (72px)', 'ai-agent-for-website' ); ?>
+								</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="widget_animation"><?php esc_html_e( 'Open Animation', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<select id="widget_animation" name="widget_animation">
+								<option value="slide" <?php selected( $settings['widget_animation'] ?? 'slide', 'slide' ); ?>>
+									<?php esc_html_e( 'Slide Up', 'ai-agent-for-website' ); ?>
+								</option>
+								<option value="fade" <?php selected( $settings['widget_animation'] ?? '', 'fade' ); ?>>
+									<?php esc_html_e( 'Fade In', 'ai-agent-for-website' ); ?>
+								</option>
+								<option value="scale" <?php selected( $settings['widget_animation'] ?? '', 'scale' ); ?>>
+									<?php esc_html_e( 'Scale', 'ai-agent-for-website' ); ?>
+								</option>
+								<option value="none" <?php selected( $settings['widget_animation'] ?? '', 'none' ); ?>>
+									<?php esc_html_e( 'None', 'ai-agent-for-website' ); ?>
+								</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="widget_sound"><?php esc_html_e( 'Enable Sound', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<label class="aiagent-switch">
+								<input type="checkbox" 
+										id="widget_sound" 
+										name="widget_sound" 
+										value="1" 
+										<?php checked( ! empty( $settings['widget_sound'] ) ); ?>>
+								<span class="slider"></span>
+							</label>
+							<p class="description">
+								<?php esc_html_e( 'Play notification sound when receiving messages', 'ai-agent-for-website' ); ?>
 							</p>
 						</td>
 					</tr>
@@ -581,7 +795,7 @@ class AIAGENT_Admin_Settings {
 				<h2><?php esc_html_e( 'Live Preview', 'ai-agent-for-website' ); ?></h2>
 				<div class="aiagent-preview-container">
 					<div class="aiagent-preview-widget" id="aiagent-preview-widget" style="--aiagent-primary: <?php echo esc_attr( $settings['primary_color'] ?? '#0073aa' ); ?>;">
-						<div class="aiagent-preview-window">
+						<div class="aiagent-preview-window animation-<?php echo esc_attr( $settings['widget_animation'] ?? 'slide' ); ?>" id="preview-window">
 							<div class="aiagent-preview-header">
 								<div class="aiagent-preview-header-info">
 									<div class="aiagent-preview-avatar" id="preview-avatar">
@@ -628,13 +842,21 @@ class AIAGENT_Admin_Settings {
 								</button>
 							</div>
 							<div class="aiagent-preview-powered" id="preview-powered">
-								<?php echo esc_html( get_bloginfo( 'name' ) ); ?>
+								<?php
+								$powered_text = $settings['powered_by_text'] ?? '';
+								echo esc_html( ! empty( $powered_text ) ? $powered_text : get_bloginfo( 'name' ) );
+								?>
 							</div>
 						</div>
-						<button type="button" class="aiagent-preview-toggle">
+						<button type="button" class="aiagent-preview-toggle size-<?php echo esc_attr( $settings['widget_button_size'] ?? 'medium' ); ?>" id="preview-toggle">
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
 								<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
 							</svg>
+							<span class="sound-indicator" id="preview-sound-indicator" <?php echo empty( $settings['widget_sound'] ) ? 'style="display:none;"' : ''; ?>>
+								<svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10">
+									<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+								</svg>
+							</span>
 						</button>
 					</div>
 				</div>
@@ -709,6 +931,106 @@ class AIAGENT_Admin_Settings {
 						<p class="description">
 							<?php esc_html_e( 'Make the phone number field required (only if phone field is enabled)', 'ai-agent-for-website' ); ?>
 						</p>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="aiagent-card">
+			<h2><?php esc_html_e( 'Consent Options', 'ai-agent-for-website' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Configure consent checkboxes that appear before the user starts a conversation.', 'ai-agent-for-website' ); ?>
+			</p>
+			
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="consent_ai_enabled"><?php esc_html_e( 'AI Consent (Required)', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="consent_ai_enabled" 
+									name="consent_ai_enabled" 
+									value="1" 
+									<?php checked( $settings['consent_ai_enabled'] ?? true ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Require users to consent to AI interaction before chatting (mandatory)', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="consent_ai_text"><?php esc_html_e( 'AI Consent Text', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="text" 
+								id="consent_ai_text" 
+								name="consent_ai_text" 
+								value="<?php echo esc_attr( $settings['consent_ai_text'] ?? 'I agree to interact with AI assistance' ); ?>" 
+								class="large-text">
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="consent_newsletter"><?php esc_html_e( 'Newsletter Consent (Optional)', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="consent_newsletter" 
+									name="consent_newsletter" 
+									value="1" 
+									<?php checked( ! empty( $settings['consent_newsletter'] ) ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Show newsletter subscription checkbox (optional for users)', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="consent_newsletter_text"><?php esc_html_e( 'Newsletter Consent Text', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="text" 
+								id="consent_newsletter_text" 
+								name="consent_newsletter_text" 
+								value="<?php echo esc_attr( $settings['consent_newsletter_text'] ?? 'Subscribe to our newsletter' ); ?>" 
+								class="large-text">
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="consent_promotional"><?php esc_html_e( 'Promotional Consent (Optional)', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="consent_promotional" 
+									name="consent_promotional" 
+									value="1" 
+									<?php checked( ! empty( $settings['consent_promotional'] ) ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Show promotional consent checkbox (optional for users)', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="consent_promotional_text"><?php esc_html_e( 'Promotional Consent Text', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="text" 
+								id="consent_promotional_text" 
+								name="consent_promotional_text" 
+								value="<?php echo esc_attr( $settings['consent_promotional_text'] ?? 'Receive promotional updates' ); ?>" 
+								class="large-text">
 					</td>
 				</tr>
 			</table>
@@ -844,19 +1166,42 @@ class AIAGENT_Admin_Settings {
 				if ( isset( $_POST['api_key'] ) ) {
 					$settings['api_key'] = sanitize_text_field( wp_unslash( $_POST['api_key'] ) );
 				}
+
+				// Save Zapier settings.
+				$integration_settings                       = get_option( 'aiagent_integrations', [] );
+				$integration_settings['zapier_enabled']     = ! empty( $_POST['zapier_enabled'] );
+				$integration_settings['zapier_webhook_url'] = isset( $_POST['zapier_webhook_url'] ) ? esc_url_raw( wp_unslash( $_POST['zapier_webhook_url'] ) ) : '';
+
+				// Save Mailchimp settings.
+				$integration_settings['mailchimp_enabled'] = ! empty( $_POST['mailchimp_enabled'] );
+				$integration_settings['mailchimp_api_key'] = isset( $_POST['mailchimp_api_key'] ) ? sanitize_text_field( wp_unslash( $_POST['mailchimp_api_key'] ) ) : '';
+				$integration_settings['mailchimp_list_id'] = isset( $_POST['mailchimp_list_id'] ) ? sanitize_text_field( wp_unslash( $_POST['mailchimp_list_id'] ) ) : '';
+
+				update_option( 'aiagent_integrations', $integration_settings );
 				break;
 
 			case 'appearance':
-				$settings['widget_position'] = isset( $_POST['widget_position'] ) ? sanitize_text_field( wp_unslash( $_POST['widget_position'] ) ) : ( $settings['widget_position'] ?? 'bottom-right' );
-				$settings['primary_color']   = isset( $_POST['primary_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['primary_color'] ) ) : ( $settings['primary_color'] ?? '#0073aa' );
-				$settings['avatar_url']      = isset( $_POST['avatar_url'] ) ? esc_url_raw( wp_unslash( $_POST['avatar_url'] ) ) : ( $settings['avatar_url'] ?? '' );
-				$settings['show_powered_by'] = ! empty( $_POST['show_powered_by'] );
+				$settings['ai_name']            = isset( $_POST['ai_name'] ) ? sanitize_text_field( wp_unslash( $_POST['ai_name'] ) ) : ( $settings['ai_name'] ?? 'AI Assistant' );
+				$settings['widget_position']    = isset( $_POST['widget_position'] ) ? sanitize_text_field( wp_unslash( $_POST['widget_position'] ) ) : ( $settings['widget_position'] ?? 'bottom-right' );
+				$settings['primary_color']      = isset( $_POST['primary_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['primary_color'] ) ) : ( $settings['primary_color'] ?? '#0073aa' );
+				$settings['avatar_url']         = isset( $_POST['avatar_url'] ) ? esc_url_raw( wp_unslash( $_POST['avatar_url'] ) ) : ( $settings['avatar_url'] ?? '' );
+				$settings['show_powered_by']    = ! empty( $_POST['show_powered_by'] );
+				$settings['powered_by_text']    = isset( $_POST['powered_by_text'] ) ? sanitize_text_field( wp_unslash( $_POST['powered_by_text'] ) ) : ( $settings['powered_by_text'] ?? '' );
+				$settings['widget_button_size'] = isset( $_POST['widget_button_size'] ) ? sanitize_text_field( wp_unslash( $_POST['widget_button_size'] ) ) : ( $settings['widget_button_size'] ?? 'medium' );
+				$settings['widget_animation']   = isset( $_POST['widget_animation'] ) ? sanitize_text_field( wp_unslash( $_POST['widget_animation'] ) ) : ( $settings['widget_animation'] ?? 'slide' );
+				$settings['widget_sound']       = ! empty( $_POST['widget_sound'] );
 				break;
 
 			case 'user-info':
-				$settings['require_user_info'] = ! empty( $_POST['require_user_info'] );
-				$settings['require_phone']     = ! empty( $_POST['require_phone'] );
-				$settings['phone_required']    = ! empty( $_POST['phone_required'] );
+				$settings['require_user_info']        = ! empty( $_POST['require_user_info'] );
+				$settings['require_phone']            = ! empty( $_POST['require_phone'] );
+				$settings['phone_required']           = ! empty( $_POST['phone_required'] );
+				$settings['consent_ai_enabled']       = ! empty( $_POST['consent_ai_enabled'] );
+				$settings['consent_ai_text']          = isset( $_POST['consent_ai_text'] ) ? sanitize_text_field( wp_unslash( $_POST['consent_ai_text'] ) ) : ( $settings['consent_ai_text'] ?? 'I agree to interact with AI assistance' );
+				$settings['consent_newsletter']       = ! empty( $_POST['consent_newsletter'] );
+				$settings['consent_newsletter_text']  = isset( $_POST['consent_newsletter_text'] ) ? sanitize_text_field( wp_unslash( $_POST['consent_newsletter_text'] ) ) : ( $settings['consent_newsletter_text'] ?? 'Subscribe to our newsletter' );
+				$settings['consent_promotional']      = ! empty( $_POST['consent_promotional'] );
+				$settings['consent_promotional_text'] = isset( $_POST['consent_promotional_text'] ) ? sanitize_text_field( wp_unslash( $_POST['consent_promotional_text'] ) ) : ( $settings['consent_promotional_text'] ?? 'Receive promotional updates' );
 				break;
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing

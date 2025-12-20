@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2024-12-20
+
+### Added
+- **Leads Management**: Convert conversations into leads for CRM workflow
+- **Admin Review**: Review conversations and convert to leads or close them
+- **Zapier Integration**: Sync leads with external CRM platforms via webhook
+- **Mailchimp Integration**: Automatically subscribe users to newsletter lists
+- **Consent System**: Add consent checkboxes before starting conversation
+  - AI Consent (Mandatory)
+  - Newsletter Consent (Optional)
+  - Promotional Consent (Optional)
+- **Editable "Powered By" Text**: Customize the branding text at widget bottom
+- **Widget Customization**: New color options for bubble, header, text, and background
+- **Live Preview Enhancements**: Real-time preview for button size, animation, and sound settings
+
+### Changed
+- Moved "AI Name" field from General tab to Widget Appearance tab
+- Improved widget appearance settings organization
+- Enhanced admin preview with interactive animations
+
+### Database
+- Added `aiagent_leads` table for lead management
+- Added consent fields to user data storage
+
 ## [1.3.0] - 2024-12-19
 
 ### Added
@@ -128,7 +152,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sanitization of user inputs
 - Capability checks for admin operations
 
-[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.0.2...v1.1.0

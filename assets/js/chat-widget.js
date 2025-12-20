@@ -14,6 +14,8 @@
             this.userName = this.getUserName();
             this.isTyping = false;
             this.hasMessages = false;
+            this.soundEnabled = aiagentConfig.widgetSound || false;
+            this.audioContext = null;
 
             // Debug: Log current state
             console.log('AI Agent Config:', {
@@ -21,6 +23,7 @@
                 userId: this.userId,
                 userName: this.userName,
                 sessionId: this.sessionId,
+                soundEnabled: this.soundEnabled,
             });
 
             if (this.widget) {
@@ -28,6 +31,68 @@
             }
 
             this.inlineChats.forEach((chat) => this.initChat(chat));
+        }
+
+        // Play notification sound using Web Audio API
+        playNotificationSound() {
+            if (!this.soundEnabled) return;
+
+            try {
+                // Create audio context on first use (browsers require user interaction)
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+
+                const ctx = this.audioContext;
+
+                // Resume if suspended (browser autoplay policy)
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+
+                // Create a pleasant notification sound
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+
+                // Use a pleasant frequency (C5 note = 523.25 Hz)
+                oscillator.frequency.setValueAtTime(523.25, ctx.currentTime);
+                oscillator.type = 'sine';
+
+                // Envelope: quick fade in, hold, fade out
+                gainNode.gain.setValueAtTime(0, ctx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+                gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.1);
+                gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+
+                oscillator.start(ctx.currentTime);
+                oscillator.stop(ctx.currentTime + 0.3);
+
+                // Play second note for a pleasant chime
+                setTimeout(() => {
+                    const osc2 = ctx.createOscillator();
+                    const gain2 = ctx.createGain();
+
+                    osc2.connect(gain2);
+                    gain2.connect(ctx.destination);
+
+                    // E5 note = 659.25 Hz
+                    osc2.frequency.setValueAtTime(659.25, ctx.currentTime);
+                    osc2.type = 'sine';
+
+                    gain2.gain.setValueAtTime(0, ctx.currentTime);
+                    gain2.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.05);
+                    gain2.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.1);
+                    gain2.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.35);
+
+                    osc2.start(ctx.currentTime);
+                    osc2.stop(ctx.currentTime + 0.35);
+                }, 150);
+            } catch (e) {
+                console.log('Sound not available:', e);
+            }
         }
 
         initFloatingWidget() {
@@ -242,6 +307,9 @@
             const nameInput = form.querySelector('input[name="user_name"]');
             const emailInput = form.querySelector('input[name="user_email"]');
             const phoneInput = form.querySelector('input[name="user_phone"]');
+            const consentAiInput = form.querySelector('input[name="consent_ai"]');
+            const consentNewsletterInput = form.querySelector('input[name="consent_newsletter"]');
+            const consentPromotionalInput = form.querySelector('input[name="consent_promotional"]');
             const submitBtn = form.querySelector('button[type="submit"]');
 
             const name = nameInput.value.trim();
@@ -252,6 +320,9 @@
 
             // Check if phone is required
             if (phoneInput && phoneInput.required && !phone) return;
+
+            // Check if AI consent is required but not checked
+            if (consentAiInput && consentAiInput.required && !consentAiInput.checked) return;
 
             // Disable form
             submitBtn.disabled = true;
@@ -269,6 +340,13 @@
                         email: email,
                         phone: phone,
                         session_id: this.sessionId,
+                        consent_ai: consentAiInput ? consentAiInput.checked : false,
+                        consent_newsletter: consentNewsletterInput
+                            ? consentNewsletterInput.checked
+                            : false,
+                        consent_promotional: consentPromotionalInput
+                            ? consentPromotionalInput.checked
+                            : false,
                     }),
                 });
 
@@ -357,7 +435,7 @@
             this.isTyping = false;
         }
 
-        addMessage(container, text, type) {
+        addMessage(container, text, type, playSound = true) {
             const messageEl = document.createElement('div');
             messageEl.className = `aiagent-message aiagent-message-${type}`;
 
@@ -369,6 +447,11 @@
             }
 
             container.appendChild(messageEl);
+
+            // Play notification sound for AI messages (not welcome messages)
+            if (type === 'ai' && playSound && this.hasMessages) {
+                this.playNotificationSound();
+            }
 
             // Scroll to bottom
             container.scrollTop = container.scrollHeight;

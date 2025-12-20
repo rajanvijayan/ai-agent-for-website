@@ -112,17 +112,52 @@ class AIAGENT_Chat_Widget {
 										required 
 										placeholder="<?php esc_attr_e( 'Enter your email', 'ai-agent-for-website' ); ?>">
 							</div>
-							<?php if ( ! empty( $settings['require_phone'] ) ) : ?>
-							<div class="aiagent-form-group">
-								<label for="aiagent-user-phone"><?php esc_html_e( 'Phone Number', 'ai-agent-for-website' ); ?></label>
-								<input type="tel" 
-										id="aiagent-user-phone" 
-										name="user_phone" 
-										<?php echo ! empty( $settings['phone_required'] ) ? 'required' : ''; ?>
-										placeholder="<?php esc_attr_e( 'Enter your phone number', 'ai-agent-for-website' ); ?>">
+						<?php if ( ! empty( $settings['require_phone'] ) ) : ?>
+						<div class="aiagent-form-group">
+							<label for="aiagent-user-phone"><?php esc_html_e( 'Phone Number', 'ai-agent-for-website' ); ?></label>
+							<input type="tel" 
+									id="aiagent-user-phone" 
+									name="user_phone" 
+									<?php echo ! empty( $settings['phone_required'] ) ? 'required' : ''; ?>
+									placeholder="<?php esc_attr_e( 'Enter your phone number', 'ai-agent-for-website' ); ?>">
+						</div>
+						<?php endif; ?>
+
+						<!-- Consent Checkboxes -->
+						<div class="aiagent-consent-section">
+							<?php if ( ! empty( $settings['consent_ai_enabled'] ) ) : ?>
+							<div class="aiagent-consent-item">
+								<label class="aiagent-checkbox-label">
+									<input type="checkbox" 
+											name="consent_ai" 
+											required>
+									<span><?php echo esc_html( $settings['consent_ai_text'] ?? 'I agree to interact with AI assistance' ); ?> <span class="required">*</span></span>
+								</label>
 							</div>
 							<?php endif; ?>
-							<button type="submit" class="aiagent-start-chat-btn">
+
+							<?php if ( ! empty( $settings['consent_newsletter'] ) ) : ?>
+							<div class="aiagent-consent-item">
+								<label class="aiagent-checkbox-label">
+									<input type="checkbox" 
+											name="consent_newsletter">
+									<span><?php echo esc_html( $settings['consent_newsletter_text'] ?? 'Subscribe to our newsletter' ); ?></span>
+								</label>
+							</div>
+							<?php endif; ?>
+
+							<?php if ( ! empty( $settings['consent_promotional'] ) ) : ?>
+							<div class="aiagent-consent-item">
+								<label class="aiagent-checkbox-label">
+									<input type="checkbox" 
+											name="consent_promotional">
+									<span><?php echo esc_html( $settings['consent_promotional_text'] ?? 'Receive promotional updates' ); ?></span>
+								</label>
+							</div>
+							<?php endif; ?>
+						</div>
+
+						<button type="submit" class="aiagent-start-chat-btn">
 								<?php esc_html_e( 'Start Chat', 'ai-agent-for-website' ); ?>
 								<!-- Lucide: arrow-right -->
 								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
@@ -174,7 +209,10 @@ class AIAGENT_Chat_Widget {
 
 				<?php if ( $settings['show_powered_by'] ?? true ) : ?>
 				<div class="aiagent-powered">
-					<?php echo esc_html( get_bloginfo( 'name' ) ); ?>
+					<?php
+					$powered_by_text = $settings['powered_by_text'] ?? '';
+					echo esc_html( ! empty( $powered_by_text ) ? $powered_by_text : get_bloginfo( 'name' ) );
+					?>
 				</div>
 				<?php endif; ?>
 			</div>
@@ -260,18 +298,53 @@ class AIAGENT_Chat_Widget {
 									required 
 									placeholder="<?php esc_attr_e( 'Enter your email', 'ai-agent-for-website' ); ?>">
 						</div>
-						<?php if ( ! empty( $settings['require_phone'] ) ) : ?>
-						<div class="aiagent-form-group">
-							<label for="aiagent-user-phone-inline"><?php esc_html_e( 'Phone Number', 'ai-agent-for-website' ); ?></label>
-							<input type="tel" 
-									id="aiagent-user-phone-inline" 
-									name="user_phone" 
-									<?php echo ! empty( $settings['phone_required'] ) ? 'required' : ''; ?>
-									placeholder="<?php esc_attr_e( 'Enter your phone number', 'ai-agent-for-website' ); ?>">
+					<?php if ( ! empty( $settings['require_phone'] ) ) : ?>
+					<div class="aiagent-form-group">
+						<label for="aiagent-user-phone-inline"><?php esc_html_e( 'Phone Number', 'ai-agent-for-website' ); ?></label>
+						<input type="tel" 
+								id="aiagent-user-phone-inline" 
+								name="user_phone" 
+								<?php echo ! empty( $settings['phone_required'] ) ? 'required' : ''; ?>
+								placeholder="<?php esc_attr_e( 'Enter your phone number', 'ai-agent-for-website' ); ?>">
+					</div>
+					<?php endif; ?>
+
+					<!-- Consent Checkboxes -->
+					<div class="aiagent-consent-section">
+						<?php if ( ! empty( $settings['consent_ai_enabled'] ) ) : ?>
+						<div class="aiagent-consent-item">
+							<label class="aiagent-checkbox-label">
+								<input type="checkbox" 
+										name="consent_ai" 
+										required>
+								<span><?php echo esc_html( $settings['consent_ai_text'] ?? 'I agree to interact with AI assistance' ); ?> <span class="required">*</span></span>
+							</label>
 						</div>
 						<?php endif; ?>
-						<button type="submit" class="aiagent-start-chat-btn">
-							<?php esc_html_e( 'Start Chat', 'ai-agent-for-website' ); ?>
+
+						<?php if ( ! empty( $settings['consent_newsletter'] ) ) : ?>
+						<div class="aiagent-consent-item">
+							<label class="aiagent-checkbox-label">
+								<input type="checkbox" 
+										name="consent_newsletter">
+								<span><?php echo esc_html( $settings['consent_newsletter_text'] ?? 'Subscribe to our newsletter' ); ?></span>
+							</label>
+						</div>
+						<?php endif; ?>
+
+						<?php if ( ! empty( $settings['consent_promotional'] ) ) : ?>
+						<div class="aiagent-consent-item">
+							<label class="aiagent-checkbox-label">
+								<input type="checkbox" 
+										name="consent_promotional">
+								<span><?php echo esc_html( $settings['consent_promotional_text'] ?? 'Receive promotional updates' ); ?></span>
+							</label>
+						</div>
+						<?php endif; ?>
+					</div>
+
+					<button type="submit" class="aiagent-start-chat-btn">
+						<?php esc_html_e( 'Start Chat', 'ai-agent-for-website' ); ?>
 							<!-- Lucide: arrow-right -->
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
 								<line x1="5" y1="12" x2="19" y2="12"></line>
