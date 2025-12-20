@@ -123,7 +123,7 @@ class AI_Agent_For_Website {
 		$db_version = get_option( 'aiagent_db_version', '0' );
 
 		// Check if we need to create/update tables.
-		if ( version_compare( $db_version, '1.4.0', '<' ) ) {
+		if ( version_compare( $db_version, '1.4.1', '<' ) ) {
 			$this->create_tables();
 		}
 
@@ -331,7 +331,7 @@ class AI_Agent_For_Website {
 		dbDelta( $consents_sql );
 
 		// Store DB version.
-		update_option( 'aiagent_db_version', '1.4.0' );
+		update_option( 'aiagent_db_version', '1.4.1' );
 	}
 
 	/**
