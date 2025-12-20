@@ -518,6 +518,7 @@ class AI_Agent_For_Website {
 				'consentPromotionalText' => $settings['consent_promotional_text'] ?? 'Receive promotional updates',
 				'widgetButtonSize'       => $settings['widget_button_size'] ?? 'medium',
 				'widgetAnimation'        => $settings['widget_animation'] ?? 'slide',
+				'widgetSound'            => ! empty( $settings['widget_sound'] ),
 			]
 		);
 	}
