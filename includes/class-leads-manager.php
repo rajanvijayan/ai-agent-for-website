@@ -63,11 +63,11 @@ class AIAGENT_Leads_Manager {
 		$total = $wpdb->get_var( "SELECT COUNT(*) FROM $leads_table l $where" );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		return [
+		return array(
 			'leads' => $leads,
 			'total' => (int) $total,
 			'pages' => ceil( $total / $per_page ),
-		];
+		);
 	}
 
 	/**
@@ -149,7 +149,7 @@ class AIAGENT_Leads_Manager {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Intentional direct insert.
 		$result = $wpdb->insert(
 			$leads_table,
-			[
+			array(
 				'user_id'         => $conversation->user_id,
 				'conversation_id' => $conversation_id,
 				'status'          => self::STATUS_NEW,
@@ -158,7 +158,7 @@ class AIAGENT_Leads_Manager {
 				'notes'           => $notes,
 				'created_at'      => current_time( 'mysql' ),
 				'updated_at'      => current_time( 'mysql' ),
-			]
+			)
 		);
 
 		if ( ! $result ) {
@@ -186,16 +186,16 @@ class AIAGENT_Leads_Manager {
 
 		$leads_table = $wpdb->prefix . 'aiagent_leads';
 
-		$update_data = [
+		$update_data = array(
 			'status'     => $status,
 			'updated_at' => current_time( 'mysql' ),
-		];
+		);
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional direct update.
 		$result = $wpdb->update(
 			$leads_table,
 			$update_data,
-			[ 'id' => $lead_id ]
+			array( 'id' => $lead_id )
 		);
 
 		// Add note to the notes table if provided.
@@ -230,13 +230,13 @@ class AIAGENT_Leads_Manager {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Intentional direct insert.
 		$result = $wpdb->insert(
 			$notes_table,
-			[
+			array(
 				'lead_id'     => $lead_id,
 				'note'        => $note,
 				'author_id'   => $author_id,
 				'author_name' => $author_name,
 				'created_at'  => current_time( 'mysql' ),
-			]
+			)
 		);
 
 		if ( ! $result ) {
@@ -257,13 +257,14 @@ class AIAGENT_Leads_Manager {
 
 		$notes_table = $wpdb->prefix . 'aiagent_lead_notes';
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table lookup with safe table name.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		return $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM $notes_table WHERE lead_id = %d ORDER BY created_at DESC",
+				"SELECT * FROM {$notes_table} WHERE lead_id = %d ORDER BY created_at DESC",
 				$lead_id
 			)
 		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	}
 
 	/**
@@ -280,7 +281,7 @@ class AIAGENT_Leads_Manager {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional direct delete.
 		$result = $wpdb->delete(
 			$notes_table,
-			[ 'id' => $note_id ]
+			array( 'id' => $note_id )
 		);
 
 		return false !== $result;
@@ -300,7 +301,7 @@ class AIAGENT_Leads_Manager {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional direct delete.
 		$result = $wpdb->delete(
 			$leads_table,
-			[ 'id' => $lead_id ]
+			array( 'id' => $lead_id )
 		);
 
 		return false !== $result;
@@ -313,13 +314,13 @@ class AIAGENT_Leads_Manager {
 	 * @param string $event   Event type (lead_created, lead_updated).
 	 */
 	public function trigger_webhook( $lead_id, $event ) {
-		$settings = get_option( 'aiagent_integrations', [] );
+		$settings = get_option( 'aiagent_integrations', array() );
 
 		// Zapier webhook.
 		if ( ! empty( $settings['zapier_webhook_url'] ) ) {
 			$lead = $this->get_lead( $lead_id );
 			if ( $lead ) {
-				$payload = [
+				$payload = array(
 					'event'      => $event,
 					'lead_id'    => $lead->id,
 					'name'       => $lead->name,
@@ -331,17 +332,17 @@ class AIAGENT_Leads_Manager {
 					'notes'      => $lead->notes,
 					'created_at' => $lead->created_at,
 					'updated_at' => $lead->updated_at,
-				];
+				);
 
 				wp_remote_post(
 					$settings['zapier_webhook_url'],
-					[
+					array(
 						'body'        => wp_json_encode( $payload ),
-						'headers'     => [ 'Content-Type' => 'application/json' ],
+						'headers'     => array( 'Content-Type' => 'application/json' ),
 						'timeout'     => 15,
 						'blocking'    => false,
 						'data_format' => 'body',
-					]
+					)
 				);
 			}
 		}
@@ -377,12 +378,12 @@ class AIAGENT_Leads_Manager {
 		);
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		return [
+		return array(
 			'total'      => $total,
 			'new'        => $new,
 			'today'      => $today,
 			'this_month' => $this_month,
-		];
+		);
 	}
 
 	/**
@@ -439,20 +440,20 @@ class AIAGENT_Leads_Manager {
 				<div class="aiagent-filter-bar">
 					<span class="aiagent-filter-label"><?php esc_html_e( 'Filter by Status:', 'ai-agent-for-website' ); ?></span>
 					<?php
-					$statuses = [
+					$statuses = array(
 						''                     => __( 'All', 'ai-agent-for-website' ),
 						self::STATUS_NEW       => __( 'New', 'ai-agent-for-website' ),
 						self::STATUS_CONTACTED => __( 'Contacted', 'ai-agent-for-website' ),
 						self::STATUS_QUALIFIED => __( 'Qualified', 'ai-agent-for-website' ),
 						self::STATUS_CONVERTED => __( 'Converted', 'ai-agent-for-website' ),
 						self::STATUS_CLOSED    => __( 'Closed', 'ai-agent-for-website' ),
-					];
+					);
 					foreach ( $statuses as $key => $label ) :
 						$url   = add_query_arg(
-							[
+							array(
 								'status' => $key,
 								'paged'  => 1,
-							],
+							),
 							admin_url( 'admin.php?page=ai-agent-leads' )
 						);
 						$class = $status_filter === $key ? 'button-primary' : 'button';
@@ -543,13 +544,13 @@ class AIAGENT_Leads_Manager {
 			return;
 		}
 
-		$statuses = [
+		$statuses = array(
 			self::STATUS_NEW       => __( 'New', 'ai-agent-for-website' ),
 			self::STATUS_CONTACTED => __( 'Contacted', 'ai-agent-for-website' ),
 			self::STATUS_QUALIFIED => __( 'Qualified', 'ai-agent-for-website' ),
 			self::STATUS_CONVERTED => __( 'Converted', 'ai-agent-for-website' ),
 			self::STATUS_CLOSED    => __( 'Closed', 'ai-agent-for-website' ),
-		];
+		);
 		?>
 		<div class="wrap aiagent-admin">
 			<h1>
