@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2024-12-20
+
+### Added
+- **Notification Center**: Centralized admin notifications for new conversations, leads, and system events
+- **AI-Powered Validation**: Automatically validate conversations using AI to identify qualified leads
+- **Convert to Lead with AI**: Use AI analysis to convert promising conversations to leads with confidence scoring
+- **Close Conversations with AI**: Intelligently close invalid or not interested conversations using AI
+- **Activity Log Center**: Comprehensive activity logging for all system events
+- **Notification Settings**: Configure email notifications, recipients, and event triggers
+- **Log Settings**: Configure log categories, retention period, and external export
+- **Zapier Log Export**: Export activity logs to Zapier webhooks for external tracking
+- **Mailchimp Tagging**: Add activity-based tags to Mailchimp subscribers for user/lead events
+- **Unread Badge**: Admin menu shows unread notification count
+- **CSV Export**: Export activity logs to CSV for reporting
+- **Automatic Cleanup**: Configurable log retention with automatic cleanup
+
+### Database
+- Added `aiagent_notifications` table for storing admin notifications
+- Added `aiagent_activity_logs` table for comprehensive activity logging
+
+### Changed
+- Added new "Notifications & Logs" settings tab for centralized configuration
+- Enhanced Zapier integration with additional webhook events for logs
+
 ## [1.4.0] - 2024-12-20
 
 ### Added
@@ -152,7 +176,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sanitization of user inputs
 - Capability checks for admin operations
 
-[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.1.0...v1.2.0

@@ -369,6 +369,132 @@ class AIAGENT_REST_API {
 				],
 			]
 		);
+
+		// Notification endpoints (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/notifications',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_get_notifications' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/notifications/unread-count',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_unread_count' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/notifications/mark-read',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_mark_notification_read' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+				'args'                => [
+					'notification_id' => [
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/notifications/mark-all-read',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_mark_all_read' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		// AI validation endpoint for conversations (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/validate-conversation',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_validate_conversation' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+				'args'                => [
+					'conversation_id' => [
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/convert-to-lead',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_convert_to_lead' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+				'args'                => [
+					'conversation_id' => [
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/close-conversation',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_close_conversation' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+				'args'                => [
+					'conversation_id' => [
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+					'reason'          => [
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_textarea_field',
+					],
+				],
+			]
+		);
+
+		// Activity log endpoints (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/logs',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_get_logs' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/logs/stats',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_log_stats' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
 	}
 
 	/**
@@ -1422,5 +1548,193 @@ Do not include any explanation, just the JSON array.',
 		}
 
 		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle get notifications request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_get_notifications( $request ) {
+		$page   = $request->get_param( 'page' ) ?? 1;
+		$status = $request->get_param( 'status' ) ?? '';
+		$type   = $request->get_param( 'type' ) ?? '';
+
+		$notification_manager = new AIAGENT_Notification_Manager();
+		$data                 = $notification_manager->get_notifications( $page, 20, $status, $type );
+
+		return rest_ensure_response(
+			[
+				'success'       => true,
+				'notifications' => $data['notifications'],
+				'total'         => $data['total'],
+				'pages'         => $data['pages'],
+			]
+		);
+	}
+
+	/**
+	 * Handle unread notification count request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_unread_count( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$notification_manager = new AIAGENT_Notification_Manager();
+		$count                = $notification_manager->get_unread_count();
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'count'   => $count,
+			]
+		);
+	}
+
+	/**
+	 * Handle mark notification as read request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_mark_notification_read( $request ) {
+		$notification_id = $request->get_param( 'notification_id' );
+
+		$notification_manager = new AIAGENT_Notification_Manager();
+		$result               = $notification_manager->mark_as_read( $notification_id );
+
+		return rest_ensure_response(
+			[
+				'success' => $result,
+			]
+		);
+	}
+
+	/**
+	 * Handle mark all notifications as read request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_mark_all_read( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$notification_manager = new AIAGENT_Notification_Manager();
+		$result               = $notification_manager->mark_all_as_read();
+
+		return rest_ensure_response(
+			[
+				'success' => $result,
+			]
+		);
+	}
+
+	/**
+	 * Handle validate conversation with AI request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_validate_conversation( $request ) {
+		$conversation_id = $request->get_param( 'conversation_id' );
+
+		$notification_manager = new AIAGENT_Notification_Manager();
+		$result               = $notification_manager->validate_conversation_with_ai( $conversation_id );
+
+		if ( ! $result['success'] ) {
+			return new WP_Error( 'validation_failed', $result['error'], [ 'status' => 400 ] );
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle convert conversation to lead request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_convert_to_lead( $request ) {
+		$conversation_id = $request->get_param( 'conversation_id' );
+
+		$notification_manager = new AIAGENT_Notification_Manager();
+		$result               = $notification_manager->convert_conversation_to_lead( $conversation_id );
+
+		if ( ! $result['success'] ) {
+			return new WP_Error( 'conversion_failed', $result['error'], [ 'status' => 400 ] );
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle close conversation request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_close_conversation( $request ) {
+		$conversation_id = $request->get_param( 'conversation_id' );
+		$reason          = $request->get_param( 'reason' ) ?? '';
+
+		$notification_manager = new AIAGENT_Notification_Manager();
+		$result               = $notification_manager->close_conversation( $conversation_id, $reason );
+
+		if ( ! $result['success'] ) {
+			return new WP_Error( 'close_failed', $result['error'], [ 'status' => 400 ] );
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle get activity logs request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_get_logs( $request ) {
+		$page      = $request->get_param( 'page' ) ?? 1;
+		$category  = $request->get_param( 'category' ) ?? '';
+		$date_from = $request->get_param( 'date_from' ) ?? '';
+		$date_to   = $request->get_param( 'date_to' ) ?? '';
+
+		$log_manager = new AIAGENT_Activity_Log_Manager();
+		$data        = $log_manager->get_logs( $page, 50, $category, $date_from, $date_to );
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'logs'    => $data['logs'],
+				'total'   => $data['total'],
+				'pages'   => $data['pages'],
+			]
+		);
+	}
+
+	/**
+	 * Handle activity log statistics request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_log_stats( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$log_manager = new AIAGENT_Activity_Log_Manager();
+		$stats       = $log_manager->get_statistics();
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'stats'   => $stats,
+			]
+		);
 	}
 }

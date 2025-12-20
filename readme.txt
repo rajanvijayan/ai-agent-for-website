@@ -4,7 +4,7 @@ Tags: ai, chatbot, chat, groq, llama, assistant
 Requires at least: 5.8
 Tested up to: 6.4
 Requires PHP: 8.0
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,7 +71,22 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 
 == Changelog ==
 
-= 1.3.0 =
+= 1.5.0 =
+* NEW: Notification Center - centralized admin notifications for all events
+* NEW: AI-powered conversation validation - automatically identify qualified leads
+* NEW: Convert conversations to leads using AI validation
+* NEW: Close invalid/not interested conversations using AI analysis
+* NEW: Activity Log Center - track all system activities when enabled
+* NEW: Configurable notification settings (email, events, AI validation)
+* NEW: Configurable log settings (categories, retention, export)
+* NEW: Zapier integration for activity log export
+* NEW: Mailchimp tagging for activity-based subscriber updates
+* NEW: Admin notifications with unread count badge
+* NEW: Export activity logs to CSV
+* NEW: Automatic log cleanup based on retention period
+* DATABASE: Added notifications and activity_logs tables
+
+= 1.4.0 =
 * NEW: Leads management - convert conversations into leads
 * NEW: Admin review - review, close, or convert conversations to leads
 * NEW: Zapier integration - sync leads with external CRM platforms
@@ -128,6 +143,9 @@ Yes, use `[ai_agent_chat]` to embed the chat in any page or post.
 * Shortcode support
 
 == Upgrade Notice ==
+
+= 1.5.0 =
+Notification & Log Centers! AI-powered lead validation, centralized notifications, activity logging with Zapier/Mailchimp export.
 
 = 1.4.0 =
 Leads & CRM integration! Convert conversations to leads, Zapier/Mailchimp integration, consent system, and enhanced widget customization.
