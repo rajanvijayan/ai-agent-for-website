@@ -1076,18 +1076,20 @@
             }
         });
 
-        // Close integration modal
+        // Close integration modal - close button and cancel button
         $(document).on(
             'click',
-            '.aiagent-integration-modal .aiagent-modal-close, .aiagent-integration-modal .aiagent-modal-cancel, .aiagent-integration-modal .aiagent-modal-overlay',
-            function () {
+            '.aiagent-integration-modal .aiagent-modal-close, .aiagent-integration-modal .aiagent-modal-cancel',
+            function (e) {
+                e.preventDefault();
+                e.stopPropagation();
                 $(this).closest('.aiagent-integration-modal').fadeOut(200);
             }
         );
 
-        // Prevent modal content click from closing
-        $(document).on('click', '.aiagent-integration-modal .aiagent-modal-content', function (e) {
-            e.stopPropagation();
+        // Close integration modal - overlay click
+        $(document).on('click', '.aiagent-integration-modal .aiagent-modal-overlay', function () {
+            $(this).closest('.aiagent-integration-modal').fadeOut(200);
         });
 
         // ESC key to close integration modals

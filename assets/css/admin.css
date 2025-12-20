@@ -332,31 +332,30 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(2px);
+    background: rgba(0, 0, 0, 0.5);
 }
 
 .aiagent-integration-modal .aiagent-modal-content {
     position: relative;
     background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    width: 560px;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 520px;
     max-width: 90%;
     max-height: 85vh;
     display: flex;
     flex-direction: column;
-    animation: aiagent-modal-slide-in 0.25s ease-out;
+    animation: aiagent-modal-slide-in 0.2s ease-out;
 }
 
 @keyframes aiagent-modal-slide-in {
     from {
         opacity: 0;
-        transform: scale(0.95) translateY(-20px);
+        transform: translateY(-10px);
     }
     to {
         opacity: 1;
-        transform: scale(1) translateY(0);
+        transform: translateY(0);
     }
 }
 
@@ -364,26 +363,29 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 20px 24px;
-    border-bottom: 1px solid #e5e5e5;
-    background: #fafafa;
-    border-radius: 12px 12px 0 0;
+    padding: 16px 20px;
+    border-bottom: 1px solid #ddd;
 }
 
 .aiagent-modal-header-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
 
+.aiagent-modal-header-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
 .aiagent-integration-modal .aiagent-modal-header h3 {
     flex: 1;
     margin: 0;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: #1e1e1e;
 }
@@ -391,17 +393,17 @@
 .aiagent-integration-modal .aiagent-modal-close {
     background: none;
     border: none;
-    font-size: 28px;
+    font-size: 24px;
     color: #666;
     cursor: pointer;
     padding: 0;
     line-height: 1;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: 4px;
     transition: all 0.15s ease;
 }
 
@@ -411,15 +413,14 @@
 }
 
 .aiagent-integration-modal .aiagent-modal-body {
-    padding: 24px;
+    padding: 20px;
     overflow-y: auto;
     flex: 1;
 }
 
 .aiagent-integration-modal .aiagent-modal-body > .description:first-child {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 14px;
+    margin: 0 0 16px 0;
+    font-size: 13px;
     color: #50575e;
 }
 
@@ -428,38 +429,54 @@
 }
 
 .aiagent-integration-modal .form-table th {
-    width: 130px;
-    padding: 12px 15px 12px 0;
+    width: 110px;
+    padding: 10px 12px 10px 0;
     vertical-align: top;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .aiagent-integration-modal .form-table td {
-    padding: 12px 0;
+    padding: 10px 0;
+}
+
+.aiagent-integration-modal .form-table td .description {
+    margin-top: 6px;
+    font-size: 12px;
 }
 
 .aiagent-integration-modal .large-text {
     width: 100%;
 }
 
+.aiagent-integration-modal .aiagent-api-key-wrapper {
+    display: flex;
+    gap: 6px;
+}
+
+.aiagent-integration-modal .aiagent-api-key-wrapper input {
+    flex: 1;
+}
+
 .aiagent-modal-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #e5e5e5;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
 }
 
 .aiagent-modal-actions .button {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
 }
 
 .aiagent-modal-actions .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
     line-height: 1;
     margin-top: -1px;
 }
@@ -469,14 +486,20 @@
     align-items: center;
     justify-content: flex-end;
     gap: 10px;
-    padding: 16px 24px;
-    border-top: 1px solid #e5e5e5;
-    background: #fafafa;
-    border-radius: 0 0 12px 12px;
+    padding: 12px 20px;
+    border-top: 1px solid #ddd;
+    background: #f9f9f9;
+    border-radius: 0 0 8px 8px;
 }
 
 .aiagent-integration-modal .aiagent-integration-status {
-    margin-top: 20px;
+    margin-top: 16px;
+}
+
+.aiagent-integration-modal .aiagent-copy-text {
+    font-size: 11px;
+    padding: 4px 8px;
+    word-break: break-all;
 }
 
 /* Legacy Integration Cards */
