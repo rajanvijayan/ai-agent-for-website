@@ -277,7 +277,8 @@ class AIAGENT_File_Processor {
 		$content = [];
 		$headers = null;
 
-		while ( ( $row = fgetcsv( $handle ) ) !== false ) { // phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
+		// phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition -- Standard pattern for reading CSV rows.
+		while ( ( $row = fgetcsv( $handle ) ) !== false ) {
 			if ( null === $headers ) {
 				$headers = $row;
 				continue;
@@ -462,7 +463,7 @@ class AIAGENT_File_Processor {
 			return new WP_Error( 'zip_not_available', __( 'ZipArchive extension is required to process DOCX files.', 'ai-agent-for-website' ) );
 		}
 
-		$zip = new ZipArchive();
+		$zip    = new ZipArchive();
 		$result = $zip->open( $file_path );
 
 		if ( true !== $result ) {
@@ -495,7 +496,7 @@ class AIAGENT_File_Processor {
 	 */
 	private function extract_text_from_xml( $xml_content ) {
 		// Strip XML tags and decode entities.
-		$text = strip_tags( $xml_content );
+		$text = wp_strip_all_tags( $xml_content );
 		$text = html_entity_decode( $text, ENT_QUOTES | ENT_XML1, 'UTF-8' );
 
 		// Alternative: Parse properly with SimpleXML.
@@ -630,7 +631,7 @@ class AIAGENT_File_Processor {
 			ARRAY_A
 		);
 
-		return $files ?: [];
+		return $files ? $files : [];
 	}
 
 	/**
@@ -704,4 +705,3 @@ class AIAGENT_File_Processor {
 		return (bool) $deleted;
 	}
 }
-

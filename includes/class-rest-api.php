@@ -1081,13 +1081,13 @@ Do not include any explanation, just the JSON array.',
 
 		return rest_ensure_response(
 			[
-				'success'       => true,
-				'message'       => __( 'File uploaded and added to knowledge base.', 'ai-agent-for-website' ),
-				'file_id'       => $file_id,
-				'filename'      => $result['original_name'],
-				'file_type'     => $result['file_type'],
-				'char_count'    => $result['char_count'],
-				'kb_index'      => $kb_index,
+				'success'    => true,
+				'message'    => __( 'File uploaded and added to knowledge base.', 'ai-agent-for-website' ),
+				'file_id'    => $file_id,
+				'filename'   => $result['original_name'],
+				'file_type'  => $result['file_type'],
+				'char_count' => $result['char_count'],
+				'kb_index'   => $kb_index,
 			]
 		);
 	}
@@ -1145,10 +1145,12 @@ Do not include any explanation, just the JSON array.',
 			return $auth_url;
 		}
 
-		return rest_ensure_response( [
-			'success'  => true,
-			'auth_url' => $auth_url,
-		] );
+		return rest_ensure_response(
+			[
+				'success'  => true,
+				'auth_url' => $auth_url,
+			]
+		);
 	}
 
 	/**
@@ -1163,10 +1165,12 @@ Do not include any explanation, just the JSON array.',
 
 		AIAGENT_Google_Drive_Integration::delete_tokens();
 
-		return rest_ensure_response( [
-			'success' => true,
-			'message' => __( 'Disconnected from Google Drive.', 'ai-agent-for-website' ),
-		] );
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'message' => __( 'Disconnected from Google Drive.', 'ai-agent-for-website' ),
+			]
+		);
 	}
 
 	/**
@@ -1185,10 +1189,12 @@ Do not include any explanation, just the JSON array.',
 			return $files;
 		}
 
-		return rest_ensure_response( [
-			'success' => true,
-			'files'   => $files,
-		] );
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'files'   => $files,
+			]
+		);
 	}
 
 	/**
@@ -1242,10 +1248,12 @@ Do not include any explanation, just the JSON array.',
 
 		AIAGENT_Confluence_Integration::disconnect();
 
-		return rest_ensure_response( [
-			'success' => true,
-			'message' => __( 'Disconnected from Confluence.', 'ai-agent-for-website' ),
-		] );
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'message' => __( 'Disconnected from Confluence.', 'ai-agent-for-website' ),
+			]
+		);
 	}
 
 	/**
@@ -1265,10 +1273,12 @@ Do not include any explanation, just the JSON array.',
 			return $spaces;
 		}
 
-		return rest_ensure_response( [
-			'success' => true,
-			'spaces'  => $spaces,
-		] );
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'spaces'  => $spaces,
+			]
+		);
 	}
 
 	/**
@@ -1287,10 +1297,12 @@ Do not include any explanation, just the JSON array.',
 			return $pages;
 		}
 
-		return rest_ensure_response( [
-			'success' => true,
-			'pages'   => $pages,
-		] );
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'pages'   => $pages,
+			]
+		);
 	}
 
 	/**

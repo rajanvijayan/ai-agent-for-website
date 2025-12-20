@@ -31,11 +31,14 @@ class AIAGENT_Confluence_Integration {
 	 * @return array Settings array.
 	 */
 	public static function get_settings() {
-		return get_option( self::OPTION_NAME, [
-			'instance_url' => '',
-			'email'        => '',
-			'api_token'    => '',
-		] );
+		return get_option(
+			self::OPTION_NAME,
+			[
+				'instance_url' => '',
+				'email'        => '',
+				'api_token'    => '',
+			]
+		);
 	}
 
 	/**
@@ -55,8 +58,8 @@ class AIAGENT_Confluence_Integration {
 	 */
 	public static function is_connected() {
 		$settings = self::get_settings();
-		return ! empty( $settings['instance_url'] ) 
-			&& ! empty( $settings['email'] ) 
+		return ! empty( $settings['instance_url'] )
+			&& ! empty( $settings['email'] )
 			&& ! empty( $settings['api_token'] );
 	}
 
@@ -84,6 +87,7 @@ class AIAGENT_Confluence_Integration {
 	 */
 	private function get_auth_header() {
 		$settings = self::get_settings();
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Required for HTTP Basic Auth.
 		return 'Basic ' . base64_encode( $settings['email'] . ':' . $settings['api_token'] );
 	}
 
@@ -171,13 +175,16 @@ class AIAGENT_Confluence_Integration {
 		$base_url = rtrim( $settings['instance_url'], '/' );
 		$url      = $base_url . '/rest/api' . $endpoint;
 
-		$response = wp_remote_get( $url, [
-			'headers' => [
-				'Authorization' => $this->get_auth_header(),
-				'Accept'        => 'application/json',
-			],
-			'timeout' => 30,
-		] );
+		$response = wp_remote_get(
+			$url,
+			[
+				'headers' => [
+					'Authorization' => $this->get_auth_header(),
+					'Accept'        => 'application/json',
+				],
+				'timeout' => 30,
+			]
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -215,14 +222,17 @@ class AIAGENT_Confluence_Integration {
 		// Normalize response format.
 		$spaces = $response['results'] ?? [];
 
-		return array_map( function ( $space ) {
-			return [
-				'id'   => $space['id'] ?? '',
-				'key'  => $space['key'] ?? '',
-				'name' => $space['name'] ?? '',
-				'type' => $space['type'] ?? 'global',
-			];
-		}, $spaces );
+		return array_map(
+			function ( $space ) {
+				return [
+					'id'   => $space['id'] ?? '',
+					'key'  => $space['key'] ?? '',
+					'name' => $space['name'] ?? '',
+					'type' => $space['type'] ?? 'global',
+				];
+			},
+			$spaces
+		);
 	}
 
 	/**
@@ -247,14 +257,17 @@ class AIAGENT_Confluence_Integration {
 
 		$pages = $response['results'] ?? [];
 
-		return array_map( function ( $page ) {
-			return [
-				'id'       => $page['id'] ?? '',
-				'title'    => $page['title'] ?? '',
-				'status'   => $page['status'] ?? 'current',
-				'parentId' => $this->get_parent_id( $page ),
-			];
-		}, $pages );
+		return array_map(
+			function ( $page ) {
+				return [
+					'id'       => $page['id'] ?? '',
+					'title'    => $page['title'] ?? '',
+					'status'   => $page['status'] ?? 'current',
+					'parentId' => $this->get_parent_id( $page ),
+				];
+			},
+			$pages
+		);
 	}
 
 	/**
@@ -368,10 +381,12 @@ class AIAGENT_Confluence_Integration {
 		$cql = 'type=page AND text~"' . addslashes( $query ) . '"';
 
 		// Try V2 API.
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.urlencode_urlencode -- Required for API URL encoding.
 		$response = $this->api_request( '/search?cql=' . urlencode( $cql ) . '&limit=' . $limit );
 
 		if ( is_wp_error( $response ) ) {
 			// Fallback to V1 API.
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.urlencode_urlencode -- Required for API URL encoding.
 			$response = $this->api_request_v1( '/content/search?cql=' . urlencode( $cql ) . '&limit=' . $limit );
 		}
 
@@ -381,15 +396,18 @@ class AIAGENT_Confluence_Integration {
 
 		$results = $response['results'] ?? [];
 
-		return array_map( function ( $result ) {
-			$content = $result['content'] ?? $result;
-			return [
-				'id'       => $content['id'] ?? '',
-				'title'    => $content['title'] ?? '',
-				'spaceKey' => $content['space']['key'] ?? '',
-				'excerpt'  => $result['excerpt'] ?? '',
-			];
-		}, $results );
+		return array_map(
+			function ( $result ) {
+				$content = $result['content'] ?? $result;
+				return [
+					'id'       => $content['id'] ?? '',
+					'title'    => $content['title'] ?? '',
+					'spaceKey' => $content['space']['key'] ?? '',
+					'excerpt'  => $result['excerpt'] ?? '',
+				];
+			},
+			$results
+		);
 	}
 
 	/**
@@ -459,4 +477,3 @@ class AIAGENT_Confluence_Integration {
 		return delete_option( self::OPTION_NAME );
 	}
 }
-

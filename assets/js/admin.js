@@ -17,7 +17,9 @@
             const $result = $('#aiagent-test-result');
 
             $btn.prop('disabled', true);
-            $btn.find('.dashicons').removeClass('dashicons-yes-alt').addClass('dashicons-update spin');
+            $btn.find('.dashicons')
+                .removeClass('dashicons-yes-alt')
+                .addClass('dashicons-update spin');
             $result.removeClass('success error').text('');
 
             $.ajax({
@@ -35,7 +37,9 @@
                 },
                 complete: function () {
                     $btn.prop('disabled', false);
-                    $btn.find('.dashicons').removeClass('dashicons-update spin').addClass('dashicons-yes-alt');
+                    $btn.find('.dashicons')
+                        .removeClass('dashicons-update spin')
+                        .addClass('dashicons-yes-alt');
                 },
             });
         });
@@ -510,13 +514,19 @@
                 contentType: false,
                 xhr: function () {
                     const xhr = new window.XMLHttpRequest();
-                    xhr.upload.addEventListener('progress', function (evt) {
-                        if (evt.lengthComputable) {
-                            const percent = Math.round((evt.loaded / evt.total) * 100);
-                            $progressItem.find('.aiagent-progress-fill').css('width', percent + '%');
-                            $progressItem.find('.aiagent-file-status').text(percent + '%');
-                        }
-                    }, false);
+                    xhr.upload.addEventListener(
+                        'progress',
+                        function (evt) {
+                            if (evt.lengthComputable) {
+                                const percent = Math.round((evt.loaded / evt.total) * 100);
+                                $progressItem
+                                    .find('.aiagent-progress-fill')
+                                    .css('width', percent + '%');
+                                $progressItem.find('.aiagent-file-status').text(percent + '%');
+                            }
+                        },
+                        false
+                    );
                     return xhr;
                 },
                 success: function (response) {
@@ -524,7 +534,9 @@
                     $progressItem.find('.aiagent-file-status').text('✓').addClass('success');
 
                     // Add success result
-                    const charCount = response.char_count ? response.char_count.toLocaleString() : 'N/A';
+                    const charCount = response.char_count
+                        ? response.char_count.toLocaleString()
+                        : 'N/A';
                     $resultsContainer.append(`
                         <div class="aiagent-file-result">
                             <span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span>
@@ -536,7 +548,9 @@
                     setTimeout(function () {
                         $progressItem.fadeOut(300, function () {
                             $(this).remove();
-                            if ($progressContainer.find('.aiagent-file-progress-item').length === 0) {
+                            if (
+                                $progressContainer.find('.aiagent-file-progress-item').length === 0
+                            ) {
                                 $progressContainer.hide();
                             }
                         });
@@ -545,8 +559,8 @@
                 error: function (xhr) {
                     const error = xhr.responseJSON?.message || 'Upload failed';
                     $progressItem.find('.aiagent-progress-fill').css({
-                        'width': '100%',
-                        'background': '#dc3232'
+                        width: '100%',
+                        background: '#dc3232',
                     });
                     $progressItem.find('.aiagent-file-status').text('✗').addClass('error');
 
@@ -562,7 +576,9 @@
                     setTimeout(function () {
                         $progressItem.fadeOut(300, function () {
                             $(this).remove();
-                            if ($progressContainer.find('.aiagent-file-progress-item').length === 0) {
+                            if (
+                                $progressContainer.find('.aiagent-file-progress-item').length === 0
+                            ) {
                                 $progressContainer.hide();
                             }
                         });
@@ -617,68 +633,70 @@
         // ===============================
         // Google Drive Integration
         // ===============================
-        
+
         // Connect button handler
-        $('#aiagent-gdrive-connect').on('click', function() {
+        $('#aiagent-gdrive-connect').on('click', function () {
             const $btn = $(this);
             $btn.prop('disabled', true);
-            
+
             $.ajax({
                 url: aiagentAdmin.restUrl + 'gdrive/auth-url',
                 method: 'GET',
                 headers: {
-                    'X-WP-Nonce': aiagentAdmin.nonce
+                    'X-WP-Nonce': aiagentAdmin.nonce,
                 },
-                success: function(response) {
+                success: function (response) {
                     if (response.auth_url) {
                         window.location.href = response.auth_url;
                     }
                 },
-                error: function(xhr) {
+                error: function (xhr) {
                     alert(xhr.responseJSON?.message || 'Failed to get auth URL');
                     $btn.prop('disabled', false);
-                }
+                },
             });
         });
 
         // Disconnect button handler
-        $('.aiagent-gdrive-disconnect').on('click', function() {
+        $('.aiagent-gdrive-disconnect').on('click', function () {
             if (!confirm('Are you sure you want to disconnect from Google Drive?')) {
                 return;
             }
-            
+
             $.ajax({
                 url: aiagentAdmin.restUrl + 'gdrive/disconnect',
                 method: 'POST',
                 headers: {
-                    'X-WP-Nonce': aiagentAdmin.nonce
+                    'X-WP-Nonce': aiagentAdmin.nonce,
                 },
-                success: function() {
+                success: function () {
                     location.reload();
-                }
+                },
             });
         });
 
         // Load Google Drive files
         function loadGDriveFiles(query = '') {
             const $container = $('#aiagent-gdrive-files');
-            $container.html('<p class="aiagent-loading"><span class="spinner is-active"></span> Loading files...</p>');
-            
+            $container.html(
+                '<p class="aiagent-loading"><span class="spinner is-active"></span> Loading files...</p>'
+            );
+
             $.ajax({
                 url: aiagentAdmin.restUrl + 'gdrive/files',
                 method: 'GET',
                 headers: {
-                    'X-WP-Nonce': aiagentAdmin.nonce
+                    'X-WP-Nonce': aiagentAdmin.nonce,
                 },
                 data: { query: query },
-                success: function(response) {
+                success: function (response) {
                     if (!response.files || response.files.length === 0) {
                         $container.html('<p class="aiagent-empty">No files found</p>');
                         return;
                     }
-                    
+
                     let html = '<div class="aiagent-file-list">';
-                    response.files.forEach(function(file) {
+                    response.files.forEach(function (file) {
                         const icon = getFileIcon(file.mimeType);
                         html += `
                             <label class="aiagent-file-item">
@@ -689,13 +707,17 @@
                         `;
                     });
                     html += '</div>';
-                    
+
                     $container.html(html);
                     $('.aiagent-gdrive-actions').show();
                 },
-                error: function(xhr) {
-                    $container.html('<p class="aiagent-error">Error: ' + (xhr.responseJSON?.message || 'Failed to load files') + '</p>');
-                }
+                error: function (xhr) {
+                    $container.html(
+                        '<p class="aiagent-error">Error: ' +
+                            (xhr.responseJSON?.message || 'Failed to load files') +
+                            '</p>'
+                    );
+                },
             });
         }
 
@@ -720,68 +742,70 @@
 
         // Google Drive search
         let gdriveSearchTimeout;
-        $('#aiagent-gdrive-search').on('input', function() {
+        $('#aiagent-gdrive-search').on('input', function () {
             clearTimeout(gdriveSearchTimeout);
             const query = $(this).val();
-            gdriveSearchTimeout = setTimeout(function() {
+            gdriveSearchTimeout = setTimeout(function () {
                 loadGDriveFiles(query);
             }, 500);
         });
 
         // Google Drive refresh
-        $('#aiagent-gdrive-refresh').on('click', function() {
+        $('#aiagent-gdrive-refresh').on('click', function () {
             loadGDriveFiles($('#aiagent-gdrive-search').val());
         });
 
         // Enable/disable import button based on selection
-        $(document).on('change', '#aiagent-gdrive-files input[type="checkbox"]', function() {
+        $(document).on('change', '#aiagent-gdrive-files input[type="checkbox"]', function () {
             const hasSelection = $('#aiagent-gdrive-files input:checked').length > 0;
             $('#aiagent-gdrive-import-selected').prop('disabled', !hasSelection);
         });
 
         // Import selected Google Drive files
-        $('#aiagent-gdrive-import-selected').on('click', function() {
+        $('#aiagent-gdrive-import-selected').on('click', function () {
             const $btn = $(this);
             const $status = $btn.siblings('.aiagent-import-status');
             const $checked = $('#aiagent-gdrive-files input:checked');
-            
+
             if ($checked.length === 0) return;
-            
+
             $btn.prop('disabled', true);
             $status.text('Importing...');
-            
+
             let completed = 0;
             let errors = 0;
             const total = $checked.length;
-            
-            $checked.each(function() {
+
+            $checked.each(function () {
                 const fileId = $(this).val();
                 const fileName = $(this).data('name');
-                
+
                 $.ajax({
                     url: aiagentAdmin.restUrl + 'gdrive/import',
                     method: 'POST',
                     headers: {
                         'X-WP-Nonce': aiagentAdmin.nonce,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
                     data: JSON.stringify({ file_id: fileId }),
-                    success: function() {
+                    success: function () {
                         completed++;
                         updateImportStatus();
                     },
-                    error: function() {
+                    error: function () {
                         completed++;
                         errors++;
                         updateImportStatus();
-                    }
+                    },
                 });
             });
-            
+
             function updateImportStatus() {
-                $status.text(`Imported ${completed}/${total}` + (errors > 0 ? ` (${errors} failed)` : ''));
+                $status.text(
+                    `Imported ${completed}/${total}` + (errors > 0 ? ` (${errors} failed)` : '')
+                );
                 if (completed === total) {
-                    setTimeout(function() {
+                    setTimeout(function () {
                         location.reload();
                     }, 1000);
                 }
@@ -791,61 +815,63 @@
         // ===============================
         // Confluence Integration
         // ===============================
-        
+
         // Connect button handler
-        $('#aiagent-confluence-connect').on('click', function() {
+        $('#aiagent-confluence-connect').on('click', function () {
             const $btn = $(this);
             const $status = $btn.siblings('.aiagent-confluence-status');
-            
+
             // First save settings, then test connection
             $btn.prop('disabled', true);
             $status.text('Testing connection...');
-            
+
             // Submit form first to save settings
             $btn.closest('form').submit();
         });
 
         // Disconnect button handler
-        $('.aiagent-confluence-disconnect').on('click', function() {
+        $('.aiagent-confluence-disconnect').on('click', function () {
             if (!confirm('Are you sure you want to disconnect from Confluence?')) {
                 return;
             }
-            
+
             $.ajax({
                 url: aiagentAdmin.restUrl + 'confluence/disconnect',
                 method: 'POST',
                 headers: {
-                    'X-WP-Nonce': aiagentAdmin.nonce
+                    'X-WP-Nonce': aiagentAdmin.nonce,
                 },
-                success: function() {
+                success: function () {
                     location.reload();
-                }
+                },
             });
         });
 
         // Load Confluence spaces
         function loadConfluenceSpaces() {
             const $select = $('#aiagent-confluence-space');
-            
+
             $.ajax({
                 url: aiagentAdmin.restUrl + 'confluence/spaces',
                 method: 'GET',
                 headers: {
-                    'X-WP-Nonce': aiagentAdmin.nonce
+                    'X-WP-Nonce': aiagentAdmin.nonce,
                 },
-                success: function(response) {
+                success: function (response) {
                     $select.empty();
                     $select.append('<option value="">Select a space...</option>');
-                    
+
                     if (response.spaces && response.spaces.length > 0) {
-                        response.spaces.forEach(function(space) {
-                            $select.append(`<option value="${space.key}">${escapeHtml(space.name)}</option>`);
+                        response.spaces.forEach(function (space) {
+                            $select.append(
+                                `<option value="${space.key}">${escapeHtml(space.name)}</option>`
+                            );
                         });
                     }
                 },
-                error: function() {
+                error: function () {
                     $select.html('<option value="">Failed to load spaces</option>');
-                }
+                },
             });
         }
 
@@ -855,33 +881,39 @@
         }
 
         // Load pages when space selected
-        $('#aiagent-confluence-space').on('change', function() {
+        $('#aiagent-confluence-space').on('change', function () {
             const spaceKey = $(this).val();
             const $container = $('#aiagent-confluence-pages');
-            
+
             if (!spaceKey) {
                 $container.hide().html('<p class="aiagent-empty">Select a space to view pages</p>');
                 $('.aiagent-confluence-actions').hide();
                 return;
             }
-            
-            $container.show().html('<p class="aiagent-loading"><span class="spinner is-active"></span> Loading pages...</p>');
-            
+
+            $container
+                .show()
+                .html(
+                    '<p class="aiagent-loading"><span class="spinner is-active"></span> Loading pages...</p>'
+                );
+
             $.ajax({
                 url: aiagentAdmin.restUrl + 'confluence/pages',
                 method: 'GET',
                 headers: {
-                    'X-WP-Nonce': aiagentAdmin.nonce
+                    'X-WP-Nonce': aiagentAdmin.nonce,
                 },
                 data: { space_key: spaceKey },
-                success: function(response) {
+                success: function (response) {
                     if (!response.pages || response.pages.length === 0) {
-                        $container.html('<p class="aiagent-empty">No pages found in this space</p>');
+                        $container.html(
+                            '<p class="aiagent-empty">No pages found in this space</p>'
+                        );
                         return;
                     }
-                    
+
                     let html = '<div class="aiagent-file-list">';
-                    response.pages.forEach(function(page) {
+                    response.pages.forEach(function (page) {
                         html += `
                             <label class="aiagent-file-item">
                                 <input type="checkbox" value="${page.id}" data-name="${escapeHtml(page.title)}">
@@ -891,64 +923,70 @@
                         `;
                     });
                     html += '</div>';
-                    
+
                     $container.html(html);
                     $('.aiagent-confluence-actions').show();
                 },
-                error: function(xhr) {
-                    $container.html('<p class="aiagent-error">Error: ' + (xhr.responseJSON?.message || 'Failed to load pages') + '</p>');
-                }
+                error: function (xhr) {
+                    $container.html(
+                        '<p class="aiagent-error">Error: ' +
+                            (xhr.responseJSON?.message || 'Failed to load pages') +
+                            '</p>'
+                    );
+                },
             });
         });
 
         // Enable/disable import button based on selection
-        $(document).on('change', '#aiagent-confluence-pages input[type="checkbox"]', function() {
+        $(document).on('change', '#aiagent-confluence-pages input[type="checkbox"]', function () {
             const hasSelection = $('#aiagent-confluence-pages input:checked').length > 0;
             $('#aiagent-confluence-import-selected').prop('disabled', !hasSelection);
         });
 
         // Import selected Confluence pages
-        $('#aiagent-confluence-import-selected').on('click', function() {
+        $('#aiagent-confluence-import-selected').on('click', function () {
             const $btn = $(this);
             const $status = $btn.siblings('.aiagent-import-status');
             const $checked = $('#aiagent-confluence-pages input:checked');
-            
+
             if ($checked.length === 0) return;
-            
+
             $btn.prop('disabled', true);
             $status.text('Importing...');
-            
+
             let completed = 0;
             let errors = 0;
             const total = $checked.length;
-            
-            $checked.each(function() {
+
+            $checked.each(function () {
                 const pageId = $(this).val();
-                
+
                 $.ajax({
                     url: aiagentAdmin.restUrl + 'confluence/import',
                     method: 'POST',
                     headers: {
                         'X-WP-Nonce': aiagentAdmin.nonce,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
                     data: JSON.stringify({ page_id: pageId }),
-                    success: function() {
+                    success: function () {
                         completed++;
                         updateConfluenceStatus();
                     },
-                    error: function() {
+                    error: function () {
                         completed++;
                         errors++;
                         updateConfluenceStatus();
-                    }
+                    },
                 });
             });
-            
+
             function updateConfluenceStatus() {
-                $status.text(`Imported ${completed}/${total}` + (errors > 0 ? ` (${errors} failed)` : ''));
+                $status.text(
+                    `Imported ${completed}/${total}` + (errors > 0 ? ` (${errors} failed)` : '')
+                );
                 if (completed === total) {
-                    setTimeout(function() {
+                    setTimeout(function () {
                         location.reload();
                     }, 1000);
                 }
@@ -958,17 +996,21 @@
         // ===============================
         // Copy to Clipboard Helper
         // ===============================
-        $(document).on('click', '.aiagent-copy-btn', function() {
+        $(document).on('click', '.aiagent-copy-btn', function () {
             const $btn = $(this);
             const targetId = $btn.data('target');
             const $target = $('#' + targetId);
-            
+
             if ($target.length) {
                 const text = $target.text();
-                navigator.clipboard.writeText(text).then(function() {
-                    $btn.find('.dashicons').removeClass('dashicons-clipboard').addClass('dashicons-yes');
-                    setTimeout(function() {
-                        $btn.find('.dashicons').removeClass('dashicons-yes').addClass('dashicons-clipboard');
+                navigator.clipboard.writeText(text).then(function () {
+                    $btn.find('.dashicons')
+                        .removeClass('dashicons-clipboard')
+                        .addClass('dashicons-yes');
+                    setTimeout(function () {
+                        $btn.find('.dashicons')
+                            .removeClass('dashicons-yes')
+                            .addClass('dashicons-clipboard');
                     }, 1500);
                 });
             }

@@ -1488,11 +1488,11 @@
     .aiagent-api-key-wrapper input {
         max-width: none;
     }
-    
+
     .aiagent-gdrive-search {
         flex-direction: column;
     }
-    
+
     .aiagent-compact-table th {
         width: auto;
     }

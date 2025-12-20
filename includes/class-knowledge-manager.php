@@ -176,8 +176,8 @@ class AIAGENT_Knowledge_Manager {
 						</label>
 						<p class="description aiagent-file-upload-info">
 							<?php
-							/* translators: 1: List of supported file extensions, 2: Maximum file size in MB */
 							printf(
+								/* translators: 1: List of supported file extensions, 2: Maximum file size in MB */
 								esc_html__( 'Supported: %1$s (Max %2$s MB)', 'ai-agent-for-website' ),
 								esc_html( strtoupper( implode( ', ', $supported_extensions ) ) ),
 								esc_html( round( $max_file_size / 1048576, 1 ) )

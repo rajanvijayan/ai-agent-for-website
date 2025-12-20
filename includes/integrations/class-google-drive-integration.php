@@ -57,10 +57,13 @@ class AIAGENT_Google_Drive_Integration {
 	 * @return array Settings array.
 	 */
 	public static function get_settings() {
-		return get_option( self::OPTION_NAME, [
-			'client_id'     => '',
-			'client_secret' => '',
-		] );
+		return get_option(
+			self::OPTION_NAME,
+			[
+				'client_id'     => '',
+				'client_secret' => '',
+			]
+		);
 	}
 
 	/**
@@ -80,7 +83,7 @@ class AIAGENT_Google_Drive_Integration {
 	 */
 	public static function get_tokens() {
 		$tokens = get_option( self::TOKEN_OPTION );
-		return $tokens ?: null;
+		return $tokens ? $tokens : null;
 	}
 
 	/**
@@ -222,15 +225,18 @@ class AIAGENT_Google_Drive_Integration {
 	private function exchange_code( $code ) {
 		$settings = self::get_settings();
 
-		$response = wp_remote_post( self::OAUTH_TOKEN_URL, [
-			'body' => [
-				'client_id'     => $settings['client_id'],
-				'client_secret' => $settings['client_secret'],
-				'code'          => $code,
-				'grant_type'    => 'authorization_code',
-				'redirect_uri'  => $this->get_redirect_uri(),
-			],
-		] );
+		$response = wp_remote_post(
+			self::OAUTH_TOKEN_URL,
+			[
+				'body' => [
+					'client_id'     => $settings['client_id'],
+					'client_secret' => $settings['client_secret'],
+					'code'          => $code,
+					'grant_type'    => 'authorization_code',
+					'redirect_uri'  => $this->get_redirect_uri(),
+				],
+			]
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -258,14 +264,17 @@ class AIAGENT_Google_Drive_Integration {
 			return new WP_Error( 'no_refresh_token', __( 'No refresh token available. Please reconnect.', 'ai-agent-for-website' ) );
 		}
 
-		$response = wp_remote_post( self::OAUTH_TOKEN_URL, [
-			'body' => [
-				'client_id'     => $settings['client_id'],
-				'client_secret' => $settings['client_secret'],
-				'refresh_token' => $tokens['refresh_token'],
-				'grant_type'    => 'refresh_token',
-			],
-		] );
+		$response = wp_remote_post(
+			self::OAUTH_TOKEN_URL,
+			[
+				'body' => [
+					'client_id'     => $settings['client_id'],
+					'client_secret' => $settings['client_secret'],
+					'refresh_token' => $tokens['refresh_token'],
+					'grant_type'    => 'refresh_token',
+				],
+			]
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -324,11 +333,14 @@ class AIAGENT_Google_Drive_Integration {
 	 * @return array|WP_Error User info or error.
 	 */
 	private function fetch_user_info( $access_token ) {
-		$response = wp_remote_get( self::USERINFO_URL, [
-			'headers' => [
-				'Authorization' => 'Bearer ' . $access_token,
-			],
-		] );
+		$response = wp_remote_get(
+			self::USERINFO_URL,
+			[
+				'headers' => [
+					'Authorization' => 'Bearer ' . $access_token,
+				],
+			]
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -400,11 +412,14 @@ class AIAGENT_Google_Drive_Integration {
 
 		$url = self::DRIVE_API_URL . '/files?' . http_build_query( $params );
 
-		$response = wp_remote_get( $url, [
-			'headers' => [
-				'Authorization' => 'Bearer ' . $access_token,
-			],
-		] );
+		$response = wp_remote_get(
+			$url,
+			[
+				'headers' => [
+					'Authorization' => 'Bearer ' . $access_token,
+				],
+			]
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -435,11 +450,14 @@ class AIAGENT_Google_Drive_Integration {
 		// First get file metadata.
 		$metadata_url = self::DRIVE_API_URL . '/files/' . $file_id . '?fields=id,name,mimeType,size';
 
-		$response = wp_remote_get( $metadata_url, [
-			'headers' => [
-				'Authorization' => 'Bearer ' . $access_token,
-			],
-		] );
+		$response = wp_remote_get(
+			$metadata_url,
+			[
+				'headers' => [
+					'Authorization' => 'Bearer ' . $access_token,
+				],
+			]
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -462,14 +480,18 @@ class AIAGENT_Google_Drive_Integration {
 				$export_mime = 'text/csv';
 			}
 
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.urlencode_urlencode -- Required for API URL encoding.
 			$export_url = self::DRIVE_API_URL . '/files/' . $file_id . '/export?mimeType=' . urlencode( $export_mime );
 
-			$response = wp_remote_get( $export_url, [
-				'headers' => [
-					'Authorization' => 'Bearer ' . $access_token,
-				],
-				'timeout' => 30,
-			] );
+			$response = wp_remote_get(
+				$export_url,
+				[
+					'headers' => [
+						'Authorization' => 'Bearer ' . $access_token,
+					],
+					'timeout' => 30,
+				]
+			);
 
 			if ( is_wp_error( $response ) ) {
 				return $response;
@@ -480,12 +502,15 @@ class AIAGENT_Google_Drive_Integration {
 			// Regular file - download.
 			$download_url = self::DRIVE_API_URL . '/files/' . $file_id . '?alt=media';
 
-			$response = wp_remote_get( $download_url, [
-				'headers' => [
-					'Authorization' => 'Bearer ' . $access_token,
-				],
-				'timeout' => 30,
-			] );
+			$response = wp_remote_get(
+				$download_url,
+				[
+					'headers' => [
+						'Authorization' => 'Bearer ' . $access_token,
+					],
+					'timeout' => 30,
+				]
+			);
 
 			if ( is_wp_error( $response ) ) {
 				return $response;
@@ -525,12 +550,14 @@ class AIAGENT_Google_Drive_Integration {
 		file_put_contents( $temp_file, $content ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 
 		$file_processor = new AIAGENT_File_Processor();
-		$result         = $file_processor->process_file( [
-			'name'     => 'document.pdf',
-			'tmp_name' => $temp_file,
-			'size'     => strlen( $content ),
-			'error'    => UPLOAD_ERR_OK,
-		] );
+		$result         = $file_processor->process_file(
+			[
+				'name'     => 'document.pdf',
+				'tmp_name' => $temp_file,
+				'size'     => strlen( $content ),
+				'error'    => UPLOAD_ERR_OK,
+			]
+		);
 
 		unlink( $temp_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
 
@@ -549,12 +576,14 @@ class AIAGENT_Google_Drive_Integration {
 		file_put_contents( $temp_file, $content ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 
 		$file_processor = new AIAGENT_File_Processor();
-		$result         = $file_processor->process_file( [
-			'name'     => 'document.docx',
-			'tmp_name' => $temp_file,
-			'size'     => strlen( $content ),
-			'error'    => UPLOAD_ERR_OK,
-		] );
+		$result         = $file_processor->process_file(
+			[
+				'name'     => 'document.docx',
+				'tmp_name' => $temp_file,
+				'size'     => strlen( $content ),
+				'error'    => UPLOAD_ERR_OK,
+			]
+		);
 
 		unlink( $temp_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
 
@@ -596,4 +625,3 @@ class AIAGENT_Google_Drive_Integration {
 		];
 	}
 }
-
