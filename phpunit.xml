@@ -21,11 +21,11 @@
     <coverage processUncoveredFiles="true">
         <include>
             <directory suffix=".php">./includes</directory>
-            <file>./ai-agent-for-website.php</file>
         </include>
         <exclude>
             <directory>./vendor</directory>
             <directory>./tests</directory>
+            <file>./ai-agent-for-website.php</file>
         </exclude>
         <report>
             <html outputDirectory="coverage-report"/>
