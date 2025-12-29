@@ -1980,10 +1980,114 @@ class AIAGENT_Admin_Settings {
 	 * Render the Live Agent tab content.
 	 */
 	private function render_live_agent_tab() {
-		$settings       = AIAGENT_Live_Agent_Manager::get_settings();
+		$settings        = AIAGENT_Live_Agent_Manager::get_settings();
 		$available_roles = AIAGENT_Live_Agent_Manager::get_available_roles();
-		$online_agents  = AIAGENT_Live_Agent_Manager::get_online_agents();
+		$online_agents   = AIAGENT_Live_Agent_Manager::get_online_agents();
+		$current_user_id = get_current_user_id();
+		$my_status       = AIAGENT_Live_Agent_Manager::get_agent_status( $current_user_id );
+		$can_be_agent    = AIAGENT_Live_Agent_Manager::can_user_be_agent( $current_user_id );
 		?>
+
+		<!-- Agent Status Card - For Testing -->
+		<?php if ( $can_be_agent ) : ?>
+		<div class="aiagent-card" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac;">
+			<h2>
+				<span class="dashicons dashicons-admin-users" style="color: #16a34a;"></span>
+				<?php esc_html_e( 'Your Agent Status', 'ai-agent-for-website' ); ?>
+			</h2>
+			<p class="description">
+				<?php esc_html_e( 'Set your availability to receive live chat requests. Visitors will only see the "Connect to Live Agent" option when at least one agent is online.', 'ai-agent-for-website' ); ?>
+			</p>
+			
+			<div style="display: flex; align-items: center; gap: 20px; margin-top: 15px;">
+				<div style="display: flex; align-items: center; gap: 10px;">
+					<span style="font-weight: 500;"><?php esc_html_e( 'Current Status:', 'ai-agent-for-website' ); ?></span>
+					<span id="agent-status-badge" style="
+						display: inline-flex;
+						align-items: center;
+						gap: 6px;
+						padding: 6px 12px;
+						border-radius: 20px;
+						font-size: 13px;
+						font-weight: 500;
+						<?php echo 'offline' !== $my_status ? 'background: #dcfce7; color: #16a34a;' : 'background: #f3f4f6; color: #6b7280;'; ?>
+					">
+						<span style="
+							width: 8px;
+							height: 8px;
+							border-radius: 50%;
+							<?php echo 'offline' !== $my_status ? 'background: #16a34a;' : 'background: #9ca3af;'; ?>
+						"></span>
+						<?php echo 'offline' !== $my_status ? esc_html__( 'Online', 'ai-agent-for-website' ) : esc_html__( 'Offline', 'ai-agent-for-website' ); ?>
+					</span>
+				</div>
+				
+				<button type="button" id="toggle-agent-status" class="button <?php echo 'offline' !== $my_status ? 'button-secondary' : 'button-primary'; ?>" style="min-width: 120px;">
+					<?php echo 'offline' !== $my_status ? esc_html__( 'Go Offline', 'ai-agent-for-website' ) : esc_html__( 'Go Online', 'ai-agent-for-website' ); ?>
+				</button>
+			</div>
+			
+			<script>
+			jQuery(document).ready(function($) {
+				$('#toggle-agent-status').on('click', function() {
+					var $btn = $(this);
+					var $badge = $('#agent-status-badge');
+					var isOnline = $badge.text().trim() === '<?php echo esc_js( __( 'Online', 'ai-agent-for-website' ) ); ?>';
+					var newStatus = isOnline ? 'offline' : 'available';
+					
+					$btn.prop('disabled', true).text('<?php echo esc_js( __( 'Updating...', 'ai-agent-for-website' ) ); ?>');
+					
+					$.ajax({
+						url: '<?php echo esc_url( rest_url( 'aiagent/v1/live-agent/set-status' ) ); ?>',
+						method: 'POST',
+						beforeSend: function(xhr) {
+							xhr.setRequestHeader('X-WP-Nonce', '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>');
+						},
+						data: JSON.stringify({ status: newStatus }),
+						contentType: 'application/json',
+						success: function(response) {
+							if (response.success) {
+								if (newStatus === 'available') {
+									$badge.css({ background: '#dcfce7', color: '#16a34a' })
+										.html('<span style="width:8px;height:8px;border-radius:50%;background:#16a34a;"></span> <?php echo esc_js( __( 'Online', 'ai-agent-for-website' ) ); ?>');
+									$btn.removeClass('button-primary').addClass('button-secondary').text('<?php echo esc_js( __( 'Go Offline', 'ai-agent-for-website' ) ); ?>');
+								} else {
+									$badge.css({ background: '#f3f4f6', color: '#6b7280' })
+										.html('<span style="width:8px;height:8px;border-radius:50%;background:#9ca3af;"></span> <?php echo esc_js( __( 'Offline', 'ai-agent-for-website' ) ); ?>');
+									$btn.removeClass('button-secondary').addClass('button-primary').text('<?php echo esc_js( __( 'Go Online', 'ai-agent-for-website' ) ); ?>');
+								}
+							}
+							$btn.prop('disabled', false);
+						},
+						error: function() {
+							alert('<?php echo esc_js( __( 'Failed to update status. Please try again.', 'ai-agent-for-website' ) ); ?>');
+							$btn.prop('disabled', false).text(isOnline ? '<?php echo esc_js( __( 'Go Offline', 'ai-agent-for-website' ) ); ?>' : '<?php echo esc_js( __( 'Go Online', 'ai-agent-for-website' ) ); ?>');
+						}
+					});
+				});
+			});
+			</script>
+		</div>
+		<?php endif; ?>
+
+		<?php if ( ! empty( $online_agents ) ) : ?>
+		<div class="aiagent-card" style="background: #eff6ff; border: 1px solid #93c5fd;">
+			<h3 style="margin-top: 0;">
+				<span class="dashicons dashicons-yes-alt" style="color: #2563eb;"></span>
+				<?php esc_html_e( 'Currently Online Agents', 'ai-agent-for-website' ); ?>
+			</h3>
+			<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+				<?php foreach ( $online_agents as $agent ) : ?>
+				<div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #dbeafe;">
+					<img src="<?php echo esc_url( $agent['avatar'] ); ?>" alt="" style="width: 32px; height: 32px; border-radius: 50%;">
+					<span style="font-weight: 500;"><?php echo esc_html( $agent['name'] ); ?></span>
+					<span style="font-size: 12px; color: #6b7280;">(<?php echo esc_html( $agent['active_chats'] ); ?> active chats)</span>
+				</div>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<?php endif; ?>
+
 		<div class="aiagent-card">
 			<h2>
 				<span class="dashicons dashicons-groups" style="color: #27ae60;"></span>
