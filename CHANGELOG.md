@@ -31,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `api-keys.php` for storing API keys securely
   - `api-keys.local.php.example` template for local development
   - Both files added to `.gitignore` for security
+- **CI/CD Pipeline**: Added GitHub Actions workflow for automated testing
+  - PHPCS check for WordPress Coding Standards
+  - PHPUnit tests across PHP 8.0, 8.1, 8.2, 8.3
+  - Test coverage verification (minimum 100 tests required)
+  - PHP 8.0+ compatibility check
+  - Security vulnerability scanning
+  - Automatic PR test coverage validation
 
 ## [1.9.0] - 2024-12-30
 
