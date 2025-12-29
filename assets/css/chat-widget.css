@@ -621,10 +621,8 @@
     display: none !important;
 }
 
-/* Make window position relative for form overlay */
-.aiagent-window {
-    position: relative;
-}
+/* The window is already properly positioned with position: absolute */
+/* Form overlays use position: absolute within the window context */
 
 .aiagent-inline-chat {
     position: relative;
