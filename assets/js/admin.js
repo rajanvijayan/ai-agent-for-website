@@ -1265,6 +1265,22 @@
                     };
                     break;
 
+                case 'calendly':
+                    endpoint = 'settings/calendly';
+                    data = {
+                        enabled: $modal.find('#calendly_enabled').is(':checked'),
+                        integration_type: $modal.find('#calendly_integration_type').val() || 'embed',
+                        scheduling_url: $modal.find('#calendly_scheduling_url').val() || '',
+                        prompt_after_chat: $modal.find('#calendly_prompt_after_chat').is(':checked'),
+                        prompt_message: $modal.find('#calendly_prompt_message').val() || '',
+                        button_text: $modal.find('#calendly_button_text').val() || 'Schedule a Meeting',
+                        embed_height: parseInt($modal.find('#calendly_embed_height').val()) || 630,
+                        primary_color: $modal.find('#calendly_primary_color').val() || '',
+                        hide_event_details: $modal.find('#calendly_hide_event_details').is(':checked'),
+                        hide_gdpr_banner: $modal.find('#calendly_hide_gdpr_banner').is(':checked'),
+                    };
+                    break;
+
                 default:
                     $btn.prop('disabled', false).text(originalText);
                     return;

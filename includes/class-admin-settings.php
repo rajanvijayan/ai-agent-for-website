@@ -44,6 +44,12 @@ class AIAGENT_Admin_Settings {
 			$this->handle_gcalendar_callback();
 		}
 
+		// Handle Calendly OAuth callback.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth state verified in callback handler.
+		if ( isset( $_GET['calendly_callback'] ) && isset( $_GET['code'] ) ) {
+			$this->handle_calendly_callback();
+		}
+
 		// Get current tab from URL parameter.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just reading tab parameter for display.
 		$this->active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'general';
@@ -98,28 +104,28 @@ class AIAGENT_Admin_Settings {
 	 * Render the tab navigation.
 	 */
 	private function render_tabs() {
-		$tabs = [
-			'general'       => [
+		$tabs = array(
+			'general'       => array(
 				'label' => __( 'General', 'ai-agent-for-website' ),
 				'icon'  => 'dashicons-admin-settings',
-			],
-			'integrations'  => [
+			),
+			'integrations'  => array(
 				'label' => __( 'Integrations', 'ai-agent-for-website' ),
 				'icon'  => 'dashicons-admin-plugins',
-			],
-			'appearance'    => [
+			),
+			'appearance'    => array(
 				'label' => __( 'Appearance', 'ai-agent-for-website' ),
 				'icon'  => 'dashicons-admin-appearance',
-			],
-			'user-info'     => [
+			),
+			'user-info'     => array(
 				'label' => __( 'User Information', 'ai-agent-for-website' ),
 				'icon'  => 'dashicons-admin-users',
-			],
-			'notifications' => [
+			),
+			'notifications' => array(
 				'label' => __( 'Notifications & Logs', 'ai-agent-for-website' ),
 				'icon'  => 'dashicons-bell',
-			],
-		];
+			),
+		);
 
 		$base_url = admin_url( 'admin.php?page=ai-agent-settings' );
 		?>
@@ -237,9 +243,12 @@ class AIAGENT_Admin_Settings {
 		$gcalendar_settings   = AIAGENT_Google_Calendar_Integration::get_settings();
 		$gcalendar_connected  = AIAGENT_Google_Calendar_Integration::is_connected();
 		$gcalendar_user       = AIAGENT_Google_Calendar_Integration::get_connected_user();
+		$calendly_settings    = AIAGENT_Calendly_Integration::get_settings();
+		$calendly_connected   = AIAGENT_Calendly_Integration::is_connected();
+		$calendly_user        = AIAGENT_Calendly_Integration::get_connected_user();
 		$confluence_settings  = AIAGENT_Confluence_Integration::get_settings();
 		$confluence_connected = AIAGENT_Confluence_Integration::is_connected();
-		$integration_settings = get_option( 'aiagent_integrations', [] );
+		$integration_settings = get_option( 'aiagent_integrations', array() );
 		$zapier_enabled       = ! empty( $integration_settings['zapier_enabled'] );
 		$zapier_url           = $integration_settings['zapier_webhook_url'] ?? '';
 		$mailchimp_settings   = AIAGENT_Mailchimp_Integration::get_settings();
@@ -533,11 +542,35 @@ class AIAGENT_Admin_Settings {
 						</button>
 					</div>
 				</div>
+
+				<!-- Calendly -->
+				<div class="aiagent-integration-box" data-integration="calendly">
+					<div class="aiagent-integration-box-header">
+						<div class="aiagent-integration-box-icon" style="background: linear-gradient(135deg, #006bff 0%, #0052cc 100%);">
+							<svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+								<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+							</svg>
+						</div>
+						<div class="aiagent-integration-box-title">
+							<h3><?php esc_html_e( 'Calendly', 'ai-agent-for-website' ); ?></h3>
+							<span class="aiagent-integration-box-desc"><?php esc_html_e( 'Easy scheduling links', 'ai-agent-for-website' ); ?></span>
+						</div>
+						<?php if ( ! empty( $calendly_settings['enabled'] ) && ! empty( $calendly_settings['scheduling_url'] ) ) : ?>
+							<span class="aiagent-badge aiagent-badge-enabled"><?php esc_html_e( 'Enabled', 'ai-agent-for-website' ); ?></span>
+						<?php endif; ?>
+					</div>
+					<div class="aiagent-integration-box-footer">
+						<button type="button" class="button aiagent-integration-configure-btn" data-modal="calendly-modal">
+							<span class="dashicons dashicons-admin-generic"></span>
+							<?php esc_html_e( 'Configure', 'ai-agent-for-website' ); ?>
+						</button>
+					</div>
+				</div>
 			</div>
 		</div>
 
 		<!-- Integration Configuration Modals -->
-		<?php $this->render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected, $woo_active, $woo_enabled, $woo_settings, $gcalendar_settings, $gcalendar_connected, $gcalendar_user ); ?>
+		<?php $this->render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected, $woo_active, $woo_enabled, $woo_settings, $gcalendar_settings, $gcalendar_connected, $gcalendar_user, $calendly_settings, $calendly_connected, $calendly_user ); ?>
 		<?php
 	}
 
@@ -561,8 +594,13 @@ class AIAGENT_Admin_Settings {
 	 * @param array  $gcalendar_settings   Google Calendar settings.
 	 * @param bool   $gcalendar_connected  Whether Google Calendar is connected.
 	 * @param array  $gcalendar_user       Connected Google Calendar user.
+	 * @param array  $calendly_settings    Calendly settings.
+	 * @param bool   $calendly_connected   Whether Calendly is connected (reserved for future OAuth use).
+	 * @param array  $calendly_user        Connected Calendly user (reserved for future OAuth use).
+	 *
+	 * @SuppressWarnings(PHPMD.UnusedFormalParameter)
 	 */
-	private function render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected, $woo_active = false, $woo_enabled = false, $woo_settings = [], $gcalendar_settings = [], $gcalendar_connected = false, $gcalendar_user = null ) {
+	private function render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected, $woo_active = false, $woo_enabled = false, $woo_settings = array(), $gcalendar_settings = array(), $gcalendar_connected = false, $gcalendar_user = null, $calendly_settings = array(), $calendly_connected = false, $calendly_user = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		?>
 		<!-- Groq Modal -->
 		<div id="groq-modal" class="aiagent-integration-modal" style="display: none;">
@@ -1221,8 +1259,8 @@ class AIAGENT_Admin_Settings {
 								<th scope="row"><label><?php esc_html_e( 'Working Days', 'ai-agent-for-website' ); ?></label></th>
 								<td>
 									<?php
-									$working_days = $gcalendar_settings['working_days'] ?? [ 1, 2, 3, 4, 5 ];
-									$days         = [
+									$working_days = $gcalendar_settings['working_days'] ?? array( 1, 2, 3, 4, 5 );
+									$days         = array(
 										1 => __( 'Monday', 'ai-agent-for-website' ),
 										2 => __( 'Tuesday', 'ai-agent-for-website' ),
 										3 => __( 'Wednesday', 'ai-agent-for-website' ),
@@ -1230,7 +1268,7 @@ class AIAGENT_Admin_Settings {
 										5 => __( 'Friday', 'ai-agent-for-website' ),
 										6 => __( 'Saturday', 'ai-agent-for-website' ),
 										7 => __( 'Sunday', 'ai-agent-for-website' ),
-									];
+									);
 									foreach ( $days as $num => $label ) :
 										?>
 										<label style="display: inline-block; margin-right: 15px; margin-bottom: 5px;">
@@ -1338,6 +1376,140 @@ class AIAGENT_Admin_Settings {
 							<?php esc_html_e( 'Save Credentials', 'ai-agent-for-website' ); ?>
 						</button>
 					<?php endif; ?>
+				</div>
+			</div>
+		</div>
+
+		<!-- Calendly Modal -->
+		<div id="calendly-modal" class="aiagent-integration-modal" style="display: none;">
+			<div class="aiagent-modal-overlay"></div>
+			<div class="aiagent-modal-content aiagent-modal-content-large">
+				<div class="aiagent-modal-header">
+					<div class="aiagent-modal-header-icon" style="background: linear-gradient(135deg, #006bff 0%, #0052cc 100%);">
+						<svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+							<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+						</svg>
+					</div>
+					<h3><?php esc_html_e( 'Configure Calendly', 'ai-agent-for-website' ); ?></h3>
+					<button type="button" class="aiagent-modal-close">&times;</button>
+				</div>
+				<div class="aiagent-modal-body">
+					<p class="description" style="margin-bottom: 20px;">
+						<?php esc_html_e( 'Add your Calendly scheduling link to let users book meetings after conversations.', 'ai-agent-for-website' ); ?>
+						<a href="https://calendly.com" target="_blank"><?php esc_html_e( 'Get Calendly →', 'ai-agent-for-website' ); ?></a>
+					</p>
+
+					<!-- Enable/Disable Toggle -->
+					<table class="form-table">
+						<tr>
+							<th scope="row"><label for="calendly_enabled"><?php esc_html_e( 'Enable Calendly', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label class="aiagent-switch">
+									<input type="checkbox" id="calendly_enabled" name="calendly_enabled" value="1" <?php checked( $calendly_settings['enabled'] ?? false ); ?>>
+									<span class="slider"></span>
+								</label>
+								<p class="description"><?php esc_html_e( 'Allow users to schedule meetings via Calendly', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="calendly_scheduling_url"><?php esc_html_e( 'Scheduling URL', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<input type="url" id="calendly_scheduling_url" name="calendly_scheduling_url" 
+									value="<?php echo esc_attr( $calendly_settings['scheduling_url'] ?? '' ); ?>" 
+									class="large-text" placeholder="https://calendly.com/your-name/30min">
+								<p class="description"><?php esc_html_e( 'Your Calendly scheduling link (e.g., calendly.com/your-name or calendly.com/your-name/event-type)', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="calendly_integration_type"><?php esc_html_e( 'Display Type', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<select id="calendly_integration_type" name="calendly_integration_type">
+									<option value="popup" <?php selected( $calendly_settings['integration_type'] ?? 'embed', 'popup' ); ?>><?php esc_html_e( 'Popup Widget', 'ai-agent-for-website' ); ?></option>
+									<option value="embed" <?php selected( $calendly_settings['integration_type'] ?? 'embed', 'embed' ); ?>><?php esc_html_e( 'Inline Embed', 'ai-agent-for-website' ); ?></option>
+									<option value="link" <?php selected( $calendly_settings['integration_type'] ?? 'embed', 'link' ); ?>><?php esc_html_e( 'External Link', 'ai-agent-for-website' ); ?></option>
+								</select>
+								<p class="description"><?php esc_html_e( 'How the Calendly scheduler should be displayed', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+					</table>
+
+					<h4 style="margin: 20px 0 10px; border-top: 1px solid #ddd; padding-top: 20px;">
+						<span class="dashicons dashicons-format-chat" style="margin-right: 5px;"></span>
+						<?php esc_html_e( 'Chat Prompt Settings', 'ai-agent-for-website' ); ?>
+					</h4>
+
+					<table class="form-table">
+						<tr>
+							<th scope="row"><label for="calendly_prompt_after_chat"><?php esc_html_e( 'Prompt After Chat', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label class="aiagent-switch">
+									<input type="checkbox" id="calendly_prompt_after_chat" name="calendly_prompt_after_chat" value="1" <?php checked( $calendly_settings['prompt_after_chat'] ?? true ); ?>>
+									<span class="slider"></span>
+								</label>
+								<p class="description"><?php esc_html_e( 'Ask users if they want to schedule a meeting when conversation ends', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="calendly_prompt_message"><?php esc_html_e( 'Prompt Message', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<input type="text" id="calendly_prompt_message" name="calendly_prompt_message" 
+									value="<?php echo esc_attr( $calendly_settings['prompt_message'] ?? 'Would you like to schedule a call with us?' ); ?>" 
+									class="large-text">
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="calendly_button_text"><?php esc_html_e( 'Button Text', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<input type="text" id="calendly_button_text" name="calendly_button_text" 
+									value="<?php echo esc_attr( $calendly_settings['button_text'] ?? 'Schedule a Meeting' ); ?>" 
+									class="regular-text">
+							</td>
+						</tr>
+					</table>
+
+					<h4 style="margin: 20px 0 10px; border-top: 1px solid #ddd; padding-top: 20px;">
+						<span class="dashicons dashicons-admin-appearance" style="margin-right: 5px;"></span>
+						<?php esc_html_e( 'Widget Appearance', 'ai-agent-for-website' ); ?>
+					</h4>
+
+					<table class="form-table">
+						<tr>
+							<th scope="row"><label for="calendly_embed_height"><?php esc_html_e( 'Embed Height', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<input type="number" id="calendly_embed_height" name="calendly_embed_height" 
+									value="<?php echo esc_attr( $calendly_settings['embed_height'] ?? 630 ); ?>" 
+									min="400" max="1000" style="width: 100px;"> px
+								<p class="description"><?php esc_html_e( 'Height of the embedded Calendly widget', 'ai-agent-for-website' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="calendly_primary_color"><?php esc_html_e( 'Primary Color', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<input type="color" id="calendly_primary_color" name="calendly_primary_color" 
+									value="<?php echo esc_attr( $calendly_settings['primary_color'] ?? '#006bff' ); ?>">
+								<span class="description"><?php esc_html_e( 'Customize Calendly accent color', 'ai-agent-for-website' ); ?></span>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label><?php esc_html_e( 'Widget Options', 'ai-agent-for-website' ); ?></label></th>
+							<td>
+								<label style="display: block; margin-bottom: 8px;">
+									<input type="checkbox" id="calendly_hide_event_details" name="calendly_hide_event_details" value="1" <?php checked( $calendly_settings['hide_event_details'] ?? false ); ?>>
+									<?php esc_html_e( 'Hide event type details', 'ai-agent-for-website' ); ?>
+								</label>
+								<label style="display: block;">
+									<input type="checkbox" id="calendly_hide_gdpr_banner" name="calendly_hide_gdpr_banner" value="1" <?php checked( $calendly_settings['hide_gdpr_banner'] ?? false ); ?>>
+									<?php esc_html_e( 'Hide GDPR cookie banner', 'ai-agent-for-website' ); ?>
+								</label>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div class="aiagent-modal-footer">
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Cancel', 'ai-agent-for-website' ); ?></button>
+					<button type="button" class="button button-primary aiagent-modal-save" data-integration="calendly">
+						<?php esc_html_e( 'Save', 'ai-agent-for-website' ); ?>
+					</button>
 				</div>
 			</div>
 		</div>
@@ -2246,7 +2418,7 @@ class AIAGENT_Admin_Settings {
 				}
 
 				// Save Zapier settings.
-				$integration_settings                       = get_option( 'aiagent_integrations', [] );
+				$integration_settings                       = get_option( 'aiagent_integrations', array() );
 				$integration_settings['zapier_enabled']     = ! empty( $_POST['zapier_enabled'] );
 				$integration_settings['zapier_webhook_url'] = isset( $_POST['zapier_webhook_url'] ) ? esc_url_raw( wp_unslash( $_POST['zapier_webhook_url'] ) ) : '';
 
@@ -2284,7 +2456,7 @@ class AIAGENT_Admin_Settings {
 
 			case 'notifications':
 				// Save notification settings.
-				$notification_settings = [
+				$notification_settings = array(
 					'enabled'                    => ! empty( $_POST['notifications_enabled'] ),
 					'email_notifications'        => ! empty( $_POST['email_notifications'] ),
 					'email_recipients'           => isset( $_POST['email_recipients'] ) ? sanitize_text_field( wp_unslash( $_POST['email_recipients'] ) ) : get_option( 'admin_email' ),
@@ -2294,11 +2466,11 @@ class AIAGENT_Admin_Settings {
 					'notify_conversation_closed' => ! empty( $_POST['notify_conversation_closed'] ),
 					'auto_validate_leads'        => ! empty( $_POST['auto_validate_leads'] ),
 					'validation_prompt'          => isset( $_POST['validation_prompt'] ) ? sanitize_textarea_field( wp_unslash( $_POST['validation_prompt'] ) ) : '',
-				];
+				);
 				AIAGENT_Notification_Manager::update_settings( $notification_settings );
 
 				// Save log settings.
-				$log_settings = [
+				$log_settings = array(
 					'enabled'             => ! empty( $_POST['logs_enabled'] ),
 					'log_conversations'   => ! empty( $_POST['log_conversations'] ),
 					'log_leads'           => ! empty( $_POST['log_leads'] ),
@@ -2311,7 +2483,7 @@ class AIAGENT_Admin_Settings {
 					'export_to_zapier'    => ! empty( $_POST['export_to_zapier'] ),
 					'zapier_log_webhook'  => isset( $_POST['zapier_log_webhook'] ) ? esc_url_raw( wp_unslash( $_POST['zapier_log_webhook'] ) ) : '',
 					'export_to_mailchimp' => ! empty( $_POST['export_to_mailchimp'] ),
-				];
+				);
 				AIAGENT_Activity_Log_Manager::update_settings( $log_settings );
 				break;
 		}
@@ -2400,6 +2572,54 @@ class AIAGENT_Admin_Settings {
 				'aiagent_messages',
 				'gcalendar_success',
 				__( 'Successfully connected to Google Calendar!', 'ai-agent-for-website' ),
+				'updated'
+			);
+		}
+	}
+
+	/**
+	 * Handle Calendly OAuth callback.
+	 */
+	private function handle_calendly_callback() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- OAuth state verified in integration class.
+		$code  = isset( $_GET['code'] ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : '';
+		$state = isset( $_GET['state'] ) ? sanitize_text_field( wp_unslash( $_GET['state'] ) ) : '';
+		$error = isset( $_GET['error'] ) ? sanitize_text_field( wp_unslash( $_GET['error'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( $error ) {
+			add_settings_error(
+				'aiagent_messages',
+				'calendly_error',
+				/* translators: %s: Error message */
+				sprintf( __( 'Calendly authorization failed: %s', 'ai-agent-for-website' ), $error ),
+				'error'
+			);
+			return;
+		}
+
+		$calendly = new AIAGENT_Calendly_Integration();
+		$result   = $calendly->handle_callback( $code, $state );
+
+		if ( is_wp_error( $result ) ) {
+			add_settings_error(
+				'aiagent_messages',
+				'calendly_error',
+				$result->get_error_message(),
+				'error'
+			);
+		} else {
+			// Auto-populate scheduling URL from user info.
+			if ( ! empty( $result['user_info']['scheduling_url'] ) ) {
+				$settings                   = AIAGENT_Calendly_Integration::get_settings();
+				$settings['scheduling_url'] = $result['user_info']['scheduling_url'];
+				AIAGENT_Calendly_Integration::update_settings( $settings );
+			}
+
+			add_settings_error(
+				'aiagent_messages',
+				'calendly_success',
+				__( 'Successfully connected to Calendly!', 'ai-agent-for-website' ),
 				'updated'
 			);
 		}

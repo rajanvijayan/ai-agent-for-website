@@ -34,6 +34,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `POST /settings/gcalendar` - Save calendar settings
 - Customizable prompt message for calendar booking suggestion
 - Event title and description templates with placeholder support
+- **Calendly Integration**: Easy scheduling via Calendly
+  - Support for popup widget, inline embed, and external link modes
+  - Customizable scheduling URL (user profile or specific event type)
+  - Pre-fill user info from chat session (name, email)
+  - Configurable prompt message and button text
+  - Widget appearance options (height, colors, hide event details/GDPR banner)
+  - Optional OAuth 2.0 connection for advanced features (event types)
+- New Calendly admin settings in "Scheduling" section
+- REST API endpoints for Calendly integration:
+  - `GET /calendly/auth-url` - OAuth authorization URL
+  - `POST /calendly/disconnect` - Disconnect account
+  - `GET /calendly/event-types` - List event types
+  - `GET /calendly/status` - Check integration status
+  - `POST /settings/calendly` - Save Calendly settings
 
 ### Changed
 - Enhanced chat widget flow to include calendar booking after rating

@@ -30,7 +30,7 @@ class AIAGENT_REST_API {
 	 *
 	 * @var array
 	 */
-	private static $conversations = [];
+	private static $conversations = array();
 
 	/**
 	 * Register REST routes.
@@ -40,882 +40,933 @@ class AIAGENT_REST_API {
 		register_rest_route(
 			$this->namespace,
 			'/chat',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_chat' ],
+				'callback'            => array( $this, 'handle_chat' ),
 				'permission_callback' => '__return_true', // Public endpoint.
-				'args'                => [
-					'message'    => [
+				'args'                => array(
+					'message'    => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'session_id' => [
+					),
+					'session_id' => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'user_id'    => [
+					),
+					'user_id'    => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		// Register user endpoint.
 		register_rest_route(
 			$this->namespace,
 			'/register-user',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_register_user' ],
+				'callback'            => array( $this, 'handle_register_user' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'name'                => [
+				'args'                => array(
+					'name'                => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'email'               => [
+					),
+					'email'               => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_email',
-					],
-					'phone'               => [
+					),
+					'phone'               => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'session_id'          => [
+					),
+					'session_id'          => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'consent_ai'          => [
+					),
+					'consent_ai'          => array(
 						'required'          => false,
 						'type'              => 'boolean',
 						'sanitize_callback' => 'rest_sanitize_boolean',
-					],
-					'consent_newsletter'  => [
+					),
+					'consent_newsletter'  => array(
 						'required'          => false,
 						'type'              => 'boolean',
 						'sanitize_callback' => 'rest_sanitize_boolean',
-					],
-					'consent_promotional' => [
+					),
+					'consent_promotional' => array(
 						'required'          => false,
 						'type'              => 'boolean',
 						'sanitize_callback' => 'rest_sanitize_boolean',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		// New conversation endpoint.
 		register_rest_route(
 			$this->namespace,
 			'/new-conversation',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_new_conversation' ],
+				'callback'            => array( $this, 'handle_new_conversation' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'session_id' => [
+				'args'                => array(
+					'session_id' => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'user_id'    => [
+					),
+					'user_id'    => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		// Test connection endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/test',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_test' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_test' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// AI suggestion endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/ai-suggest',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_ai_suggest' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-				'args'                => [
-					'type' => [
+				'callback'            => array( $this, 'handle_ai_suggest' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+				'args'                => array(
+					'type' => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		// Auto detect pillar pages endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/detect-pillar-pages',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_detect_pillar_pages' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_detect_pillar_pages' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// Fetch URL endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/fetch-url',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_fetch_url' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-				'args'                => [
-					'url' => [
+				'callback'            => array( $this, 'handle_fetch_url' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+				'args'                => array(
+					'url' => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'esc_url_raw',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		// Rate conversation endpoint.
 		register_rest_route(
 			$this->namespace,
 			'/rate-conversation',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_rate_conversation' ],
+				'callback'            => array( $this, 'handle_rate_conversation' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'session_id' => [
+				'args'                => array(
+					'session_id' => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'rating'     => [
+					),
+					'rating'     => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		// File upload endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/upload-file',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_file_upload' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_file_upload' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// Delete uploaded file endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/delete-file',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_delete_file' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-				'args'                => [
-					'file_id'  => [
+				'callback'            => array( $this, 'handle_delete_file' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+				'args'                => array(
+					'file_id'  => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-					'kb_index' => [
+					),
+					'kb_index' => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		// Google Drive auth URL endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/gdrive/auth-url',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_gdrive_auth_url' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_gdrive_auth_url' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// Google Drive disconnect endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/gdrive/disconnect',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_gdrive_disconnect' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_gdrive_disconnect' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// Google Drive list files endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/gdrive/files',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_gdrive_list_files' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_gdrive_list_files' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// Google Drive import file endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/gdrive/import',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_gdrive_import' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-				'args'                => [
-					'file_id' => [
+				'callback'            => array( $this, 'handle_gdrive_import' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+				'args'                => array(
+					'file_id' => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		// Confluence test connection endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/confluence/test',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_confluence_test' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_confluence_test' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// Confluence disconnect endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/confluence/disconnect',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_confluence_disconnect' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_confluence_disconnect' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// Confluence list spaces endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/confluence/spaces',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_confluence_spaces' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_confluence_spaces' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// Confluence list pages endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/confluence/pages',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_confluence_pages' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-				'args'                => [
-					'space_key' => [
+				'callback'            => array( $this, 'handle_confluence_pages' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+				'args'                => array(
+					'space_key' => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		// Confluence import page endpoint (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/confluence/import',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_confluence_import' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-				'args'                => [
-					'page_id' => [
+				'callback'            => array( $this, 'handle_confluence_import' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+				'args'                => array(
+					'page_id' => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		// Notification endpoints (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/notifications',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_get_notifications' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_get_notifications' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/notifications/unread-count',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_unread_count' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_unread_count' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/notifications/mark-read',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_mark_notification_read' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-				'args'                => [
-					'notification_id' => [
+				'callback'            => array( $this, 'handle_mark_notification_read' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+				'args'                => array(
+					'notification_id' => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/notifications/mark-all-read',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_mark_all_read' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_mark_all_read' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// AI validation endpoint for conversations (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/validate-conversation',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_validate_conversation' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-				'args'                => [
-					'conversation_id' => [
+				'callback'            => array( $this, 'handle_validate_conversation' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+				'args'                => array(
+					'conversation_id' => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/convert-to-lead',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_convert_to_lead' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-				'args'                => [
-					'conversation_id' => [
+				'callback'            => array( $this, 'handle_convert_to_lead' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+				'args'                => array(
+					'conversation_id' => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/close-conversation',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_close_conversation' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-				'args'                => [
-					'conversation_id' => [
+				'callback'            => array( $this, 'handle_close_conversation' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+				'args'                => array(
+					'conversation_id' => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-					'reason'          => [
+					),
+					'reason'          => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_textarea_field',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		// Activity log endpoints (admin only).
 		register_rest_route(
 			$this->namespace,
 			'/logs',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_get_logs' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_get_logs' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/logs/stats',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_log_stats' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_log_stats' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// Save integration settings endpoints.
 		register_rest_route(
 			$this->namespace,
 			'/settings/groq',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_save_groq_settings' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_save_groq_settings' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/settings/gdrive',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_save_gdrive_settings' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_save_gdrive_settings' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/settings/confluence',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_save_confluence_settings' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_save_confluence_settings' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/settings/zapier',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_save_zapier_settings' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_save_zapier_settings' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/settings/mailchimp',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_save_mailchimp_settings' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_save_mailchimp_settings' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// WooCommerce integration endpoints.
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/status',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_woocommerce_status' ],
+				'callback'            => array( $this, 'handle_woocommerce_status' ),
 				'permission_callback' => '__return_true',
-			]
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/search',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_woocommerce_search' ],
+				'callback'            => array( $this, 'handle_woocommerce_search' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'query' => [
+				'args'                => array(
+					'query' => array(
 						'required'          => false,
 						'type'              => 'string',
 						'default'           => '',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'limit' => [
+					),
+					'limit' => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'default'           => 10,
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/product/(?P<id>\d+)',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_woocommerce_product' ],
+				'callback'            => array( $this, 'handle_woocommerce_product' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'id' => [
+				'args'                => array(
+					'id' => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/related/(?P<id>\d+)',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_woocommerce_related' ],
+				'callback'            => array( $this, 'handle_woocommerce_related' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'id'    => [
+				'args'                => array(
+					'id'    => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-					'limit' => [
+					),
+					'limit' => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'default'           => 4,
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/compare',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_woocommerce_compare' ],
+				'callback'            => array( $this, 'handle_woocommerce_compare' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'product_ids' => [
+				'args'                => array(
+					'product_ids' => array(
 						'required'          => true,
 						'type'              => 'array',
 						'sanitize_callback' => function ( $ids ) {
 							return array_map( 'absint', $ids );
 						},
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/add-to-cart',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_woocommerce_add_to_cart' ],
+				'callback'            => array( $this, 'handle_woocommerce_add_to_cart' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'product_id'   => [
+				'args'                => array(
+					'product_id'   => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-					'quantity'     => [
+					),
+					'quantity'     => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'default'           => 1,
 						'sanitize_callback' => 'absint',
-					],
-					'variation_id' => [
+					),
+					'variation_id' => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'default'           => 0,
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/cart',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_woocommerce_cart' ],
+				'callback'            => array( $this, 'handle_woocommerce_cart' ),
 				'permission_callback' => '__return_true',
-			]
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/remove-from-cart',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_woocommerce_remove_from_cart' ],
+				'callback'            => array( $this, 'handle_woocommerce_remove_from_cart' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'cart_item_key' => [
+				'args'                => array(
+					'cart_item_key' => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/categories',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_woocommerce_categories' ],
+				'callback'            => array( $this, 'handle_woocommerce_categories' ),
 				'permission_callback' => '__return_true',
-			]
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/featured',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_woocommerce_featured' ],
+				'callback'            => array( $this, 'handle_woocommerce_featured' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'limit' => [
+				'args'                => array(
+					'limit' => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'default'           => 6,
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/sale',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_woocommerce_sale' ],
+				'callback'            => array( $this, 'handle_woocommerce_sale' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'limit' => [
+				'args'                => array(
+					'limit' => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'default'           => 6,
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/bestsellers',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_woocommerce_bestsellers' ],
+				'callback'            => array( $this, 'handle_woocommerce_bestsellers' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'limit' => [
+				'args'                => array(
+					'limit' => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'default'           => 6,
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/variations/(?P<id>\d+)',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_woocommerce_variations' ],
+				'callback'            => array( $this, 'handle_woocommerce_variations' ),
 				'permission_callback' => '__return_true',
-				'args'                => [
-					'id' => [
+				'args'                => array(
+					'id' => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/settings/woocommerce',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_save_woocommerce_settings' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_save_woocommerce_settings' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/woocommerce/sync-to-kb',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_woocommerce_sync_to_kb' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_woocommerce_sync_to_kb' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		// Google Calendar integration endpoints.
 		register_rest_route(
 			$this->namespace,
 			'/gcalendar/auth-url',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_gcalendar_auth_url' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_gcalendar_auth_url' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/gcalendar/disconnect',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_gcalendar_disconnect' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_gcalendar_disconnect' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/gcalendar/calendars',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_gcalendar_list_calendars' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_gcalendar_list_calendars' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/gcalendar/slots',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_gcalendar_slots' ],
+				'callback'            => array( $this, 'handle_gcalendar_slots' ),
 				'permission_callback' => '__return_true', // Public endpoint for chat widget.
-				'args'                => [
-					'start_date' => [
+				'args'                => array(
+					'start_date' => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'days_ahead' => [
+					),
+					'days_ahead' => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/gcalendar/create-event',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_gcalendar_create_event' ],
+				'callback'            => array( $this, 'handle_gcalendar_create_event' ),
 				'permission_callback' => '__return_true', // Public endpoint for chat widget.
-				'args'                => [
-					'title'          => [
+				'args'                => array(
+					'title'          => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'start'          => [
+					),
+					'start'          => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'end'            => [
+					),
+					'end'            => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'description'    => [
+					),
+					'description'    => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_textarea_field',
-					],
-					'attendee_email' => [
+					),
+					'attendee_email' => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_email',
-					],
-					'attendee_name'  => [
+					),
+					'attendee_name'  => array(
 						'required'          => false,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'add_meet'       => [
+					),
+					'add_meet'       => array(
 						'required'          => false,
 						'type'              => 'boolean',
 						'sanitize_callback' => 'rest_sanitize_boolean',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/gcalendar/status',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_gcalendar_status' ],
+				'callback'            => array( $this, 'handle_gcalendar_status' ),
 				'permission_callback' => '__return_true', // Public to check if booking is available.
-			]
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/settings/gcalendar',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'handle_save_gcalendar_settings' ],
-				'permission_callback' => [ $this, 'admin_permission_check' ],
-			]
+				'callback'            => array( $this, 'handle_save_gcalendar_settings' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
+		);
+
+		// Calendly integration endpoints.
+		register_rest_route(
+			$this->namespace,
+			'/calendly/auth-url',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'handle_calendly_auth_url' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/calendly/disconnect',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_calendly_disconnect' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/calendly/event-types',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'handle_calendly_event_types' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/calendly/status',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'handle_calendly_status' ),
+				'permission_callback' => '__return_true', // Public to check if booking is available.
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/settings/calendly',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_save_calendly_settings' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
 		);
 	}
 
@@ -933,7 +984,7 @@ class AIAGENT_REST_API {
 
 		// Validate rating (1-5).
 		if ( $rating < 1 || $rating > 5 ) {
-			return new WP_Error( 'invalid_rating', __( 'Rating must be between 1 and 5.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'invalid_rating', __( 'Rating must be between 1 and 5.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$conversations_table = $wpdb->prefix . 'aiagent_conversations';
@@ -942,19 +993,19 @@ class AIAGENT_REST_API {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional direct update for conversation rating.
 		$wpdb->update(
 			$conversations_table,
-			[
+			array(
 				'rating'   => $rating,
 				'status'   => 'ended',
 				'ended_at' => current_time( 'mysql' ),
-			],
-			[ 'session_id' => $session_id ]
+			),
+			array( 'session_id' => $session_id )
 		);
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'message' => __( 'Thank you for your feedback!', 'ai-agent-for-website' ),
-			]
+			)
 		);
 	}
 
@@ -987,7 +1038,7 @@ class AIAGENT_REST_API {
 
 		// Validate email.
 		if ( ! is_email( $email ) ) {
-			return new WP_Error( 'invalid_email', __( 'Please enter a valid email address.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'invalid_email', __( 'Please enter a valid email address.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$users_table = $wpdb->prefix . 'aiagent_users';
@@ -1001,10 +1052,10 @@ class AIAGENT_REST_API {
 
 		if ( $existing_user ) {
 			// Update session ID and return existing user.
-			$update_data = [
+			$update_data = array(
 				'session_id' => $session_id,
 				'name'       => $name,
-			];
+			);
 			if ( ! empty( $phone ) ) {
 				$update_data['phone'] = $phone;
 			}
@@ -1012,16 +1063,16 @@ class AIAGENT_REST_API {
 			$wpdb->update(
 				$users_table,
 				$update_data,
-				[ 'id' => $existing_user->id ]
+				array( 'id' => $existing_user->id )
 			);
 			$user_id = $existing_user->id;
 		} else {
 			// Create new user.
-			$insert_data = [
+			$insert_data = array(
 				'name'       => $name,
 				'email'      => $email,
 				'session_id' => $session_id,
-			];
+			);
 			if ( ! empty( $phone ) ) {
 				$insert_data['phone'] = $phone;
 			}
@@ -1034,7 +1085,7 @@ class AIAGENT_REST_API {
 		}
 
 		if ( ! $user_id ) {
-			return new WP_Error( 'db_error', __( 'Could not register user.', 'ai-agent-for-website' ), [ 'status' => 500 ] );
+			return new WP_Error( 'db_error', __( 'Could not register user.', 'ai-agent-for-website' ), array( 'status' => 500 ) );
 		}
 
 		// Save user consents.
@@ -1045,13 +1096,13 @@ class AIAGENT_REST_API {
 			$name_parts = explode( ' ', $name, 2 );
 			$first_name = $name_parts[0] ?? '';
 			$last_name  = $name_parts[1] ?? '';
-			AIAGENT_Mailchimp_Integration::subscribe( $email, $first_name, $last_name, [ 'AI Agent Chat' ] );
+			AIAGENT_Mailchimp_Integration::subscribe( $email, $first_name, $last_name, array( 'AI Agent Chat' ) );
 		}
 
 		// Trigger Zapier webhook for new user.
 		if ( AIAGENT_Zapier_Integration::is_enabled() ) {
 			AIAGENT_Zapier_Integration::send_webhook(
-				[
+				array(
 					'user_id'             => $user_id,
 					'name'                => $name,
 					'email'               => $email,
@@ -1059,7 +1110,7 @@ class AIAGENT_REST_API {
 					'consent_ai'          => $consent_ai,
 					'consent_newsletter'  => $consent_newsletter,
 					'consent_promotional' => $consent_promotional,
-				],
+				),
 				'user_registered'
 			);
 		}
@@ -1075,12 +1126,12 @@ class AIAGENT_REST_API {
 					__( 'User registered: %s', 'ai-agent-for-website' ),
 					$email
 				),
-				[
+				array(
 					'user_id' => $user_id,
 					'name'    => $name,
 					'email'   => $email,
 					'phone'   => $phone,
-				]
+				)
 			);
 		}
 
@@ -1088,11 +1139,11 @@ class AIAGENT_REST_API {
 		$this->create_conversation( $user_id, $session_id, $name, $email );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'    => true,
 				'user_id'    => $user_id,
 				'session_id' => $session_id,
-			]
+			)
 		);
 	}
 
@@ -1110,23 +1161,23 @@ class AIAGENT_REST_API {
 		$consents_table = $wpdb->prefix . 'aiagent_user_consents';
 		$ip_address     = $this->get_client_ip();
 
-		$consents = [
+		$consents = array(
 			'ai'          => $consent_ai,
 			'newsletter'  => $consent_newsletter,
 			'promotional' => $consent_promotional,
-		];
+		);
 
 		foreach ( $consents as $type => $value ) {
 			if ( null !== $value ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Intentional direct insert.
 				$wpdb->insert(
 					$consents_table,
-					[
+					array(
 						'user_id'      => $user_id,
 						'consent_type' => $type,
 						'consented'    => $value ? 1 : 0,
 						'ip_address'   => $ip_address,
-					]
+					)
 				);
 			}
 		}
@@ -1167,7 +1218,7 @@ class AIAGENT_REST_API {
 
 		// Validate message.
 		if ( empty( trim( $message ) ) ) {
-			return new WP_Error( 'empty_message', __( 'Please enter a message.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'empty_message', __( 'Please enter a message.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		// Get settings.
@@ -1175,12 +1226,12 @@ class AIAGENT_REST_API {
 
 		// Check if enabled.
 		if ( empty( $settings['enabled'] ) ) {
-			return new WP_Error( 'not_enabled', __( 'Chat is not enabled.', 'ai-agent-for-website' ), [ 'status' => 403 ] );
+			return new WP_Error( 'not_enabled', __( 'Chat is not enabled.', 'ai-agent-for-website' ), array( 'status' => 403 ) );
 		}
 
 		// Check API key.
 		if ( empty( $settings['api_key'] ) ) {
-			return new WP_Error( 'no_api_key', __( 'AI is not configured.', 'ai-agent-for-website' ), [ 'status' => 500 ] );
+			return new WP_Error( 'no_api_key', __( 'AI is not configured.', 'ai-agent-for-website' ), array( 'status' => 500 ) );
 		}
 
 		// Get or create conversation.
@@ -1228,7 +1279,7 @@ class AIAGENT_REST_API {
 
 			// Handle error response.
 			if ( is_array( $response ) && isset( $response['error'] ) ) {
-				return new WP_Error( 'ai_error', $response['error'], [ 'status' => 500 ] );
+				return new WP_Error( 'ai_error', $response['error'], array( 'status' => 500 ) );
 			}
 
 			// Save AI response to database.
@@ -1237,15 +1288,15 @@ class AIAGENT_REST_API {
 			}
 
 			return rest_ensure_response(
-				[
+				array(
 					'success'    => true,
 					'message'    => $response,
 					'session_id' => $session_id,
-				]
+				)
 			);
 
 		} catch ( Exception $e ) {
-			return new WP_Error( 'exception', $e->getMessage(), [ 'status' => 500 ] );
+			return new WP_Error( 'exception', $e->getMessage(), array( 'status' => 500 ) );
 		}
 	}
 
@@ -1273,10 +1324,10 @@ class AIAGENT_REST_API {
 		}
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'    => true,
 				'session_id' => $new_session_id,
-			]
+			)
 		);
 	}
 
@@ -1293,7 +1344,7 @@ class AIAGENT_REST_API {
 		$settings = AI_Agent_For_Website::get_settings();
 
 		if ( empty( $settings['api_key'] ) ) {
-			return new WP_Error( 'no_api_key', __( 'API key not configured.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'no_api_key', __( 'API key not configured.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		try {
@@ -1301,18 +1352,18 @@ class AIAGENT_REST_API {
 			$response = $ai->generateContent( 'Say "Hello! API connection successful." in exactly those words.' );
 
 			if ( is_array( $response ) && isset( $response['error'] ) ) {
-				return new WP_Error( 'api_error', $response['error'], [ 'status' => 500 ] );
+				return new WP_Error( 'api_error', $response['error'], array( 'status' => 500 ) );
 			}
 
 			return rest_ensure_response(
-				[
+				array(
 					'success' => true,
 					'message' => $response,
-				]
+				)
 			);
 
 		} catch ( Exception $e ) {
-			return new WP_Error( 'exception', $e->getMessage(), [ 'status' => 500 ] );
+			return new WP_Error( 'exception', $e->getMessage(), array( 'status' => 500 ) );
 		}
 	}
 
@@ -1337,14 +1388,14 @@ class AIAGENT_REST_API {
 			$kb->save( $kb_file );
 
 			return rest_ensure_response(
-				[
+				array(
 					'success' => true,
 					'title'   => $result['title'] ?? 'Untitled',
-				]
+				)
 			);
 		}
 
-		return new WP_Error( 'fetch_error', $result['error'] ?? 'Failed to fetch URL', [ 'status' => 400 ] );
+		return new WP_Error( 'fetch_error', $result['error'] ?? 'Failed to fetch URL', array( 'status' => 400 ) );
 	}
 
 	/**
@@ -1358,7 +1409,7 @@ class AIAGENT_REST_API {
 		$settings = AI_Agent_For_Website::get_settings();
 
 		if ( empty( $settings['api_key'] ) ) {
-			return new WP_Error( 'no_api_key', __( 'API key not configured.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'no_api_key', __( 'API key not configured.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$site_name = get_bloginfo( 'name' );
@@ -1387,18 +1438,18 @@ class AIAGENT_REST_API {
 			$response = $ai->generateContent( $prompt );
 
 			if ( is_array( $response ) && isset( $response['error'] ) ) {
-				return new WP_Error( 'ai_error', $response['error'], [ 'status' => 500 ] );
+				return new WP_Error( 'ai_error', $response['error'], array( 'status' => 500 ) );
 			}
 
 			return rest_ensure_response(
-				[
+				array(
 					'success'    => true,
 					'suggestion' => trim( $response ),
-				]
+				)
 			);
 
 		} catch ( Exception $e ) {
-			return new WP_Error( 'exception', $e->getMessage(), [ 'status' => 500 ] );
+			return new WP_Error( 'exception', $e->getMessage(), array( 'status' => 500 ) );
 		}
 	}
 
@@ -1415,34 +1466,34 @@ class AIAGENT_REST_API {
 		$settings = AI_Agent_For_Website::get_settings();
 
 		if ( empty( $settings['api_key'] ) ) {
-			return new WP_Error( 'no_api_key', __( 'API key not configured.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'no_api_key', __( 'API key not configured.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		// Get all published pages and posts.
 		$pages = get_posts(
-			[
-				'post_type'      => [ 'page', 'post' ],
+			array(
+				'post_type'      => array( 'page', 'post' ),
 				'post_status'    => 'publish',
 				'posts_per_page' => 100,
 				'orderby'        => 'date',
 				'order'          => 'DESC',
-			]
+			)
 		);
 
 		if ( empty( $pages ) ) {
-			return new WP_Error( 'no_content', __( 'No published content found.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'no_content', __( 'No published content found.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		// Prepare content list for AI.
-		$content_list = [];
+		$content_list = array();
 		foreach ( $pages as $page ) {
-			$content_list[] = [
+			$content_list[] = array(
 				'id'      => $page->ID,
 				'title'   => $page->post_title,
 				'type'    => $page->post_type,
 				'url'     => get_permalink( $page->ID ),
 				'excerpt' => wp_trim_words( $page->post_content, 50 ),
-			];
+			);
 		}
 
 		try {
@@ -1478,7 +1529,7 @@ Do not include any explanation, just the JSON array.',
 			$response = $ai->generateContent( $prompt );
 
 			if ( is_array( $response ) && isset( $response['error'] ) ) {
-				return new WP_Error( 'ai_error', $response['error'], [ 'status' => 500 ] );
+				return new WP_Error( 'ai_error', $response['error'], array( 'status' => 500 ) );
 			}
 
 			// Parse the AI response to get page IDs.
@@ -1490,32 +1541,32 @@ Do not include any explanation, just the JSON array.',
 			$page_ids = json_decode( $response, true );
 
 			if ( ! is_array( $page_ids ) ) {
-				return new WP_Error( 'parse_error', __( 'Could not parse AI response.', 'ai-agent-for-website' ), [ 'status' => 500 ] );
+				return new WP_Error( 'parse_error', __( 'Could not parse AI response.', 'ai-agent-for-website' ), array( 'status' => 500 ) );
 			}
 
 			// Get the recommended pages with full details.
-			$recommended = [];
+			$recommended = array();
 			foreach ( $page_ids as $id ) {
 				$page = get_post( $id );
 				if ( $page ) {
-					$recommended[] = [
+					$recommended[] = array(
 						'id'    => $page->ID,
 						'title' => $page->post_title,
 						'type'  => $page->post_type,
 						'url'   => get_permalink( $page->ID ),
-					];
+					);
 				}
 			}
 
 			return rest_ensure_response(
-				[
+				array(
 					'success' => true,
 					'pages'   => $recommended,
-				]
+				)
 			);
 
 		} catch ( Exception $e ) {
-			return new WP_Error( 'exception', $e->getMessage(), [ 'status' => 500 ] );
+			return new WP_Error( 'exception', $e->getMessage(), array( 'status' => 500 ) );
 		}
 	}
 
@@ -1581,14 +1632,14 @@ Do not include any explanation, just the JSON array.',
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional direct update.
 		$wpdb->update(
 			$conversations_table,
-			[
+			array(
 				'status'   => 'ended',
 				'ended_at' => current_time( 'mysql' ),
-			],
-			[
+			),
+			array(
 				'session_id' => $session_id,
 				'status'     => 'active',
-			]
+			)
 		);
 	}
 
@@ -1613,11 +1664,11 @@ Do not include any explanation, just the JSON array.',
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Intentional direct insert.
 		$wpdb->insert(
 			$conversations_table,
-			[
+			array(
 				'user_id'    => $user_id,
 				'session_id' => $session_id,
 				'status'     => 'active',
-			]
+			)
 		);
 
 		$conversation_id = $wpdb->insert_id;
@@ -1651,11 +1702,11 @@ Do not include any explanation, just the JSON array.',
 					$conversation_id,
 					$user_name ? $user_name : 'Unknown'
 				),
-				[
+				array(
 					'conversation_id' => $conversation_id,
 					'user_id'         => $user_id,
 					'session_id'      => $session_id,
-				]
+				)
 			);
 		}
 
@@ -1710,11 +1761,11 @@ Do not include any explanation, just the JSON array.',
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional direct update.
 		$wpdb->update(
 			$conversations_table,
-			[
+			array(
 				'status'   => 'ended',
 				'ended_at' => current_time( 'mysql' ),
-			],
-			[ 'session_id' => $session_id ]
+			),
+			array( 'session_id' => $session_id )
 		);
 
 		// Log conversation end.
@@ -1728,10 +1779,10 @@ Do not include any explanation, just the JSON array.',
 					__( 'Conversation #%d ended', 'ai-agent-for-website' ),
 					$conversation->id
 				),
-				[
+				array(
 					'conversation_id' => $conversation->id,
 					'session_id'      => $session_id,
-				]
+				)
 			);
 		}
 	}
@@ -1755,11 +1806,11 @@ Do not include any explanation, just the JSON array.',
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Intentional direct insert.
 		$wpdb->insert(
 			$messages_table,
-			[
+			array(
 				'conversation_id' => $conversation_id,
 				'role'            => $role,
 				'content'         => $content,
-			]
+			)
 		);
 	}
 
@@ -1774,7 +1825,7 @@ Do not include any explanation, just the JSON array.',
 		$files = $request->get_file_params();
 
 		if ( empty( $files ) || empty( $files['file'] ) ) {
-			return new WP_Error( 'no_file', __( 'No file was uploaded.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'no_file', __( 'No file was uploaded.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$file = $files['file'];
@@ -1784,7 +1835,7 @@ Do not include any explanation, just the JSON array.',
 		$result         = $file_processor->process_file( $file );
 
 		if ( ! $result['success'] ) {
-			return new WP_Error( 'processing_failed', $result['error'], [ 'status' => 400 ] );
+			return new WP_Error( 'processing_failed', $result['error'], array( 'status' => 400 ) );
 		}
 
 		// Add to knowledge base.
@@ -1797,7 +1848,7 @@ Do not include any explanation, just the JSON array.',
 		$kb_result = $kb->addText( $result['content'], $source, $title );
 
 		if ( ! $kb_result ) {
-			return new WP_Error( 'kb_add_failed', __( 'Failed to add content to knowledge base.', 'ai-agent-for-website' ), [ 'status' => 500 ] );
+			return new WP_Error( 'kb_add_failed', __( 'Failed to add content to knowledge base.', 'ai-agent-for-website' ), array( 'status' => 500 ) );
 		}
 
 		// Save knowledge base.
@@ -1811,7 +1862,7 @@ Do not include any explanation, just the JSON array.',
 		$file_id = $file_processor->save_file_record( $result, $kb_index );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'    => true,
 				'message'    => __( 'File uploaded and added to knowledge base.', 'ai-agent-for-website' ),
 				'file_id'    => $file_id,
@@ -1819,7 +1870,7 @@ Do not include any explanation, just the JSON array.',
 				'file_type'  => $result['file_type'],
 				'char_count' => $result['char_count'],
 				'kb_index'   => $kb_index,
-			]
+			)
 		);
 	}
 
@@ -1848,14 +1899,14 @@ Do not include any explanation, just the JSON array.',
 		$deleted        = $file_processor->delete_file( $file_id );
 
 		if ( ! $deleted ) {
-			return new WP_Error( 'delete_failed', __( 'Failed to delete file.', 'ai-agent-for-website' ), [ 'status' => 500 ] );
+			return new WP_Error( 'delete_failed', __( 'Failed to delete file.', 'ai-agent-for-website' ), array( 'status' => 500 ) );
 		}
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'message' => __( 'File deleted successfully.', 'ai-agent-for-website' ),
-			]
+			)
 		);
 	}
 
@@ -1877,10 +1928,10 @@ Do not include any explanation, just the JSON array.',
 		}
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'  => true,
 				'auth_url' => $auth_url,
-			]
+			)
 		);
 	}
 
@@ -1897,10 +1948,10 @@ Do not include any explanation, just the JSON array.',
 		AIAGENT_Google_Drive_Integration::delete_tokens();
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'message' => __( 'Disconnected from Google Drive.', 'ai-agent-for-website' ),
-			]
+			)
 		);
 	}
 
@@ -1921,10 +1972,10 @@ Do not include any explanation, just the JSON array.',
 		}
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'files'   => $files,
-			]
+			)
 		);
 	}
 
@@ -1980,10 +2031,10 @@ Do not include any explanation, just the JSON array.',
 		AIAGENT_Confluence_Integration::disconnect();
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'message' => __( 'Disconnected from Confluence.', 'ai-agent-for-website' ),
-			]
+			)
 		);
 	}
 
@@ -2005,10 +2056,10 @@ Do not include any explanation, just the JSON array.',
 		}
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'spaces'  => $spaces,
-			]
+			)
 		);
 	}
 
@@ -2029,10 +2080,10 @@ Do not include any explanation, just the JSON array.',
 		}
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'pages'   => $pages,
-			]
+			)
 		);
 	}
 
@@ -2070,12 +2121,12 @@ Do not include any explanation, just the JSON array.',
 		$data                 = $notification_manager->get_notifications( $page, 20, $status, $type );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'       => true,
 				'notifications' => $data['notifications'],
 				'total'         => $data['total'],
 				'pages'         => $data['pages'],
-			]
+			)
 		);
 	}
 
@@ -2093,10 +2144,10 @@ Do not include any explanation, just the JSON array.',
 		$count                = $notification_manager->get_unread_count();
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'count'   => $count,
-			]
+			)
 		);
 	}
 
@@ -2113,9 +2164,9 @@ Do not include any explanation, just the JSON array.',
 		$result               = $notification_manager->mark_as_read( $notification_id );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => $result,
-			]
+			)
 		);
 	}
 
@@ -2133,9 +2184,9 @@ Do not include any explanation, just the JSON array.',
 		$result               = $notification_manager->mark_all_as_read();
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => $result,
-			]
+			)
 		);
 	}
 
@@ -2152,7 +2203,7 @@ Do not include any explanation, just the JSON array.',
 		$result               = $notification_manager->validate_conversation_with_ai( $conversation_id );
 
 		if ( ! $result['success'] ) {
-			return new WP_Error( 'validation_failed', $result['error'], [ 'status' => 400 ] );
+			return new WP_Error( 'validation_failed', $result['error'], array( 'status' => 400 ) );
 		}
 
 		return rest_ensure_response( $result );
@@ -2171,7 +2222,7 @@ Do not include any explanation, just the JSON array.',
 		$result               = $notification_manager->convert_conversation_to_lead( $conversation_id );
 
 		if ( ! $result['success'] ) {
-			return new WP_Error( 'conversion_failed', $result['error'], [ 'status' => 400 ] );
+			return new WP_Error( 'conversion_failed', $result['error'], array( 'status' => 400 ) );
 		}
 
 		return rest_ensure_response( $result );
@@ -2191,7 +2242,7 @@ Do not include any explanation, just the JSON array.',
 		$result               = $notification_manager->close_conversation( $conversation_id, $reason );
 
 		if ( ! $result['success'] ) {
-			return new WP_Error( 'close_failed', $result['error'], [ 'status' => 400 ] );
+			return new WP_Error( 'close_failed', $result['error'], array( 'status' => 400 ) );
 		}
 
 		return rest_ensure_response( $result );
@@ -2213,12 +2264,12 @@ Do not include any explanation, just the JSON array.',
 		$data        = $log_manager->get_logs( $page, 50, $category, $date_from, $date_to );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'logs'    => $data['logs'],
 				'total'   => $data['total'],
 				'pages'   => $data['pages'],
-			]
+			)
 		);
 	}
 
@@ -2236,10 +2287,10 @@ Do not include any explanation, just the JSON array.',
 		$stats       = $log_manager->get_statistics();
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'stats'   => $stats,
-			]
+			)
 		);
 	}
 
@@ -2257,10 +2308,10 @@ Do not include any explanation, just the JSON array.',
 		AI_Agent_For_Website::update_settings( $settings );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'message' => __( 'Groq settings saved successfully.', 'ai-agent-for-website' ),
-			]
+			)
 		);
 	}
 
@@ -2280,10 +2331,10 @@ Do not include any explanation, just the JSON array.',
 		AIAGENT_Google_Drive_Integration::update_settings( $gdrive_settings );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'message' => __( 'Google Drive settings saved successfully.', 'ai-agent-for-website' ),
-			]
+			)
 		);
 	}
 
@@ -2305,10 +2356,10 @@ Do not include any explanation, just the JSON array.',
 		AIAGENT_Confluence_Integration::update_settings( $confluence_settings );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'message' => __( 'Confluence settings saved successfully.', 'ai-agent-for-website' ),
-			]
+			)
 		);
 	}
 
@@ -2322,16 +2373,16 @@ Do not include any explanation, just the JSON array.',
 		$enabled     = rest_sanitize_boolean( $request->get_param( 'enabled' ) );
 		$webhook_url = esc_url_raw( $request->get_param( 'webhook_url' ) );
 
-		$integration_settings                       = get_option( 'aiagent_integrations', [] );
+		$integration_settings                       = get_option( 'aiagent_integrations', array() );
 		$integration_settings['zapier_enabled']     = $enabled;
 		$integration_settings['zapier_webhook_url'] = $webhook_url;
 		update_option( 'aiagent_integrations', $integration_settings );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'message' => __( 'Zapier settings saved successfully.', 'ai-agent-for-website' ),
-			]
+			)
 		);
 	}
 
@@ -2346,17 +2397,17 @@ Do not include any explanation, just the JSON array.',
 		$api_key = sanitize_text_field( $request->get_param( 'api_key' ) );
 		$list_id = sanitize_text_field( $request->get_param( 'list_id' ) );
 
-		$integration_settings                      = get_option( 'aiagent_integrations', [] );
+		$integration_settings                      = get_option( 'aiagent_integrations', array() );
 		$integration_settings['mailchimp_enabled'] = $enabled;
 		$integration_settings['mailchimp_api_key'] = $api_key;
 		$integration_settings['mailchimp_list_id'] = $list_id;
 		update_option( 'aiagent_integrations', $integration_settings );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'message' => __( 'Mailchimp settings saved successfully.', 'ai-agent-for-website' ),
-			]
+			)
 		);
 	}
 
@@ -2375,12 +2426,12 @@ Do not include any explanation, just the JSON array.',
 		$settings   = AIAGENT_WooCommerce_Integration::get_settings();
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'             => true,
 				'woocommerce_active'  => $is_active,
 				'integration_enabled' => $is_enabled,
 				'settings'            => $settings,
-			]
+			)
 		);
 	}
 
@@ -2392,7 +2443,7 @@ Do not include any explanation, just the JSON array.',
 	 */
 	public function handle_woocommerce_search( $request ) {
 		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
-			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$query = $request->get_param( 'query' );
@@ -2409,19 +2460,19 @@ Do not include any explanation, just the JSON array.',
 		}
 
 		// Get related products from first result if enabled.
-		$related = [];
+		$related = array();
 		if ( ! empty( $products ) && $settings['show_related_products'] ) {
 			$related = $woo->get_related_products( $products[0]['id'], 3 );
 		}
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'  => true,
 				'products' => $products,
 				'related'  => $related,
 				'query'    => $query,
 				'count'    => count( $products ),
-			]
+			)
 		);
 	}
 
@@ -2433,7 +2484,7 @@ Do not include any explanation, just the JSON array.',
 	 */
 	public function handle_woocommerce_product( $request ) {
 		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
-			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$product_id = $request->get_param( 'id' );
@@ -2442,14 +2493,14 @@ Do not include any explanation, just the JSON array.',
 		$product = $woo->get_product( $product_id );
 
 		if ( ! $product ) {
-			return new WP_Error( 'product_not_found', __( 'Product not found.', 'ai-agent-for-website' ), [ 'status' => 404 ] );
+			return new WP_Error( 'product_not_found', __( 'Product not found.', 'ai-agent-for-website' ), array( 'status' => 404 ) );
 		}
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'product' => $product,
-			]
+			)
 		);
 	}
 
@@ -2461,7 +2512,7 @@ Do not include any explanation, just the JSON array.',
 	 */
 	public function handle_woocommerce_related( $request ) {
 		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
-			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$product_id = $request->get_param( 'id' );
@@ -2473,12 +2524,12 @@ Do not include any explanation, just the JSON array.',
 		$crosssells = $woo->get_crosssell_products( $product_id, $limit );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'     => true,
 				'related'     => $related,
 				'upsells'     => $upsells,
 				'cross_sells' => $crosssells,
-			]
+			)
 		);
 	}
 
@@ -2490,28 +2541,28 @@ Do not include any explanation, just the JSON array.',
 	 */
 	public function handle_woocommerce_compare( $request ) {
 		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
-			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$settings = AIAGENT_WooCommerce_Integration::get_settings();
 		if ( empty( $settings['show_product_comparison'] ) ) {
-			return new WP_Error( 'comparison_disabled', __( 'Product comparison is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'comparison_disabled', __( 'Product comparison is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$product_ids = $request->get_param( 'product_ids' );
 
 		if ( count( $product_ids ) < 2 ) {
-			return new WP_Error( 'insufficient_products', __( 'Please select at least 2 products to compare.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'insufficient_products', __( 'Please select at least 2 products to compare.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$woo        = new AIAGENT_WooCommerce_Integration();
 		$comparison = $woo->compare_products( $product_ids );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'    => true,
 				'comparison' => $comparison,
-			]
+			)
 		);
 	}
 
@@ -2523,24 +2574,24 @@ Do not include any explanation, just the JSON array.',
 	 */
 	public function handle_woocommerce_add_to_cart( $request ) {
 		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
-			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$settings = AIAGENT_WooCommerce_Integration::get_settings();
 		if ( empty( $settings['show_add_to_cart'] ) ) {
-			return new WP_Error( 'add_to_cart_disabled', __( 'Add to cart is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'add_to_cart_disabled', __( 'Add to cart is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$product_id   = $request->get_param( 'product_id' );
 		$quantity     = $request->get_param( 'quantity' ) ?? 1;
 		$variation_id = $request->get_param( 'variation_id' ) ?? 0;
-		$variation    = $request->get_param( 'variation' ) ?? [];
+		$variation    = $request->get_param( 'variation' ) ?? array();
 
 		$woo    = new AIAGENT_WooCommerce_Integration();
 		$result = $woo->add_to_cart( $product_id, $quantity, $variation_id, $variation );
 
 		if ( ! $result['success'] ) {
-			return new WP_Error( 'add_to_cart_failed', $result['message'], [ 'status' => 400 ] );
+			return new WP_Error( 'add_to_cart_failed', $result['message'], array( 'status' => 400 ) );
 		}
 
 		return rest_ensure_response( $result );
@@ -2557,17 +2608,17 @@ Do not include any explanation, just the JSON array.',
 		unset( $request );
 
 		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
-			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$woo  = new AIAGENT_WooCommerce_Integration();
 		$cart = $woo->get_cart();
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'cart'    => $cart,
-			]
+			)
 		);
 	}
 
@@ -2579,7 +2630,7 @@ Do not include any explanation, just the JSON array.',
 	 */
 	public function handle_woocommerce_remove_from_cart( $request ) {
 		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
-			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$cart_item_key = $request->get_param( 'cart_item_key' );
@@ -2588,7 +2639,7 @@ Do not include any explanation, just the JSON array.',
 		$result = $woo->remove_from_cart( $cart_item_key );
 
 		if ( ! $result['success'] ) {
-			return new WP_Error( 'remove_failed', $result['message'], [ 'status' => 400 ] );
+			return new WP_Error( 'remove_failed', $result['message'], array( 'status' => 400 ) );
 		}
 
 		return rest_ensure_response( $result );
@@ -2605,17 +2656,17 @@ Do not include any explanation, just the JSON array.',
 		unset( $request );
 
 		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
-			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$woo        = new AIAGENT_WooCommerce_Integration();
 		$categories = $woo->get_categories();
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'    => true,
 				'categories' => $categories,
-			]
+			)
 		);
 	}
 
@@ -2627,7 +2678,7 @@ Do not include any explanation, just the JSON array.',
 	 */
 	public function handle_woocommerce_featured( $request ) {
 		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
-			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$limit = $request->get_param( 'limit' ) ?? 6;
@@ -2636,10 +2687,10 @@ Do not include any explanation, just the JSON array.',
 		$products = $woo->get_featured_products( $limit );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'  => true,
 				'products' => $products,
-			]
+			)
 		);
 	}
 
@@ -2651,7 +2702,7 @@ Do not include any explanation, just the JSON array.',
 	 */
 	public function handle_woocommerce_sale( $request ) {
 		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
-			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$limit = $request->get_param( 'limit' ) ?? 6;
@@ -2660,10 +2711,10 @@ Do not include any explanation, just the JSON array.',
 		$products = $woo->get_sale_products( $limit );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'  => true,
 				'products' => $products,
-			]
+			)
 		);
 	}
 
@@ -2675,7 +2726,7 @@ Do not include any explanation, just the JSON array.',
 	 */
 	public function handle_woocommerce_bestsellers( $request ) {
 		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
-			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$limit = $request->get_param( 'limit' ) ?? 6;
@@ -2684,10 +2735,10 @@ Do not include any explanation, just the JSON array.',
 		$products = $woo->get_bestsellers( $limit );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'  => true,
 				'products' => $products,
-			]
+			)
 		);
 	}
 
@@ -2699,7 +2750,7 @@ Do not include any explanation, just the JSON array.',
 	 */
 	public function handle_woocommerce_variations( $request ) {
 		if ( ! AIAGENT_WooCommerce_Integration::is_enabled() ) {
-			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_disabled', __( 'WooCommerce integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$product_id = $request->get_param( 'id' );
@@ -2708,10 +2759,10 @@ Do not include any explanation, just the JSON array.',
 		$variations = $woo->get_product_variations( $product_id );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'    => true,
 				'variations' => $variations,
-			]
+			)
 		);
 	}
 
@@ -2722,7 +2773,7 @@ Do not include any explanation, just the JSON array.',
 	 * @return WP_REST_Response Response object.
 	 */
 	public function handle_save_woocommerce_settings( $request ) {
-		$settings = [
+		$settings = array(
 			'enabled'                 => rest_sanitize_boolean( $request->get_param( 'enabled' ) ),
 			'show_prices'             => rest_sanitize_boolean( $request->get_param( 'show_prices' ) ),
 			'show_add_to_cart'        => rest_sanitize_boolean( $request->get_param( 'show_add_to_cart' ) ),
@@ -2739,7 +2790,7 @@ Do not include any explanation, just the JSON array.',
 			'kb_include_categories'   => rest_sanitize_boolean( $request->get_param( 'kb_include_categories' ) ),
 			'kb_include_attributes'   => rest_sanitize_boolean( $request->get_param( 'kb_include_attributes' ) ),
 			'kb_include_stock_status' => rest_sanitize_boolean( $request->get_param( 'kb_include_stock_status' ) ),
-		];
+		);
 
 		AIAGENT_WooCommerce_Integration::update_settings( $settings );
 
@@ -2749,11 +2800,11 @@ Do not include any explanation, just the JSON array.',
 		}
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'     => true,
 				'message'     => __( 'WooCommerce settings saved successfully.', 'ai-agent-for-website' ),
 				'sync_result' => $sync_result ?? null,
-			]
+			)
 		);
 	}
 
@@ -2768,7 +2819,7 @@ Do not include any explanation, just the JSON array.',
 		unset( $request );
 
 		if ( ! AIAGENT_WooCommerce_Integration::is_woocommerce_active() ) {
-			return new WP_Error( 'woocommerce_not_active', __( 'WooCommerce is not active.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'woocommerce_not_active', __( 'WooCommerce is not active.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$result = AIAGENT_WooCommerce_Integration::sync_products_to_knowledge_base();
@@ -2776,7 +2827,7 @@ Do not include any explanation, just the JSON array.',
 		if ( $result['success'] ) {
 			return rest_ensure_response( $result );
 		} else {
-			return new WP_Error( 'sync_failed', $result['message'], [ 'status' => 400 ] );
+			return new WP_Error( 'sync_failed', $result['message'], array( 'status' => 400 ) );
 		}
 	}
 
@@ -2798,10 +2849,10 @@ Do not include any explanation, just the JSON array.',
 		}
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'  => true,
 				'auth_url' => $auth_url,
-			]
+			)
 		);
 	}
 
@@ -2818,10 +2869,10 @@ Do not include any explanation, just the JSON array.',
 		AIAGENT_Google_Calendar_Integration::delete_tokens();
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'message' => __( 'Disconnected from Google Calendar.', 'ai-agent-for-website' ),
-			]
+			)
 		);
 	}
 
@@ -2843,10 +2894,10 @@ Do not include any explanation, just the JSON array.',
 		}
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'   => true,
 				'calendars' => $calendars,
-			]
+			)
 		);
 	}
 
@@ -2859,7 +2910,7 @@ Do not include any explanation, just the JSON array.',
 	public function handle_gcalendar_slots( $request ) {
 		// Check if calendar is enabled.
 		if ( ! AIAGENT_Google_Calendar_Integration::is_enabled() ) {
-			return new WP_Error( 'calendar_disabled', __( 'Google Calendar integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'calendar_disabled', __( 'Google Calendar integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
 		$start_date = $request->get_param( 'start_date' );
@@ -2873,10 +2924,10 @@ Do not include any explanation, just the JSON array.',
 		}
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'slots'   => $slots,
-			]
+			)
 		);
 	}
 
@@ -2889,10 +2940,10 @@ Do not include any explanation, just the JSON array.',
 	public function handle_gcalendar_create_event( $request ) {
 		// Check if calendar is enabled.
 		if ( ! AIAGENT_Google_Calendar_Integration::is_enabled() ) {
-			return new WP_Error( 'calendar_disabled', __( 'Google Calendar integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+			return new WP_Error( 'calendar_disabled', __( 'Google Calendar integration is not enabled.', 'ai-agent-for-website' ), array( 'status' => 400 ) );
 		}
 
-		$event_data = [
+		$event_data = array(
 			'title'          => $request->get_param( 'title' ),
 			'description'    => $request->get_param( 'description' ) ?? '',
 			'start'          => $request->get_param( 'start' ),
@@ -2900,7 +2951,7 @@ Do not include any explanation, just the JSON array.',
 			'attendee_email' => $request->get_param( 'attendee_email' ),
 			'attendee_name'  => $request->get_param( 'attendee_name' ),
 			'add_meet'       => $request->get_param( 'add_meet' ) ?? false,
-		];
+		);
 
 		$gcalendar = new AIAGENT_Google_Calendar_Integration();
 		$result    = $gcalendar->create_event( $event_data );
@@ -2927,12 +2978,12 @@ Do not include any explanation, just the JSON array.',
 		$settings     = AIAGENT_Google_Calendar_Integration::get_frontend_settings();
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'   => true,
 				'connected' => $is_connected,
 				'enabled'   => $is_enabled,
 				'settings'  => $settings,
-			]
+			)
 		);
 	}
 
@@ -2943,7 +2994,7 @@ Do not include any explanation, just the JSON array.',
 	 * @return WP_REST_Response Response object.
 	 */
 	public function handle_save_gcalendar_settings( $request ) {
-		$settings = [
+		$settings = array(
 			'enabled'                    => rest_sanitize_boolean( $request->get_param( 'enabled' ) ),
 			'client_id'                  => sanitize_text_field( $request->get_param( 'client_id' ) ?? '' ),
 			'client_secret'              => sanitize_text_field( $request->get_param( 'client_secret' ) ?? '' ),
@@ -2953,20 +3004,148 @@ Do not include any explanation, just the JSON array.',
 			'days_ahead'                 => absint( $request->get_param( 'days_ahead' ) ) > 0 ? absint( $request->get_param( 'days_ahead' ) ) : 14,
 			'business_hours_start'       => sanitize_text_field( $request->get_param( 'business_hours_start' ) ?? '09:00' ),
 			'business_hours_end'         => sanitize_text_field( $request->get_param( 'business_hours_end' ) ?? '17:00' ),
-			'working_days'               => $request->get_param( 'working_days' ) ?? [ 1, 2, 3, 4, 5 ],
+			'working_days'               => $request->get_param( 'working_days' ) ?? array( 1, 2, 3, 4, 5 ),
 			'prompt_after_chat'          => rest_sanitize_boolean( $request->get_param( 'prompt_after_chat' ) ),
 			'prompt_message'             => sanitize_text_field( $request->get_param( 'prompt_message' ) ?? '' ),
 			'event_title_template'       => sanitize_text_field( $request->get_param( 'event_title_template' ) ?? '' ),
 			'event_description_template' => sanitize_textarea_field( $request->get_param( 'event_description_template' ) ?? '' ),
-		];
+		);
 
 		AIAGENT_Google_Calendar_Integration::update_settings( $settings );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success' => true,
 				'message' => __( 'Google Calendar settings saved successfully.', 'ai-agent-for-website' ),
-			]
+			)
+		);
+	}
+
+	/**
+	 * Handle Calendly auth URL request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_calendly_auth_url( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$calendly = new AIAGENT_Calendly_Integration();
+		$auth_url = $calendly->get_auth_url();
+
+		if ( is_wp_error( $auth_url ) ) {
+			return $auth_url;
+		}
+
+		return rest_ensure_response(
+			array(
+				'success'  => true,
+				'auth_url' => $auth_url,
+			)
+		);
+	}
+
+	/**
+	 * Handle Calendly disconnect request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_calendly_disconnect( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		AIAGENT_Calendly_Integration::delete_tokens();
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => __( 'Disconnected from Calendly.', 'ai-agent-for-website' ),
+			)
+		);
+	}
+
+	/**
+	 * Handle Calendly event types request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_calendly_event_types( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$calendly    = new AIAGENT_Calendly_Integration();
+		$event_types = $calendly->get_event_types();
+
+		if ( is_wp_error( $event_types ) ) {
+			return $event_types;
+		}
+
+		return rest_ensure_response(
+			array(
+				'success'     => true,
+				'event_types' => $event_types,
+			)
+		);
+	}
+
+	/**
+	 * Handle Calendly status request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_calendly_status( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$is_connected = AIAGENT_Calendly_Integration::is_connected();
+		$is_enabled   = AIAGENT_Calendly_Integration::is_enabled();
+		$settings     = AIAGENT_Calendly_Integration::get_frontend_settings();
+
+		return rest_ensure_response(
+			array(
+				'success'   => true,
+				'connected' => $is_connected,
+				'enabled'   => $is_enabled,
+				'settings'  => $settings,
+			)
+		);
+	}
+
+	/**
+	 * Handle save Calendly settings request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_save_calendly_settings( $request ) {
+		$settings = array(
+			'enabled'            => rest_sanitize_boolean( $request->get_param( 'enabled' ) ),
+			'integration_type'   => sanitize_text_field( $request->get_param( 'integration_type' ) ?? 'embed' ),
+			'scheduling_url'     => esc_url_raw( $request->get_param( 'scheduling_url' ) ?? '' ),
+			'client_id'          => sanitize_text_field( $request->get_param( 'client_id' ) ?? '' ),
+			'client_secret'      => sanitize_text_field( $request->get_param( 'client_secret' ) ?? '' ),
+			'prompt_after_chat'  => rest_sanitize_boolean( $request->get_param( 'prompt_after_chat' ) ),
+			'prompt_message'     => sanitize_text_field( $request->get_param( 'prompt_message' ) ?? '' ),
+			'button_text'        => sanitize_text_field( $request->get_param( 'button_text' ) ?? 'Schedule a Meeting' ),
+			'embed_height'       => absint( $request->get_param( 'embed_height' ) ) > 0 ? absint( $request->get_param( 'embed_height' ) ) : 630,
+			'hide_event_details' => rest_sanitize_boolean( $request->get_param( 'hide_event_details' ) ),
+			'hide_gdpr_banner'   => rest_sanitize_boolean( $request->get_param( 'hide_gdpr_banner' ) ),
+			'primary_color'      => sanitize_hex_color( $request->get_param( 'primary_color' ) ?? '' ),
+			'text_color'         => sanitize_hex_color( $request->get_param( 'text_color' ) ?? '' ),
+			'background_color'   => sanitize_hex_color( $request->get_param( 'background_color' ) ?? '' ),
+		);
+
+		AIAGENT_Calendly_Integration::update_settings( $settings );
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => __( 'Calendly settings saved successfully.', 'ai-agent-for-website' ),
+			)
 		);
 	}
 }

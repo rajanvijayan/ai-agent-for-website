@@ -19,15 +19,29 @@
             this.compareProducts = [];
             this.wooEnabled = aiagentConfig.wooEnabled || false;
 
-            // Calendar booking state
-            this.calendarEnabled = aiagentConfig.gcalendarSettings?.enabled || false;
-            this.calendarPromptAfterChat = aiagentConfig.gcalendarSettings?.prompt_after_chat || false;
-            this.calendarPromptMessage =
+            // Calendar booking state (Google Calendar)
+            this.gcalendarEnabled = aiagentConfig.gcalendarSettings?.enabled || false;
+            this.gcalendarPromptAfterChat = aiagentConfig.gcalendarSettings?.prompt_after_chat || false;
+            this.gcalendarPromptMessage =
                 aiagentConfig.gcalendarSettings?.prompt_message ||
                 'Would you like to schedule a meeting or follow-up?';
             this.calendarSlots = [];
             this.currentDateIndex = 0;
             this.selectedSlot = null;
+
+            // Calendly state
+            this.calendlyEnabled = aiagentConfig.calendlySettings?.enabled || false;
+            this.calendlyPromptAfterChat = aiagentConfig.calendlySettings?.prompt_after_chat || false;
+            this.calendlyPromptMessage =
+                aiagentConfig.calendlySettings?.prompt_message ||
+                'Would you like to schedule a call with us?';
+            this.calendlySettings = aiagentConfig.calendlySettings || {};
+
+            // Combined calendar enabled (either one)
+            this.calendarEnabled = this.gcalendarEnabled || this.calendlyEnabled;
+            this.calendarPromptAfterChat =
+                (this.gcalendarEnabled && this.gcalendarPromptAfterChat) ||
+                (this.calendlyEnabled && this.calendlyPromptAfterChat);
 
             // Debug: Log current state
             console.log('AI Agent Config:', {
@@ -37,7 +51,8 @@
                 sessionId: this.sessionId,
                 soundEnabled: this.soundEnabled,
                 wooEnabled: this.wooEnabled,
-                calendarEnabled: this.calendarEnabled,
+                gcalendarEnabled: this.gcalendarEnabled,
+                calendlyEnabled: this.calendlyEnabled,
             });
 
             if (this.widget) {
@@ -292,10 +307,20 @@
                 return;
             }
 
+            // Determine which calendar to use (prefer Calendly if both enabled as it's simpler)
+            let promptMessage = '';
+            if (this.calendlyEnabled && this.calendlyPromptAfterChat) {
+                promptMessage = this.calendlyPromptMessage;
+                container.dataset.calendarType = 'calendly';
+            } else if (this.gcalendarEnabled && this.gcalendarPromptAfterChat) {
+                promptMessage = this.gcalendarPromptMessage;
+                container.dataset.calendarType = 'gcalendar';
+            }
+
             // Set the prompt text
             const promptText = container.querySelector('.aiagent-calendar-prompt-text');
             if (promptText) {
-                promptText.textContent = this.calendarPromptMessage;
+                promptText.textContent = promptMessage;
             }
 
             container.classList.add('show-calendar');
@@ -1331,12 +1356,19 @@
 
         // Calendar Booking Methods
         initCalendar(container, calendarModal) {
-            // Yes button - proceed to slot selection
+            // Yes button - proceed to slot selection or open Calendly
             const yesBtn = calendarModal.querySelector('.aiagent-calendar-yes');
             if (yesBtn) {
                 yesBtn.addEventListener('click', () => {
-                    this.showCalendarStep(calendarModal, 'slots');
-                    this.loadAvailableSlots(calendarModal);
+                    const calendarType = container.dataset.calendarType;
+
+                    if (calendarType === 'calendly') {
+                        this.openCalendly(container);
+                    } else {
+                        // Google Calendar - show slot selection
+                        this.showCalendarStep(calendarModal, 'slots');
+                        this.loadAvailableSlots(calendarModal);
+                    }
                 });
             }
 
@@ -1585,6 +1617,112 @@
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
                 alert('Failed to book appointment: ' + (error.message || 'Please try again.'));
+            }
+        }
+
+        // Calendly Methods
+        openCalendly(container) {
+            if (!this.calendlyEnabled || !this.calendlySettings.scheduling_url) {
+                console.error('Calendly not configured');
+                return;
+            }
+
+            const url = this.calendlySettings.scheduling_url;
+            const integrationType = this.calendlySettings.integration_type || 'popup';
+
+            // Prefill user info if available
+            let prefillUrl = url;
+            const params = [];
+
+            try {
+                const userName = localStorage.getItem('aiagent_user_name');
+                const userEmail = localStorage.getItem('aiagent_user_email');
+
+                if (userName) {
+                    params.push('name=' + encodeURIComponent(userName));
+                }
+                if (userEmail) {
+                    params.push('email=' + encodeURIComponent(userEmail));
+                }
+
+                if (params.length > 0) {
+                    prefillUrl += (url.includes('?') ? '&' : '?') + params.join('&');
+                }
+            } catch (e) {
+                // Storage not available
+            }
+
+            if (integrationType === 'popup' && window.Calendly) {
+                // Use Calendly popup widget
+                window.Calendly.initPopupWidget({ url: prefillUrl });
+                this.hideCalendarPrompt(container);
+            } else if (integrationType === 'embed') {
+                // Show embed in the calendar modal
+                this.showCalendlyEmbed(container, prefillUrl);
+            } else {
+                // Open in new window
+                window.open(prefillUrl, '_blank');
+                this.closeChat(container, true);
+            }
+        }
+
+        showCalendlyEmbed(container, url) {
+            const calendarModal = container.querySelector('.aiagent-calendar-modal');
+            if (!calendarModal) return;
+
+            // Hide all steps
+            const steps = calendarModal.querySelectorAll('.aiagent-calendar-step');
+            steps.forEach((step) => {
+                step.style.display = 'none';
+            });
+
+            // Create or show embed container
+            let embedContainer = calendarModal.querySelector('.aiagent-calendly-embed');
+            if (!embedContainer) {
+                embedContainer = document.createElement('div');
+                embedContainer.className = 'aiagent-calendly-embed';
+                embedContainer.innerHTML = `
+                    <div class="aiagent-calendar-header">
+                        <button type="button" class="aiagent-calendar-back">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <h3>Schedule a Meeting</h3>
+                    </div>
+                    <div class="calendly-inline-widget" data-url="${url}" style="min-width:100%;height:${this.calendlySettings.embed_height || 500}px;"></div>
+                `;
+                calendarModal.querySelector('.aiagent-calendar-inner').appendChild(embedContainer);
+
+                // Bind back button
+                embedContainer.querySelector('.aiagent-calendar-back').addEventListener('click', () => {
+                    embedContainer.style.display = 'none';
+                    this.showCalendarStep(calendarModal, 'prompt');
+                });
+
+                // Load Calendly widget script if not loaded
+                if (!window.Calendly) {
+                    const script = document.createElement('script');
+                    script.src = 'https://assets.calendly.com/assets/external/widget.js';
+                    script.async = true;
+                    document.head.appendChild(script);
+                }
+            } else {
+                // Update URL
+                const widget = embedContainer.querySelector('.calendly-inline-widget');
+                if (widget) {
+                    widget.dataset.url = url;
+                }
+            }
+
+            embedContainer.style.display = 'block';
+
+            // Reinitialize Calendly widget
+            if (window.Calendly) {
+                window.Calendly.initInlineWidget({
+                    url: url,
+                    parentElement: embedContainer.querySelector('.calendly-inline-widget'),
+                });
             }
         }
 

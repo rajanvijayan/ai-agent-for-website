@@ -1675,3 +1675,64 @@
         max-width: 100%;
     }
 }
+
+/* Calendly Embed Styles */
+.aiagent-calendly-embed {
+    display: none;
+    height: 100%;
+    flex-direction: column;
+}
+
+.aiagent-calendly-embed .aiagent-calendar-header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid var(--aiagent-border, #e5e7eb);
+    gap: 10px;
+}
+
+.aiagent-calendly-embed .aiagent-calendar-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--aiagent-text);
+}
+
+.aiagent-calendly-embed .aiagent-calendar-back {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    color: var(--aiagent-text-light, #6b7280);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.aiagent-calendly-embed .aiagent-calendar-back:hover {
+    background: var(--aiagent-surface, #f3f4f6);
+    color: var(--aiagent-text);
+}
+
+.aiagent-calendly-embed .calendly-inline-widget {
+    flex: 1;
+    min-height: 450px;
+}
+
+/* Calendly popup button styles */
+.aiagent-calendly-popup-btn {
+    background: #006bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.aiagent-calendly-popup-btn:hover {
+    background: #0052cc;
+}
