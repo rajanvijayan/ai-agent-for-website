@@ -60,7 +60,7 @@ jobs:
           php-version: ${{ matrix.php-version }}
           extensions: mbstring, xml, zip, fileinfo
           tools: composer
-          coverage: xdebug
+          coverage: none
 
       - name: Get Composer cache directory
         id: composer-cache

@@ -18,7 +18,10 @@
         </testsuite>
     </testsuites>
 
-    <coverage processUncoveredFiles="true">
+    <!-- Coverage disabled: Using mocks in bootstrap.php prevents loading actual class files -->
+    <!-- To enable coverage, remove mocks from bootstrap.php and load actual WordPress environment -->
+    <!--
+    <coverage processUncoveredFiles="false">
         <include>
             <directory suffix=".php">./includes</directory>
         </include>
@@ -32,4 +35,5 @@
             <clover outputFile="coverage.xml"/>
         </report>
     </coverage>
+    -->
 </phpunit>
