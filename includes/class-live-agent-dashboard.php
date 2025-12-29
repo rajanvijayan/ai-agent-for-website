@@ -20,7 +20,8 @@ class AIAGENT_Live_Agent_Dashboard {
 	 * Initialize the dashboard.
 	 */
 	public static function init() {
-		add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
+		// Add with priority 20 to ensure main menu is registered first.
+		add_action( 'admin_menu', array( __CLASS__, 'add_menu' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_scripts' ) );
 	}
 
@@ -37,7 +38,7 @@ class AIAGENT_Live_Agent_Dashboard {
 		add_submenu_page(
 			'ai-agent-settings',
 			__( 'Live Agent Dashboard', 'ai-agent-for-website' ),
-			__( 'Live Agent', 'ai-agent-for-website' ),
+			__( 'Agent Dashboard', 'ai-agent-for-website' ),
 			'read',
 			'ai-agent-live-dashboard',
 			array( __CLASS__, 'render_dashboard' )
