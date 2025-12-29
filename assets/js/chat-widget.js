@@ -21,7 +21,8 @@
 
             // Calendar booking state (Google Calendar)
             this.gcalendarEnabled = aiagentConfig.gcalendarSettings?.enabled || false;
-            this.gcalendarPromptAfterChat = aiagentConfig.gcalendarSettings?.prompt_after_chat || false;
+            this.gcalendarPromptAfterChat =
+                aiagentConfig.gcalendarSettings?.prompt_after_chat || false;
             this.gcalendarPromptMessage =
                 aiagentConfig.gcalendarSettings?.prompt_message ||
                 'Would you like to schedule a meeting or follow-up?';
@@ -31,7 +32,8 @@
 
             // Calendly state
             this.calendlyEnabled = aiagentConfig.calendlySettings?.enabled || false;
-            this.calendlyPromptAfterChat = aiagentConfig.calendlySettings?.prompt_after_chat || false;
+            this.calendlyPromptAfterChat =
+                aiagentConfig.calendlySettings?.prompt_after_chat || false;
             this.calendlyPromptMessage =
                 aiagentConfig.calendlySettings?.prompt_message ||
                 'Would you like to schedule a call with us?';
@@ -1567,7 +1569,8 @@
             submitBtn.innerHTML = '<span class="aiagent-spinner"></span> Booking...';
 
             const title = form.querySelector('input[name="event_title"]').value.trim();
-            const description = form.querySelector('textarea[name="event_description"]')?.value.trim() || '';
+            const description =
+                form.querySelector('textarea[name="event_description"]')?.value.trim() || '';
 
             // Get user email from localStorage
             let userEmail = '';
@@ -1695,10 +1698,12 @@
                 calendarModal.querySelector('.aiagent-calendar-inner').appendChild(embedContainer);
 
                 // Bind back button
-                embedContainer.querySelector('.aiagent-calendar-back').addEventListener('click', () => {
-                    embedContainer.style.display = 'none';
-                    this.showCalendarStep(calendarModal, 'prompt');
-                });
+                embedContainer
+                    .querySelector('.aiagent-calendar-back')
+                    .addEventListener('click', () => {
+                        embedContainer.style.display = 'none';
+                        this.showCalendarStep(calendarModal, 'prompt');
+                    });
 
                 // Load Calendly widget script if not loaded
                 if (!window.Calendly) {

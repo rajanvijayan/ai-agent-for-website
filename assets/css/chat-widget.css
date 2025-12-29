@@ -1666,11 +1666,11 @@
     .aiagent-slots-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .aiagent-calendar-inner {
         padding: 16px;
     }
-    
+
     .aiagent-calendar-prompt-actions {
         max-width: 100%;
     }

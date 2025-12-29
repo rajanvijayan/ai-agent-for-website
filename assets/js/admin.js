@@ -1233,11 +1233,9 @@
                     endpoint = 'settings/gcalendar';
                     // Collect working days
                     const workingDays = [];
-                    $modal
-                        .find('input[name="gcalendar_working_days[]"]:checked')
-                        .each(function () {
-                            workingDays.push(parseInt($(this).val()));
-                        });
+                    $modal.find('input[name="gcalendar_working_days[]"]:checked').each(function () {
+                        workingDays.push(parseInt($(this).val()));
+                    });
 
                     data = {
                         enabled: $modal.find('#gcalendar_enabled').is(':checked'),
@@ -1249,10 +1247,8 @@
                         prompt_message: $modal.find('#gcalendar_prompt_message').val() || '',
                         default_duration:
                             parseInt($modal.find('#gcalendar_default_duration').val()) || 30,
-                        buffer_time:
-                            parseInt($modal.find('#gcalendar_buffer_time').val()) || 15,
-                        days_ahead:
-                            parseInt($modal.find('#gcalendar_days_ahead').val()) || 14,
+                        buffer_time: parseInt($modal.find('#gcalendar_buffer_time').val()) || 15,
+                        days_ahead: parseInt($modal.find('#gcalendar_days_ahead').val()) || 14,
                         business_hours_start:
                             $modal.find('#gcalendar_business_hours_start').val() || '09:00',
                         business_hours_end:
@@ -1269,14 +1265,20 @@
                     endpoint = 'settings/calendly';
                     data = {
                         enabled: $modal.find('#calendly_enabled').is(':checked'),
-                        integration_type: $modal.find('#calendly_integration_type').val() || 'embed',
+                        integration_type:
+                            $modal.find('#calendly_integration_type').val() || 'embed',
                         scheduling_url: $modal.find('#calendly_scheduling_url').val() || '',
-                        prompt_after_chat: $modal.find('#calendly_prompt_after_chat').is(':checked'),
+                        prompt_after_chat: $modal
+                            .find('#calendly_prompt_after_chat')
+                            .is(':checked'),
                         prompt_message: $modal.find('#calendly_prompt_message').val() || '',
-                        button_text: $modal.find('#calendly_button_text').val() || 'Schedule a Meeting',
+                        button_text:
+                            $modal.find('#calendly_button_text').val() || 'Schedule a Meeting',
                         embed_height: parseInt($modal.find('#calendly_embed_height').val()) || 630,
                         primary_color: $modal.find('#calendly_primary_color').val() || '',
-                        hide_event_details: $modal.find('#calendly_hide_event_details').is(':checked'),
+                        hide_event_details: $modal
+                            .find('#calendly_hide_event_details')
+                            .is(':checked'),
                         hide_gdpr_banner: $modal.find('#calendly_hide_gdpr_banner').is(':checked'),
                     };
                     break;
