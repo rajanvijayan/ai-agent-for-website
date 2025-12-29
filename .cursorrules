@@ -1,0 +1,68 @@
+# AI Agent for Website - Cursor Rules
+
+This file contains instructions for Cursor AI when working on this WordPress plugin.
+
+## Mandatory Checks Before Committing
+
+### 1. CI/CD Pipeline
+- Always verify that CI/CD workflows will pass before committing
+- Check `.github/workflows/` for any pipeline configurations
+- Ensure all automated tests are passing
+
+### 2. PHPCS (PHP CodeSniffer)
+- Always run PHPCS before committing any PHP changes:
+  ```bash
+  vendor/bin/phpcs --standard=phpcs.xml .
+  ```
+- Fix any coding standard violations before committing
+- Use `vendor/bin/phpcbf` for automatic fixes when possible
+
+### 3. WordPress Coding Standards
+- Follow WordPress Coding Standards for all PHP, CSS, and JavaScript code
+- Use proper escaping functions (`esc_html()`, `esc_attr()`, `wp_kses()`, etc.)
+- Use proper sanitization for all user inputs
+- Follow WordPress naming conventions (snake_case for functions/variables)
+- Use proper internationalization with `__()`, `_e()`, `esc_html__()`, etc.
+- Prefix all functions, classes, and hooks with `aaw_` (AI Agent for Website)
+
+### 4. Changelog and Version
+- Update `CHANGELOG.md` for any new features, bug fixes, or changes
+- Follow the existing changelog format (Keep a Changelog)
+- Update version number in the following files when releasing:
+  - `ai-agent-for-website.php` (Plugin header and constant)
+  - `readme.txt` (Stable tag)
+- Use semantic versioning (MAJOR.MINOR.PATCH)
+
+## Code Quality Guidelines
+
+### PHP
+- Minimum PHP version: Check `composer.json` for requirements
+- Use strict type declarations where appropriate
+- Document functions with proper PHPDoc comments
+- Use WordPress Database API (`$wpdb`) for database operations
+- Use WordPress HTTP API (`wp_remote_*`) for external requests
+
+### JavaScript
+- Use vanilla JavaScript or jQuery (WordPress bundled version)
+- Properly enqueue scripts with dependencies
+- Use `wp_localize_script()` for passing data to JavaScript
+
+### CSS
+- Use proper prefixing for custom classes
+- Follow BEM naming convention where applicable
+- Ensure responsive design
+
+## Testing
+- Run PHPUnit tests before major changes:
+  ```bash
+  vendor/bin/phpunit
+  ```
+- Test in multiple WordPress versions when possible
+- Test with WordPress Multisite if applicable
+
+## Security
+- Never trust user input - always sanitize and validate
+- Use nonces for all form submissions and AJAX requests
+- Check user capabilities before performing actions
+- Escape all output
+
