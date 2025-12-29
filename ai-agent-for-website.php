@@ -77,7 +77,7 @@ class AI_Agent_For_Website {
 		// Load integrations.
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-google-drive-integration.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-google-calendar-integration.php';
-		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-aiagent-calendly-integration.php';
+		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-calendly-integration.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-confluence-integration.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-zapier-integration.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-mailchimp-integration.php';
