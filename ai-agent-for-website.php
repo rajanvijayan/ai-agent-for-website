@@ -3,7 +3,7 @@
  * Plugin Name: AI Agent for Website
  * Plugin URI: https://github.com/rajanvijayan/ai-agent-for-website
  * Description: Add an AI-powered chat agent to your website using Groq API. Train it with your website content.
- * Version: 1.8.0
+ * Version: 1.9.0
  * Author: Rajan Vijayan
  * Author URI: https://rajanvijayan.com
  * License: GPL v2 or later
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'AIAGENT_VERSION', '1.8.0' );
+define( 'AIAGENT_VERSION', '1.9.0' );
 define( 'AIAGENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -89,6 +89,14 @@ class AI_Agent_For_Website {
 		// Load notification and log managers.
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-notification-manager.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-activity-log-manager.php';
+
+		// Load live agent manager.
+		require_once AIAGENT_PLUGIN_DIR . 'includes/class-live-agent-manager.php';
+
+		// Load live agent dashboard (admin only).
+		if ( is_admin() ) {
+			require_once AIAGENT_PLUGIN_DIR . 'includes/class-live-agent-dashboard.php';
+		}
 	}
 
 	/**
@@ -136,7 +144,7 @@ class AI_Agent_For_Website {
 		$db_version = get_option( 'aiagent_db_version', '0' );
 
 		// Check if we need to create/update tables.
-		if ( version_compare( $db_version, '1.5.0', '<' ) ) {
+		if ( version_compare( $db_version, '1.6.0', '<' ) ) {
 			$this->create_tables();
 		}
 
@@ -368,6 +376,40 @@ class AI_Agent_For_Website {
             KEY created_at (created_at)
         ) $charset_collate;";
 
+		// Live agent sessions table.
+		$live_sessions_table = $wpdb->prefix . 'aiagent_live_sessions';
+		$live_sessions_sql   = "CREATE TABLE $live_sessions_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            conversation_id bigint(20) unsigned DEFAULT NULL,
+            user_id bigint(20) unsigned NOT NULL,
+            session_id varchar(100) NOT NULL,
+            agent_id bigint(20) unsigned DEFAULT NULL,
+            status varchar(20) DEFAULT 'waiting',
+            started_at datetime DEFAULT CURRENT_TIMESTAMP,
+            ended_at datetime DEFAULT NULL,
+            ended_by varchar(20) DEFAULT NULL,
+            PRIMARY KEY (id),
+            KEY conversation_id (conversation_id),
+            KEY user_id (user_id),
+            KEY session_id (session_id),
+            KEY agent_id (agent_id),
+            KEY status (status)
+        ) $charset_collate;";
+
+		// Live agent messages table.
+		$live_messages_table = $wpdb->prefix . 'aiagent_live_messages';
+		$live_messages_sql   = "CREATE TABLE $live_messages_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            live_session_id bigint(20) unsigned NOT NULL,
+            sender_type varchar(20) NOT NULL,
+            sender_id bigint(20) unsigned NOT NULL,
+            message text NOT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY live_session_id (live_session_id),
+            KEY sender_type (sender_type)
+        ) $charset_collate;";
+
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $users_sql );
 		dbDelta( $conversations_sql );
@@ -378,9 +420,11 @@ class AI_Agent_For_Website {
 		dbDelta( $consents_sql );
 		dbDelta( $notifications_sql );
 		dbDelta( $logs_sql );
+		dbDelta( $live_sessions_sql );
+		dbDelta( $live_messages_sql );
 
 		// Store DB version.
-		update_option( 'aiagent_db_version', '1.5.0' );
+		update_option( 'aiagent_db_version', '1.6.0' );
 	}
 
 	/**
@@ -639,6 +683,12 @@ class AI_Agent_For_Website {
 				'checkoutUrl'            => $woo_enabled ? wc_get_checkout_url() : '',
 				'gcalendarSettings'      => AIAGENT_Google_Calendar_Integration::get_frontend_settings(),
 				'calendlySettings'       => AIAGENT_Calendly_Integration::get_frontend_settings(),
+				'liveAgentSettings'      => AIAGENT_Live_Agent_Manager::get_frontend_settings(),
+				// Auto Popup settings.
+				'autoPopupEnabled'       => ! empty( $settings['auto_popup_enabled'] ),
+				'autoPopupDelay'         => absint( $settings['auto_popup_delay'] ?? 10 ),
+				'autoPopupMessage'       => $settings['auto_popup_message'] ?? __( 'Hi there! Do you have any questions? I\'m here to help!', 'ai-agent-for-website' ),
+				'autoPopupOnce'          => ! empty( $settings['auto_popup_once'] ),
 			]
 		);
 	}

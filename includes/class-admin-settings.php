@@ -71,6 +71,9 @@ class AIAGENT_Admin_Settings {
 						case 'integrations':
 							$this->render_integrations_tab( $settings );
 							break;
+						case 'live-agent':
+							$this->render_live_agent_tab();
+							break;
 						case 'appearance':
 							$this->render_appearance_tab( $settings );
 							break;
@@ -112,6 +115,10 @@ class AIAGENT_Admin_Settings {
 			'integrations'  => array(
 				'label' => __( 'Integrations', 'ai-agent-for-website' ),
 				'icon'  => 'dashicons-admin-plugins',
+			),
+			'live-agent'    => array(
+				'label' => __( 'Live Agent', 'ai-agent-for-website' ),
+				'icon'  => 'dashicons-groups',
 			),
 			'appearance'    => array(
 				'label' => __( 'Appearance', 'ai-agent-for-website' ),
@@ -1763,6 +1770,88 @@ class AIAGENT_Admin_Settings {
 					</div>
 				</div>
 			</div>
+
+			<!-- Auto Popup Settings -->
+			<div class="aiagent-card">
+				<h2>
+					<span class="dashicons dashicons-bell" style="color: #f59e0b;"></span>
+					<?php esc_html_e( 'Auto Popup', 'ai-agent-for-website' ); ?>
+				</h2>
+				<p class="description">
+					<?php esc_html_e( 'Automatically open the chat widget after a visitor stays on the page for a specified time.', 'ai-agent-for-website' ); ?>
+				</p>
+
+				<table class="form-table">
+					<tr>
+						<th scope="row">
+							<label for="auto_popup_enabled"><?php esc_html_e( 'Enable Auto Popup', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<label class="aiagent-switch">
+								<input type="checkbox" 
+										id="auto_popup_enabled" 
+										name="auto_popup_enabled" 
+										value="1" 
+										<?php checked( $settings['auto_popup_enabled'] ?? false ); ?>>
+								<span class="slider"></span>
+							</label>
+							<p class="description">
+								<?php esc_html_e( 'Automatically open the chat widget for new visitors', 'ai-agent-for-website' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="auto_popup_delay"><?php esc_html_e( 'Popup Delay (seconds)', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<input type="number" 
+									id="auto_popup_delay" 
+									name="auto_popup_delay" 
+									value="<?php echo esc_attr( $settings['auto_popup_delay'] ?? 10 ); ?>" 
+									min="1" 
+									max="300"
+									class="small-text">
+							<p class="description">
+								<?php esc_html_e( 'Number of seconds before the chat widget automatically opens (1-300)', 'ai-agent-for-website' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="auto_popup_message"><?php esc_html_e( 'Popup Message', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<input type="text" 
+									id="auto_popup_message" 
+									name="auto_popup_message" 
+									value="<?php echo esc_attr( $settings['auto_popup_message'] ?? __( 'Hi there! Do you have any questions? I\'m here to help!', 'ai-agent-for-website' ) ); ?>" 
+									class="large-text">
+							<p class="description">
+								<?php esc_html_e( 'Custom greeting message shown when the chat auto-opens', 'ai-agent-for-website' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="auto_popup_once"><?php esc_html_e( 'Show Only Once', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<label class="aiagent-switch">
+								<input type="checkbox" 
+										id="auto_popup_once" 
+										name="auto_popup_once" 
+										value="1" 
+										<?php checked( $settings['auto_popup_once'] ?? true ); ?>>
+								<span class="slider"></span>
+							</label>
+							<p class="description">
+								<?php esc_html_e( 'Only auto-popup once per visitor (uses browser storage)', 'ai-agent-for-website' ); ?>
+							</p>
+						</td>
+					</tr>
+				</table>
+			</div>
 		</div>
 		<?php
 	}
@@ -1965,6 +2054,444 @@ class AIAGENT_Admin_Settings {
 					</button>
 				</div>
 			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render the Live Agent tab content.
+	 */
+	private function render_live_agent_tab() {
+		$settings        = AIAGENT_Live_Agent_Manager::get_settings();
+		$available_roles = AIAGENT_Live_Agent_Manager::get_available_roles();
+		$online_agents   = AIAGENT_Live_Agent_Manager::get_online_agents();
+		$current_user_id = get_current_user_id();
+		$my_status       = AIAGENT_Live_Agent_Manager::get_agent_status( $current_user_id );
+		// Allow admins to always be agents for testing purposes.
+		$can_be_agent = AIAGENT_Live_Agent_Manager::can_user_be_agent( $current_user_id ) || current_user_can( 'manage_options' );
+		?>
+
+		<!-- Agent Status Card - For Testing -->
+		<?php if ( $can_be_agent ) : ?>
+		<div class="aiagent-card" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac;">
+			<h2>
+				<span class="dashicons dashicons-admin-users" style="color: #16a34a;"></span>
+				<?php esc_html_e( 'Your Agent Status', 'ai-agent-for-website' ); ?>
+			</h2>
+			<p class="description">
+				<?php esc_html_e( 'Set your availability to receive live chat requests. Visitors will only see the "Connect to Live Agent" option when at least one agent is online.', 'ai-agent-for-website' ); ?>
+			</p>
+			
+			<div style="display: flex; align-items: center; gap: 20px; margin-top: 15px;">
+				<div style="display: flex; align-items: center; gap: 10px;">
+					<span style="font-weight: 500;"><?php esc_html_e( 'Current Status:', 'ai-agent-for-website' ); ?></span>
+					<span id="agent-status-badge" style="
+						display: inline-flex;
+						align-items: center;
+						gap: 6px;
+						padding: 6px 12px;
+						border-radius: 20px;
+						font-size: 13px;
+						font-weight: 500;
+						<?php echo 'offline' !== $my_status ? 'background: #dcfce7; color: #16a34a;' : 'background: #f3f4f6; color: #6b7280;'; ?>
+					">
+						<span style="
+							width: 8px;
+							height: 8px;
+							border-radius: 50%;
+							<?php echo 'offline' !== $my_status ? 'background: #16a34a;' : 'background: #9ca3af;'; ?>
+						"></span>
+						<?php echo 'offline' !== $my_status ? esc_html__( 'Online', 'ai-agent-for-website' ) : esc_html__( 'Offline', 'ai-agent-for-website' ); ?>
+					</span>
+				</div>
+				
+				<button type="button" id="toggle-agent-status" class="button <?php echo 'offline' !== $my_status ? 'button-secondary' : 'button-primary'; ?>" style="min-width: 120px;">
+					<?php echo 'offline' !== $my_status ? esc_html__( 'Go Offline', 'ai-agent-for-website' ) : esc_html__( 'Go Online', 'ai-agent-for-website' ); ?>
+				</button>
+			</div>
+			
+			<script>
+			jQuery(document).ready(function($) {
+				$('#toggle-agent-status').on('click', function() {
+					var $btn = $(this);
+					var $badge = $('#agent-status-badge');
+					var isOnline = $badge.text().trim() === '<?php echo esc_js( __( 'Online', 'ai-agent-for-website' ) ); ?>';
+					var newStatus = isOnline ? 'offline' : 'available';
+					
+					$btn.prop('disabled', true).text('<?php echo esc_js( __( 'Updating...', 'ai-agent-for-website' ) ); ?>');
+					
+					$.ajax({
+						url: '<?php echo esc_url( rest_url( 'ai-agent/v1/live-agent/set-status' ) ); ?>',
+						method: 'POST',
+						beforeSend: function(xhr) {
+							xhr.setRequestHeader('X-WP-Nonce', '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>');
+						},
+						data: JSON.stringify({ status: newStatus }),
+						contentType: 'application/json',
+						success: function(response) {
+							if (response.success) {
+								if (newStatus === 'available') {
+									$badge.css({ background: '#dcfce7', color: '#16a34a' })
+										.html('<span style="width:8px;height:8px;border-radius:50%;background:#16a34a;"></span> <?php echo esc_js( __( 'Online', 'ai-agent-for-website' ) ); ?>');
+									$btn.removeClass('button-primary').addClass('button-secondary').text('<?php echo esc_js( __( 'Go Offline', 'ai-agent-for-website' ) ); ?>');
+								} else {
+									$badge.css({ background: '#f3f4f6', color: '#6b7280' })
+										.html('<span style="width:8px;height:8px;border-radius:50%;background:#9ca3af;"></span> <?php echo esc_js( __( 'Offline', 'ai-agent-for-website' ) ); ?>');
+									$btn.removeClass('button-secondary').addClass('button-primary').text('<?php echo esc_js( __( 'Go Online', 'ai-agent-for-website' ) ); ?>');
+								}
+							}
+							$btn.prop('disabled', false);
+						},
+						error: function() {
+							alert('<?php echo esc_js( __( 'Failed to update status. Please try again.', 'ai-agent-for-website' ) ); ?>');
+							$btn.prop('disabled', false).text(isOnline ? '<?php echo esc_js( __( 'Go Offline', 'ai-agent-for-website' ) ); ?>' : '<?php echo esc_js( __( 'Go Online', 'ai-agent-for-website' ) ); ?>');
+						}
+					});
+				});
+			});
+			</script>
+		</div>
+		<?php endif; ?>
+
+		<?php if ( ! empty( $online_agents ) ) : ?>
+		<div class="aiagent-card" style="background: #eff6ff; border: 1px solid #93c5fd;">
+			<h3 style="margin-top: 0;">
+				<span class="dashicons dashicons-yes-alt" style="color: #2563eb;"></span>
+				<?php esc_html_e( 'Currently Online Agents', 'ai-agent-for-website' ); ?>
+			</h3>
+			<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+				<?php foreach ( $online_agents as $agent ) : ?>
+				<div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #dbeafe;">
+					<img src="<?php echo esc_url( $agent['avatar'] ); ?>" alt="" style="width: 32px; height: 32px; border-radius: 50%;">
+					<span style="font-weight: 500;"><?php echo esc_html( $agent['name'] ); ?></span>
+					<span style="font-size: 12px; color: #6b7280;">(<?php echo esc_html( $agent['active_chats'] ); ?> active chats)</span>
+				</div>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<?php endif; ?>
+
+		<div class="aiagent-card">
+			<h2>
+				<span class="dashicons dashicons-groups" style="color: #27ae60;"></span>
+				<?php esc_html_e( 'Live Agent Mode', 'ai-agent-for-website' ); ?>
+			</h2>
+			<p class="description">
+				<?php esc_html_e( 'Allow visitors to connect with live human agents when AI cannot help. Agents can take over conversations seamlessly.', 'ai-agent-for-website' ); ?>
+			</p>
+
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="live_agent_enabled"><?php esc_html_e( 'Enable Live Agent', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="live_agent_enabled" 
+									name="live_agent_enabled" 
+									value="1" 
+									<?php checked( $settings['enabled'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Enable visitors to connect with live human agents', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="live_agent_roles"><?php esc_html_e( 'Allowed Roles', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<select id="live_agent_roles" name="live_agent_roles[]" multiple class="aiagent-select-multiple" style="min-width: 300px; min-height: 120px;">
+							<?php foreach ( $available_roles as $role_name => $role_label ) : ?>
+								<option value="<?php echo esc_attr( $role_name ); ?>" 
+									<?php echo in_array( $role_name, $settings['allowed_roles'], true ) ? 'selected' : ''; ?>>
+									<?php echo esc_html( $role_label ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+						<p class="description">
+							<?php esc_html_e( 'Select which user roles can act as live agents. Hold Ctrl/Cmd to select multiple.', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="aiagent-card">
+			<h2><?php esc_html_e( 'When to Show Live Agent Option', 'ai-agent-for-website' ); ?></h2>
+			
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="live_agent_show_on_no_results"><?php esc_html_e( 'Show on Negative AI Results', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="live_agent_show_on_no_results" 
+									name="live_agent_show_on_no_results" 
+									value="1" 
+									<?php checked( $settings['show_on_no_results'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Show live agent option when AI responds with "I don\'t know" or similar negative responses', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="live_agent_show_after_messages"><?php esc_html_e( 'Show After Messages', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="number" 
+								id="live_agent_show_after_messages" 
+								name="live_agent_show_after_messages" 
+								value="<?php echo esc_attr( $settings['show_after_messages'] ); ?>" 
+								min="0" 
+								max="20"
+								class="small-text">
+						<p class="description">
+							<?php esc_html_e( 'Always show the live agent option after this many messages (0 = never auto-show, only on negative results)', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="aiagent-card">
+			<h2><?php esc_html_e( 'Messages & UI', 'ai-agent-for-website' ); ?></h2>
+			
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="live_agent_connect_button_text"><?php esc_html_e( 'Connect Button Text', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="text" 
+								id="live_agent_connect_button_text" 
+								name="live_agent_connect_button_text" 
+								value="<?php echo esc_attr( $settings['connect_button_text'] ); ?>" 
+								class="regular-text">
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="live_agent_waiting_message"><?php esc_html_e( 'Waiting Message', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="text" 
+								id="live_agent_waiting_message" 
+								name="live_agent_waiting_message" 
+								value="<?php echo esc_attr( $settings['waiting_message'] ); ?>" 
+								class="large-text">
+						<p class="description">
+							<?php esc_html_e( 'Shown while waiting for an agent to connect', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="live_agent_connected_message"><?php esc_html_e( 'Connected Message', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="text" 
+								id="live_agent_connected_message" 
+								name="live_agent_connected_message" 
+								value="<?php echo esc_attr( $settings['connected_message'] ); ?>" 
+								class="large-text">
+						<p class="description">
+							<?php esc_html_e( 'Shown when connected to a live agent', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="live_agent_offline_message"><?php esc_html_e( 'Offline Message', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="text" 
+								id="live_agent_offline_message" 
+								name="live_agent_offline_message" 
+								value="<?php echo esc_attr( $settings['offline_message'] ); ?>" 
+								class="large-text">
+						<p class="description">
+							<?php esc_html_e( 'Shown when no agents are available', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="live_agent_show_agent_name"><?php esc_html_e( 'Show Agent Name', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="live_agent_show_agent_name" 
+									name="live_agent_show_agent_name" 
+									value="1" 
+									<?php checked( $settings['show_agent_name'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Display the agent\'s name to visitors', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="live_agent_show_agent_avatar"><?php esc_html_e( 'Show Agent Avatar', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="live_agent_show_agent_avatar" 
+									name="live_agent_show_agent_avatar" 
+									value="1" 
+									<?php checked( $settings['show_agent_avatar'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Display the agent\'s avatar/profile picture', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="aiagent-card">
+			<h2><?php esc_html_e( 'Agent Queue Settings', 'ai-agent-for-website' ); ?></h2>
+			
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="live_agent_queue_enabled"><?php esc_html_e( 'Enable Queue', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="live_agent_queue_enabled" 
+									name="live_agent_queue_enabled" 
+									value="1" 
+									<?php checked( $settings['queue_enabled'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Queue visitors when all agents are busy', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="live_agent_queue_message"><?php esc_html_e( 'Queue Message', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="text" 
+								id="live_agent_queue_message" 
+								name="live_agent_queue_message" 
+								value="<?php echo esc_attr( $settings['queue_message'] ); ?>" 
+								class="large-text">
+						<p class="description">
+							<?php esc_html_e( 'Use {position} as placeholder for queue position', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="live_agent_max_concurrent_chats"><?php esc_html_e( 'Max Concurrent Chats', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<input type="number" 
+								id="live_agent_max_concurrent_chats" 
+								name="live_agent_max_concurrent_chats" 
+								value="<?php echo esc_attr( $settings['max_concurrent_chats'] ); ?>" 
+								min="1" 
+								max="20"
+								class="small-text">
+						<p class="description">
+							<?php esc_html_e( 'Maximum concurrent chats per agent', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="live_agent_auto_assign"><?php esc_html_e( 'Auto-Assign Agents', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="live_agent_auto_assign" 
+									name="live_agent_auto_assign" 
+									value="1" 
+									<?php checked( $settings['auto_assign'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Automatically assign chats to available agents based on workload', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="live_agent_transfer_conversation"><?php esc_html_e( 'Allow Transfer', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<label class="aiagent-switch">
+							<input type="checkbox" 
+									id="live_agent_transfer_conversation" 
+									name="live_agent_transfer_conversation" 
+									value="1" 
+									<?php checked( $settings['transfer_conversation'] ); ?>>
+							<span class="slider"></span>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Allow agents to transfer conversations to other agents', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="aiagent-card">
+			<h2><?php esc_html_e( 'Agent Status', 'ai-agent-for-website' ); ?></h2>
+			
+			<?php if ( ! empty( $online_agents ) ) : ?>
+				<table class="wp-list-table widefat fixed striped">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Agent', 'ai-agent-for-website' ); ?></th>
+							<th><?php esc_html_e( 'Status', 'ai-agent-for-website' ); ?></th>
+							<th><?php esc_html_e( 'Active Chats', 'ai-agent-for-website' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $online_agents as $agent ) : ?>
+							<tr>
+								<td>
+									<img src="<?php echo esc_url( $agent['avatar'] ); ?>" 
+										alt="<?php echo esc_attr( $agent['name'] ); ?>" 
+										style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 8px;">
+									<?php echo esc_html( $agent['name'] ); ?>
+								</td>
+								<td>
+									<span class="aiagent-status-badge aiagent-status-<?php echo esc_attr( $agent['status'] ); ?>">
+										<?php echo esc_html( ucfirst( $agent['status'] ) ); ?>
+									</span>
+								</td>
+								<td><?php echo esc_html( $agent['active_chats'] ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php else : ?>
+				<p class="description" style="padding: 20px; background: #f9f9f9; border-radius: 8px; text-align: center;">
+					<span class="dashicons dashicons-warning" style="color: #dba617;"></span>
+					<?php esc_html_e( 'No agents are currently online. Agents must go online from the admin bar to accept live chats.', 'ai-agent-for-website' ); ?>
+				</p>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
@@ -2440,6 +2967,12 @@ class AIAGENT_Admin_Settings {
 				$settings['widget_button_size'] = isset( $_POST['widget_button_size'] ) ? sanitize_text_field( wp_unslash( $_POST['widget_button_size'] ) ) : ( $settings['widget_button_size'] ?? 'medium' );
 				$settings['widget_animation']   = isset( $_POST['widget_animation'] ) ? sanitize_text_field( wp_unslash( $_POST['widget_animation'] ) ) : ( $settings['widget_animation'] ?? 'slide' );
 				$settings['widget_sound']       = ! empty( $_POST['widget_sound'] );
+				// Auto popup settings.
+				$settings['auto_popup_enabled'] = ! empty( $_POST['auto_popup_enabled'] );
+				$settings['auto_popup_delay']   = isset( $_POST['auto_popup_delay'] ) ? absint( wp_unslash( $_POST['auto_popup_delay'] ) ) : 10;
+				$settings['auto_popup_delay']   = max( 1, min( 300, $settings['auto_popup_delay'] ) ); // Clamp between 1-300.
+				$settings['auto_popup_message'] = isset( $_POST['auto_popup_message'] ) ? sanitize_text_field( wp_unslash( $_POST['auto_popup_message'] ) ) : __( 'Hi there! Do you have any questions? I\'m here to help!', 'ai-agent-for-website' );
+				$settings['auto_popup_once']    = ! empty( $_POST['auto_popup_once'] );
 				break;
 
 			case 'user-info':
@@ -2452,6 +2985,35 @@ class AIAGENT_Admin_Settings {
 				$settings['consent_newsletter_text']  = isset( $_POST['consent_newsletter_text'] ) ? sanitize_text_field( wp_unslash( $_POST['consent_newsletter_text'] ) ) : ( $settings['consent_newsletter_text'] ?? 'Subscribe to our newsletter' );
 				$settings['consent_promotional']      = ! empty( $_POST['consent_promotional'] );
 				$settings['consent_promotional_text'] = isset( $_POST['consent_promotional_text'] ) ? sanitize_text_field( wp_unslash( $_POST['consent_promotional_text'] ) ) : ( $settings['consent_promotional_text'] ?? 'Receive promotional updates' );
+				break;
+
+			case 'live-agent':
+				// Save live agent settings.
+				$live_agent_roles = array();
+				if ( isset( $_POST['live_agent_roles'] ) && is_array( $_POST['live_agent_roles'] ) ) {
+					$live_agent_roles = array_map( 'sanitize_key', wp_unslash( $_POST['live_agent_roles'] ) );
+				}
+
+				$live_agent_settings = array(
+					'enabled'                    => ! empty( $_POST['live_agent_enabled'] ),
+					'allowed_roles'              => $live_agent_roles,
+					'show_on_no_results'         => ! empty( $_POST['live_agent_show_on_no_results'] ),
+					'show_after_messages'        => isset( $_POST['live_agent_show_after_messages'] ) ? absint( $_POST['live_agent_show_after_messages'] ) : 3,
+					'connect_button_text'        => isset( $_POST['live_agent_connect_button_text'] ) ? sanitize_text_field( wp_unslash( $_POST['live_agent_connect_button_text'] ) ) : '',
+					'waiting_message'            => isset( $_POST['live_agent_waiting_message'] ) ? sanitize_text_field( wp_unslash( $_POST['live_agent_waiting_message'] ) ) : '',
+					'connected_message'          => isset( $_POST['live_agent_connected_message'] ) ? sanitize_text_field( wp_unslash( $_POST['live_agent_connected_message'] ) ) : '',
+					'offline_message'            => isset( $_POST['live_agent_offline_message'] ) ? sanitize_text_field( wp_unslash( $_POST['live_agent_offline_message'] ) ) : '',
+					'agent_typing_indicator'     => true,
+					'enable_sound_notifications' => true,
+					'auto_assign'                => ! empty( $_POST['live_agent_auto_assign'] ),
+					'max_concurrent_chats'       => isset( $_POST['live_agent_max_concurrent_chats'] ) ? absint( $_POST['live_agent_max_concurrent_chats'] ) : 5,
+					'queue_enabled'              => ! empty( $_POST['live_agent_queue_enabled'] ),
+					'queue_message'              => isset( $_POST['live_agent_queue_message'] ) ? sanitize_text_field( wp_unslash( $_POST['live_agent_queue_message'] ) ) : '',
+					'transfer_conversation'      => ! empty( $_POST['live_agent_transfer_conversation'] ),
+					'show_agent_name'            => ! empty( $_POST['live_agent_show_agent_name'] ),
+					'show_agent_avatar'          => ! empty( $_POST['live_agent_show_agent_avatar'] ),
+				);
+				AIAGENT_Live_Agent_Manager::update_settings( $live_agent_settings );
 				break;
 
 			case 'notifications':

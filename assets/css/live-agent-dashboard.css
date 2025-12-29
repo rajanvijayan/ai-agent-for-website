@@ -1,0 +1,477 @@
+/**
+ * Live Agent Dashboard Styles
+ */
+
+.aiagent-live-dashboard h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.aiagent-live-dashboard h1 .dashicons {
+    color: #2271b1;
+}
+
+/* Agent Status Bar */
+.aiagent-agent-status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.aiagent-status-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.aiagent-status-label {
+    font-weight: 500;
+    color: #1d2327;
+}
+
+.aiagent-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.aiagent-status-badge.online {
+    background: #d1fae5;
+    color: #047857;
+}
+
+.aiagent-status-badge.offline {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.aiagent-status-badge .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.aiagent-status-badge.online .status-dot {
+    background: #10b981;
+    animation: pulse 2s infinite;
+}
+
+.aiagent-status-badge.offline .status-dot {
+    background: #9ca3af;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Dashboard Container */
+.aiagent-dashboard-container {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 20px;
+    min-height: 600px;
+}
+
+/* Sessions Panel */
+.aiagent-sessions-panel {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.aiagent-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background: #f6f7f7;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+.aiagent-panel-header h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.aiagent-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 8px;
+    background: #2271b1;
+    color: #fff;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.aiagent-sessions-list {
+    max-height: 550px;
+    overflow-y: auto;
+}
+
+.aiagent-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    color: #646970;
+}
+
+.aiagent-loading .spinner {
+    float: none;
+    margin: 0;
+}
+
+/* Session Item */
+.aiagent-session-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f0f0f1;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.aiagent-session-item:hover {
+    background: #f6f7f7;
+}
+
+.aiagent-session-item.active {
+    background: #e7f3ff;
+    border-left: 3px solid #2271b1;
+}
+
+.aiagent-session-item.waiting {
+    background: #fef3c7;
+}
+
+.aiagent-session-avatar {
+    width: 40px;
+    height: 40px;
+    background: #ddd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.aiagent-session-avatar .dashicons {
+    color: #646970;
+}
+
+.aiagent-session-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.aiagent-session-name {
+    font-weight: 600;
+    color: #1d2327;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.aiagent-session-preview {
+    font-size: 13px;
+    color: #646970;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.aiagent-session-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.aiagent-session-time {
+    font-size: 11px;
+    color: #8c8f94;
+}
+
+.aiagent-session-status {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.aiagent-session-status.waiting {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.aiagent-session-status.active {
+    background: #d1fae5;
+    color: #047857;
+}
+
+.aiagent-no-sessions {
+    padding: 40px 20px;
+    text-align: center;
+    color: #646970;
+}
+
+.aiagent-no-sessions .dashicons {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #c3c4c7;
+    margin-bottom: 10px;
+}
+
+/* Chat Panel */
+.aiagent-chat-panel {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.aiagent-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background: #f6f7f7;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+.aiagent-chat-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.aiagent-user-avatar {
+    width: 44px;
+    height: 44px;
+    background: #ddd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aiagent-user-avatar .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: #646970;
+}
+
+.aiagent-user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.aiagent-user-name {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aiagent-user-email {
+    font-size: 13px;
+    color: #646970;
+}
+
+/* Chat Messages */
+.aiagent-chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f6f7f7;
+    min-height: 400px;
+}
+
+.aiagent-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #646970;
+    text-align: center;
+}
+
+.aiagent-empty-state .dashicons {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #c3c4c7;
+    margin-bottom: 15px;
+}
+
+/* Message Bubbles */
+.aiagent-message {
+    display: flex;
+    margin-bottom: 16px;
+}
+
+.aiagent-message.user {
+    justify-content: flex-start;
+}
+
+.aiagent-message.agent {
+    justify-content: flex-end;
+}
+
+.aiagent-message-bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.aiagent-message.user .aiagent-message-bubble {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 16px 16px 16px 4px;
+}
+
+.aiagent-message.agent .aiagent-message-bubble {
+    background: #2271b1;
+    color: #fff;
+    border-radius: 16px 16px 4px 16px;
+}
+
+.aiagent-message-sender {
+    font-size: 11px;
+    color: #646970;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.aiagent-message.agent .aiagent-message-sender {
+    color: rgba(255, 255, 255, 0.7);
+    text-align: right;
+}
+
+.aiagent-message-time {
+    font-size: 11px;
+    color: #8c8f94;
+    margin-top: 4px;
+    display: block;
+}
+
+.aiagent-message.agent .aiagent-message-time {
+    color: rgba(255, 255, 255, 0.6);
+    text-align: right;
+}
+
+/* Chat Input */
+.aiagent-chat-input {
+    padding: 15px 20px;
+    background: #fff;
+    border-top: 1px solid #c3c4c7;
+}
+
+.aiagent-chat-input form {
+    display: flex;
+    gap: 10px;
+}
+
+.aiagent-chat-input input[type="text"] {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.aiagent-chat-input input[type="text"]:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+.aiagent-chat-input button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+}
+
+.aiagent-chat-input button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* System Messages */
+.aiagent-system-message {
+    text-align: center;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.aiagent-system-message span {
+    display: inline-block;
+    padding: 6px 16px;
+    background: #f0f0f1;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #646970;
+}
+
+/* Accept Chat Button */
+.aiagent-accept-chat {
+    text-align: center;
+    padding: 20px;
+}
+
+.aiagent-accept-chat .button-primary {
+    padding: 10px 30px;
+    height: auto;
+    font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .aiagent-dashboard-container {
+        grid-template-columns: 280px 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .aiagent-dashboard-container {
+        grid-template-columns: 1fr;
+    }
+
+    .aiagent-sessions-panel {
+        max-height: 300px;
+    }
+
+    .aiagent-sessions-list {
+        max-height: 250px;
+    }
+}
