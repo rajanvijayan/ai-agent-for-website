@@ -58,6 +58,14 @@
             this.messageCount = 0;
             this.negativeResponseCount = 0;
 
+            // Auto Popup state
+            this.autoPopupEnabled = aiagentConfig.autoPopupEnabled || false;
+            this.autoPopupDelay = (aiagentConfig.autoPopupDelay || 10) * 1000; // Convert to ms
+            this.autoPopupMessage = aiagentConfig.autoPopupMessage || 'Hi there! Do you have any questions?';
+            this.autoPopupOnce = aiagentConfig.autoPopupOnce !== false; // Default true
+            this.autoPopupTimer = null;
+            this.autoPopupShown = false;
+
             // Debug: Log current state
             console.log('AI Agent Config:', {
                 requireUserInfo: aiagentConfig.requireUserInfo,
@@ -70,6 +78,8 @@
                 calendlyEnabled: this.calendlyEnabled,
                 liveAgentEnabled: this.liveAgentEnabled,
                 isAgentAvailable: this.isAgentAvailable,
+                autoPopupEnabled: this.autoPopupEnabled,
+                autoPopupDelay: this.autoPopupDelay,
             });
 
             if (this.widget) {
@@ -147,6 +157,9 @@
 
             // Toggle open/close
             toggle.addEventListener('click', () => {
+                // Cancel auto popup timer if user interacts
+                this.cancelAutoPopup();
+                
                 if (this.widget.classList.contains('open')) {
                     // Closing - check if we should show rating
                     if (this.hasMessages) {
@@ -162,6 +175,9 @@
             });
 
             this.initChat(this.widget);
+            
+            // Initialize auto popup
+            this.initAutoPopup();
         }
 
         checkUserInfo(container, messagesContainer) {
@@ -180,6 +196,103 @@
                 const welcomeMsg = this.getPersonalizedWelcome();
                 this.addMessage(messagesContainer, welcomeMsg, 'ai');
             }
+        }
+
+        // Auto Popup functionality
+        initAutoPopup() {
+            if (!this.autoPopupEnabled || !this.widget) {
+                return;
+            }
+
+            // Check if we should only show once and if already shown
+            if (this.autoPopupOnce && this.hasAutoPopupBeenShown()) {
+                console.log('Auto popup already shown to this visitor');
+                return;
+            }
+
+            // Don't auto popup if widget is already open
+            if (this.widget.classList.contains('open')) {
+                return;
+            }
+
+            console.log(`Auto popup will trigger in ${this.autoPopupDelay / 1000} seconds`);
+
+            // Set timer to open the widget
+            this.autoPopupTimer = setTimeout(() => {
+                this.triggerAutoPopup();
+            }, this.autoPopupDelay);
+        }
+
+        cancelAutoPopup() {
+            if (this.autoPopupTimer) {
+                clearTimeout(this.autoPopupTimer);
+                this.autoPopupTimer = null;
+                console.log('Auto popup cancelled (user interaction)');
+            }
+        }
+
+        hasAutoPopupBeenShown() {
+            try {
+                return localStorage.getItem('aiagent_auto_popup_shown') === 'true';
+            } catch (e) {
+                return false;
+            }
+        }
+
+        markAutoPopupShown() {
+            try {
+                localStorage.setItem('aiagent_auto_popup_shown', 'true');
+            } catch (e) {
+                // localStorage not available
+            }
+        }
+
+        triggerAutoPopup() {
+            if (this.autoPopupShown) return;
+            if (!this.widget) return;
+            if (this.widget.classList.contains('open')) return;
+
+            console.log('Triggering auto popup');
+            this.autoPopupShown = true;
+
+            // Mark as shown if "show only once" is enabled
+            if (this.autoPopupOnce) {
+                this.markAutoPopupShown();
+            }
+
+            // Open the widget
+            this.widget.classList.add('open');
+
+            // Get messages container and add the auto popup message
+            const messagesContainer = this.widget.querySelector('.aiagent-messages');
+            
+            // Check if user info is required
+            this.checkUserInfo(this.widget, messagesContainer);
+            
+            // Add the custom auto popup greeting if there's no welcome message yet
+            // or add it as a follow-up message
+            if (messagesContainer && this.autoPopupMessage) {
+                // Small delay to ensure widget is open
+                setTimeout(() => {
+                    // Check if we need to show a special popup message
+                    // (different from welcome message)
+                    const hasWelcome = messagesContainer.children.length > 0;
+                    if (hasWelcome && this.autoPopupMessage !== aiagentConfig.welcomeMessage) {
+                        this.addMessage(messagesContainer, this.autoPopupMessage, 'ai');
+                    } else if (!hasWelcome) {
+                        this.addMessage(messagesContainer, this.autoPopupMessage, 'ai');
+                    }
+                    
+                    // Play notification sound
+                    this.playNotificationSound();
+                }, 100);
+            }
+
+            // Add a subtle attention animation
+            this.widget.classList.add('aiagent-popup-attention');
+            setTimeout(() => {
+                this.widget.classList.remove('aiagent-popup-attention');
+            }, 1000);
         }
 
         getPersonalizedWelcome() {

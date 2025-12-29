@@ -1770,6 +1770,88 @@ class AIAGENT_Admin_Settings {
 					</div>
 				</div>
 			</div>
+
+			<!-- Auto Popup Settings -->
+			<div class="aiagent-card">
+				<h2>
+					<span class="dashicons dashicons-bell" style="color: #f59e0b;"></span>
+					<?php esc_html_e( 'Auto Popup', 'ai-agent-for-website' ); ?>
+				</h2>
+				<p class="description">
+					<?php esc_html_e( 'Automatically open the chat widget after a visitor stays on the page for a specified time.', 'ai-agent-for-website' ); ?>
+				</p>
+
+				<table class="form-table">
+					<tr>
+						<th scope="row">
+							<label for="auto_popup_enabled"><?php esc_html_e( 'Enable Auto Popup', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<label class="aiagent-switch">
+								<input type="checkbox" 
+										id="auto_popup_enabled" 
+										name="auto_popup_enabled" 
+										value="1" 
+										<?php checked( $settings['auto_popup_enabled'] ?? false ); ?>>
+								<span class="slider"></span>
+							</label>
+							<p class="description">
+								<?php esc_html_e( 'Automatically open the chat widget for new visitors', 'ai-agent-for-website' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="auto_popup_delay"><?php esc_html_e( 'Popup Delay (seconds)', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<input type="number" 
+									id="auto_popup_delay" 
+									name="auto_popup_delay" 
+									value="<?php echo esc_attr( $settings['auto_popup_delay'] ?? 10 ); ?>" 
+									min="1" 
+									max="300"
+									class="small-text">
+							<p class="description">
+								<?php esc_html_e( 'Number of seconds before the chat widget automatically opens (1-300)', 'ai-agent-for-website' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="auto_popup_message"><?php esc_html_e( 'Popup Message', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<input type="text" 
+									id="auto_popup_message" 
+									name="auto_popup_message" 
+									value="<?php echo esc_attr( $settings['auto_popup_message'] ?? __( 'Hi there! Do you have any questions? I\'m here to help!', 'ai-agent-for-website' ) ); ?>" 
+									class="large-text">
+							<p class="description">
+								<?php esc_html_e( 'Custom greeting message shown when the chat auto-opens', 'ai-agent-for-website' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="auto_popup_once"><?php esc_html_e( 'Show Only Once', 'ai-agent-for-website' ); ?></label>
+						</th>
+						<td>
+							<label class="aiagent-switch">
+								<input type="checkbox" 
+										id="auto_popup_once" 
+										name="auto_popup_once" 
+										value="1" 
+										<?php checked( $settings['auto_popup_once'] ?? true ); ?>>
+								<span class="slider"></span>
+							</label>
+							<p class="description">
+								<?php esc_html_e( 'Only auto-popup once per visitor (uses browser storage)', 'ai-agent-for-website' ); ?>
+							</p>
+						</td>
+					</tr>
+				</table>
+			</div>
 		</div>
 		<?php
 	}
@@ -2885,6 +2967,12 @@ class AIAGENT_Admin_Settings {
 				$settings['widget_button_size'] = isset( $_POST['widget_button_size'] ) ? sanitize_text_field( wp_unslash( $_POST['widget_button_size'] ) ) : ( $settings['widget_button_size'] ?? 'medium' );
 				$settings['widget_animation']   = isset( $_POST['widget_animation'] ) ? sanitize_text_field( wp_unslash( $_POST['widget_animation'] ) ) : ( $settings['widget_animation'] ?? 'slide' );
 				$settings['widget_sound']       = ! empty( $_POST['widget_sound'] );
+				// Auto popup settings.
+				$settings['auto_popup_enabled'] = ! empty( $_POST['auto_popup_enabled'] );
+				$settings['auto_popup_delay']   = isset( $_POST['auto_popup_delay'] ) ? absint( wp_unslash( $_POST['auto_popup_delay'] ) ) : 10;
+				$settings['auto_popup_delay']   = max( 1, min( 300, $settings['auto_popup_delay'] ) ); // Clamp between 1-300.
+				$settings['auto_popup_message'] = isset( $_POST['auto_popup_message'] ) ? sanitize_text_field( wp_unslash( $_POST['auto_popup_message'] ) ) : __( 'Hi there! Do you have any questions? I\'m here to help!', 'ai-agent-for-website' );
+				$settings['auto_popup_once']    = ! empty( $_POST['auto_popup_once'] );
 				break;
 
 			case 'user-info':

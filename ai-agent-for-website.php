@@ -684,6 +684,11 @@ class AI_Agent_For_Website {
 				'gcalendarSettings'      => AIAGENT_Google_Calendar_Integration::get_frontend_settings(),
 				'calendlySettings'       => AIAGENT_Calendly_Integration::get_frontend_settings(),
 				'liveAgentSettings'      => AIAGENT_Live_Agent_Manager::get_frontend_settings(),
+				// Auto Popup settings.
+				'autoPopupEnabled'       => ! empty( $settings['auto_popup_enabled'] ),
+				'autoPopupDelay'         => absint( $settings['auto_popup_delay'] ?? 10 ),
+				'autoPopupMessage'       => $settings['auto_popup_message'] ?? __( 'Hi there! Do you have any questions? I\'m here to help!', 'ai-agent-for-website' ),
+				'autoPopupOnce'          => ! empty( $settings['auto_popup_once'] ),
 			]
 		);
 	}
