@@ -2039,7 +2039,7 @@ class AIAGENT_Admin_Settings {
 					$btn.prop('disabled', true).text('<?php echo esc_js( __( 'Updating...', 'ai-agent-for-website' ) ); ?>');
 					
 					$.ajax({
-						url: '<?php echo esc_url( rest_url( 'aiagent/v1/live-agent/set-status' ) ); ?>',
+						url: '<?php echo esc_url( rest_url( 'ai-agent/v1/live-agent/set-status' ) ); ?>',
 						method: 'POST',
 						beforeSend: function(xhr) {
 							xhr.setRequestHeader('X-WP-Nonce', '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>');
