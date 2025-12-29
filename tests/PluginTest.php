@@ -429,12 +429,14 @@ class PluginTest extends TestCase {
 	}
 
 	/**
-	 * Test API keys file exists.
+	 * Test API keys example file exists.
+	 *
+	 * Note: api-keys.php is gitignored, so we check for the example file instead.
 	 */
 	public function testAPIKeysFileExists(): void {
 		$base_dir = dirname( __DIR__ );
 
-		$this->assertFileExists( $base_dir . '/api-keys.php' );
+		$this->assertFileExists( $base_dir . '/api-keys.example.php' );
 	}
 
 	/**
