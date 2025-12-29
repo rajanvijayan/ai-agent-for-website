@@ -3608,37 +3608,38 @@ Do not include any explanation, just the JSON array.',
 	 * @return string User-friendly error message.
 	 */
 	private function get_friendly_error_message( $error_message ) {
-		// Check for rate limit errors.
-		if ( stripos( $error_message, 'rate limit' ) !== false || stripos( $error_message, 'Rate limit' ) !== false ) {
-			return __( 'I\'m experiencing high demand right now. Please try again in a few moments.', 'ai-agent-for-website' );
+		// Log the actual error for debugging.
+		$this->log_api_error( $error_message );
+
+		// Always show a friendly message to users.
+		return __( 'I\'m experiencing high demand right now. Please try again in a few moments.', 'ai-agent-for-website' );
+	}
+
+	/**
+	 * Log API errors for admin review.
+	 *
+	 * @param string $error_message The error message to log.
+	 */
+	private function log_api_error( $error_message ) {
+		// Log using Activity Log Manager if available.
+		if ( class_exists( 'AIAGENT_Activity_Log_Manager' ) ) {
+			$log_manager = new AIAGENT_Activity_Log_Manager();
+			$log_manager->log(
+				AIAGENT_Activity_Log_Manager::CATEGORY_SYSTEM,
+				'ai_api_error',
+				__( 'AI API Error occurred', 'ai-agent-for-website' ),
+				array(
+					'error_message' => $error_message,
+					'timestamp'     => current_time( 'mysql' ),
+					'user_ip'       => $this->get_client_ip(),
+				)
+			);
 		}
 
-		// Check for quota exceeded errors.
-		if ( stripos( $error_message, 'quota' ) !== false || stripos( $error_message, 'Quota' ) !== false ) {
-			return __( 'I\'m temporarily unavailable. Please try again later.', 'ai-agent-for-website' );
+		// Also log to WordPress debug log if WP_DEBUG is enabled.
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( sprintf( '[AI Agent] API Error: %s', $error_message ) );
 		}
-
-		// Check for authentication errors.
-		if ( stripos( $error_message, 'authentication' ) !== false || stripos( $error_message, 'api key' ) !== false || stripos( $error_message, 'unauthorized' ) !== false ) {
-			return __( 'I\'m having trouble connecting right now. Please try again later.', 'ai-agent-for-website' );
-		}
-
-		// Check for timeout errors.
-		if ( stripos( $error_message, 'timeout' ) !== false || stripos( $error_message, 'timed out' ) !== false ) {
-			return __( 'The request took too long. Please try again.', 'ai-agent-for-website' );
-		}
-
-		// Check for connection errors.
-		if ( stripos( $error_message, 'connection' ) !== false || stripos( $error_message, 'network' ) !== false ) {
-			return __( 'I\'m having trouble connecting. Please check your connection and try again.', 'ai-agent-for-website' );
-		}
-
-		// Check for server errors.
-		if ( stripos( $error_message, '500' ) !== false || stripos( $error_message, '502' ) !== false || stripos( $error_message, '503' ) !== false ) {
-			return __( 'I\'m temporarily unavailable. Please try again in a moment.', 'ai-agent-for-website' );
-		}
-
-		// Default friendly message for any other errors.
-		return __( 'Sorry, I encountered an issue processing your request. Please try again.', 'ai-agent-for-website' );
 	}
 }
