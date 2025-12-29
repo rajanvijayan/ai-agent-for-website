@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added `.cursorrules` file for Cursor AI coding assistant instructions
+  - Mandatory checks for CI/CD, PHPCS, and WordPress coding standards
+  - Changelog and version update requirements
+  - Code quality guidelines for PHP, JavaScript, and CSS
+
 ## [1.9.0] - 2024-12-30
 
 ### Added
