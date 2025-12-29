@@ -1984,7 +1984,8 @@
 }
 
 @keyframes pulse-green {
-    0%, 100% {
+    0%,
+    100% {
         box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
     }
     50% {
@@ -2146,7 +2147,7 @@
 }
 
 .aiagent-message-agent::before {
-    content: '';
+    content: "";
     display: block;
     font-size: 10px;
     color: #3b82f6;
@@ -2215,7 +2216,7 @@
 
 /* Auto popup badge/indicator on toggle button */
 .aiagent-widget.aiagent-popup-attention .aiagent-toggle::after {
-    content: '';
+    content: "";
     position: absolute;
     top: -5px;
     right: -5px;
@@ -2228,7 +2229,8 @@
 }
 
 @keyframes aiagent-pulse-attention {
-    0%, 100% {
+    0%,
+    100% {
         transform: scale(1);
         opacity: 1;
     }

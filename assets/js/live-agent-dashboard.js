@@ -2,7 +2,7 @@
  * Live Agent Dashboard JavaScript
  */
 
-(function($) {
+(function ($) {
     'use strict';
 
     const Dashboard = {
@@ -10,13 +10,13 @@
         pollInterval: null,
         lastMessageId: 0,
 
-        init: function() {
+        init: function () {
             this.bindEvents();
             this.loadSessions();
             this.startPolling();
         },
 
-        bindEvents: function() {
+        bindEvents: function () {
             // Toggle agent status
             $('#toggle-agent-status').on('click', () => this.toggleStatus());
 
@@ -30,7 +30,7 @@
             $('#end-chat-btn').on('click', () => this.endChat());
         },
 
-        toggleStatus: function() {
+        toggleStatus: function () {
             const $btn = $('#toggle-agent-status');
             const $badge = $('#agent-status-indicator');
             const isOnline = $badge.hasClass('online');
@@ -49,11 +49,15 @@
                         if (newStatus === 'available') {
                             $badge.removeClass('offline').addClass('online');
                             $badge.find('.status-text').text('Online');
-                            $btn.removeClass('button-primary').addClass('button-secondary').text('Go Offline');
+                            $btn.removeClass('button-primary')
+                                .addClass('button-secondary')
+                                .text('Go Offline');
                         } else {
                             $badge.removeClass('online').addClass('offline');
                             $badge.find('.status-text').text('Offline');
-                            $btn.removeClass('button-secondary').addClass('button-primary').text('Go Online');
+                            $btn.removeClass('button-secondary')
+                                .addClass('button-primary')
+                                .text('Go Online');
                         }
                     }
                     $btn.prop('disabled', false);
@@ -61,11 +65,11 @@
                 error: () => {
                     alert('Failed to update status');
                     $btn.prop('disabled', false).text(isOnline ? 'Go Offline' : 'Go Online');
-                }
+                },
             });
         },
 
-        loadSessions: function() {
+        loadSessions: function () {
             $.ajax({
                 url: aiagentLiveAgent.restUrl + 'live-agent/sessions',
                 method: 'GET',
@@ -74,12 +78,14 @@
                     this.renderSessions(response.sessions || []);
                 },
                 error: () => {
-                    $('#sessions-list').html('<div class="aiagent-no-sessions"><span class="dashicons dashicons-warning"></span><p>Failed to load sessions</p></div>');
-                }
+                    $('#sessions-list').html(
+                        '<div class="aiagent-no-sessions"><span class="dashicons dashicons-warning"></span><p>Failed to load sessions</p></div>'
+                    );
+                },
             });
         },
 
-        renderSessions: function(sessions) {
+        renderSessions: function (sessions) {
             const $list = $('#sessions-list');
             $('#sessions-count').text(sessions.length);
 
@@ -94,10 +100,13 @@
             }
 
             let html = '';
-            sessions.forEach(session => {
+            sessions.forEach((session) => {
                 const isActive = this.currentSessionId === session.id;
                 const statusClass = session.status === 'waiting' ? 'waiting' : 'active';
-                const statusText = session.status === 'waiting' ? aiagentLiveAgent.strings.waiting : aiagentLiveAgent.strings.active;
+                const statusText =
+                    session.status === 'waiting'
+                        ? aiagentLiveAgent.strings.waiting
+                        : aiagentLiveAgent.strings.active;
                 const time = this.formatTime(session.started_at);
 
                 html += `
@@ -120,13 +129,13 @@
             $list.html(html);
 
             // Bind click events
-            $('.aiagent-session-item').on('click', function() {
+            $('.aiagent-session-item').on('click', function () {
                 const sessionId = $(this).data('session-id');
                 Dashboard.selectSession(sessionId);
             });
         },
 
-        selectSession: function(sessionId) {
+        selectSession: function (sessionId) {
             this.currentSessionId = sessionId;
             this.lastMessageId = 0;
 
@@ -149,9 +158,11 @@
             this.loadMessages(sessionId, isWaiting);
         },
 
-        loadMessages: function(sessionId, isWaiting) {
+        loadMessages: function (sessionId, isWaiting) {
             const $messages = $('#chat-messages');
-            $messages.html('<div class="aiagent-loading"><span class="spinner is-active"></span> Loading messages...</div>');
+            $messages.html(
+                '<div class="aiagent-loading"><span class="spinner is-active"></span> Loading messages...</div>'
+            );
 
             $.ajax({
                 url: aiagentLiveAgent.restUrl + 'live-agent/messages',
@@ -163,12 +174,14 @@
                     $('#chat-input-area').show();
                 },
                 error: () => {
-                    $messages.html('<div class="aiagent-empty-state"><p>Failed to load messages</p></div>');
-                }
+                    $messages.html(
+                        '<div class="aiagent-empty-state"><p>Failed to load messages</p></div>'
+                    );
+                },
             });
         },
 
-        renderMessages: function(messages, isWaiting) {
+        renderMessages: function (messages, isWaiting) {
             const $messages = $('#chat-messages');
             let html = '';
 
@@ -184,9 +197,11 @@
                 `;
             }
 
-            messages.forEach(msg => {
+            messages.forEach((msg) => {
                 const isAgent = msg.sender_type === 'agent';
-                const senderName = isAgent ? aiagentLiveAgent.strings.you : aiagentLiveAgent.strings.visitor;
+                const senderName = isAgent
+                    ? aiagentLiveAgent.strings.you
+                    : aiagentLiveAgent.strings.visitor;
                 const time = this.formatTime(msg.created_at);
 
                 html += `
@@ -203,7 +218,8 @@
             });
 
             if (messages.length === 0 && !isWaiting) {
-                html = '<div class="aiagent-system-message"><span>Chat started. Waiting for messages...</span></div>';
+                html =
+                    '<div class="aiagent-system-message"><span>Chat started. Waiting for messages...</span></div>';
             }
 
             $messages.html(html);
@@ -213,7 +229,7 @@
             $('#accept-chat-btn').on('click', () => this.acceptChat());
         },
 
-        acceptChat: function() {
+        acceptChat: function () {
             if (!this.currentSessionId) return;
 
             $.ajax({
@@ -230,11 +246,11 @@
                 },
                 error: () => {
                     alert('Failed to accept chat');
-                }
+                },
             });
         },
 
-        sendMessage: function() {
+        sendMessage: function () {
             const $input = $('#agent-message-input');
             const message = $input.val().trim();
 
@@ -251,7 +267,7 @@
                     live_session_id: this.currentSessionId,
                     message: message,
                     sender_type: 'agent',
-                    sender_id: aiagentLiveAgent.userId
+                    sender_id: aiagentLiveAgent.userId,
                 }),
                 success: (response) => {
                     if (response.success) {
@@ -273,11 +289,11 @@
                 error: () => {
                     alert('Failed to send message');
                     $input.val(message).prop('disabled', false);
-                }
+                },
             });
         },
 
-        endChat: function() {
+        endChat: function () {
             if (!this.currentSessionId) return;
 
             if (!confirm('Are you sure you want to end this chat?')) return;
@@ -289,7 +305,7 @@
                 contentType: 'application/json',
                 data: JSON.stringify({
                     live_session_id: this.currentSessionId,
-                    ended_by: 'agent'
+                    ended_by: 'agent',
                 }),
                 success: (response) => {
                     if (response.success) {
@@ -300,11 +316,11 @@
                 },
                 error: () => {
                     alert('Failed to end chat');
-                }
+                },
             });
         },
 
-        resetChatPanel: function() {
+        resetChatPanel: function () {
             $('#chat-user-name').text('Select a chat');
             $('#chat-user-email').text('');
             $('#end-chat-btn').hide();
@@ -317,7 +333,7 @@
             `);
         },
 
-        startPolling: function() {
+        startPolling: function () {
             // Poll every 3 seconds for updates
             this.pollInterval = setInterval(() => {
                 this.loadSessions();
@@ -331,12 +347,12 @@
                 $.ajax({
                     url: aiagentLiveAgent.restUrl + 'live-agent/heartbeat',
                     method: 'POST',
-                    beforeSend: (xhr) => xhr.setRequestHeader('X-WP-Nonce', aiagentLiveAgent.nonce)
+                    beforeSend: (xhr) => xhr.setRequestHeader('X-WP-Nonce', aiagentLiveAgent.nonce),
                 });
             }, 60000); // Every minute
         },
 
-        pollMessages: function() {
+        pollMessages: function () {
             $.ajax({
                 url: aiagentLiveAgent.restUrl + 'live-agent/messages',
                 method: 'GET',
@@ -344,7 +360,7 @@
                 beforeSend: (xhr) => xhr.setRequestHeader('X-WP-Nonce', aiagentLiveAgent.nonce),
                 success: (response) => {
                     if (response.messages && response.messages.length > 0) {
-                        response.messages.forEach(msg => {
+                        response.messages.forEach((msg) => {
                             // Only show user messages (agent messages already shown when sent)
                             if (msg.sender_type === 'user') {
                                 const time = this.formatTime(msg.created_at);
@@ -363,11 +379,11 @@
                             this.lastMessageId = Math.max(this.lastMessageId, msg.id);
                         });
                     }
-                }
+                },
             });
         },
 
-        formatTime: function(dateString) {
+        formatTime: function (dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
             const now = new Date();
@@ -380,17 +396,15 @@
             return date.toLocaleDateString();
         },
 
-        escapeHtml: function(text) {
+        escapeHtml: function (text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
-        }
+        },
     };
 
     // Initialize on document ready
-    $(document).ready(function() {
+    $(document).ready(function () {
         Dashboard.init();
     });
-
 })(jQuery);
-

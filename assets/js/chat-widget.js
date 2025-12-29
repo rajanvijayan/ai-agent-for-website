@@ -49,8 +49,11 @@
             this.liveAgentEnabled = aiagentConfig.liveAgentSettings?.enabled || false;
             this.isAgentAvailable = aiagentConfig.liveAgentSettings?.agent_available || false;
             this.liveAgentSettings = aiagentConfig.liveAgentSettings || {};
-            this.liveAgentConnectButtonText = aiagentConfig.liveAgentSettings?.connect_button_text || 'Connect to Live Agent';
-            this.liveAgentNoAgentMessage = aiagentConfig.liveAgentSettings?.offline_message || 'No agents are currently available.';
+            this.liveAgentConnectButtonText =
+                aiagentConfig.liveAgentSettings?.connect_button_text || 'Connect to Live Agent';
+            this.liveAgentNoAgentMessage =
+                aiagentConfig.liveAgentSettings?.offline_message ||
+                'No agents are currently available.';
             this.isLiveAgentMode = false;
             this.liveSessionId = null;
             this.liveAgentPollInterval = null;
@@ -61,7 +64,8 @@
             // Auto Popup state
             this.autoPopupEnabled = aiagentConfig.autoPopupEnabled || false;
             this.autoPopupDelay = (aiagentConfig.autoPopupDelay || 10) * 1000; // Convert to ms
-            this.autoPopupMessage = aiagentConfig.autoPopupMessage || 'Hi there! Do you have any questions?';
+            this.autoPopupMessage =
+                aiagentConfig.autoPopupMessage || 'Hi there! Do you have any questions?';
             this.autoPopupOnce = aiagentConfig.autoPopupOnce !== false; // Default true
             this.autoPopupTimer = null;
             this.autoPopupShown = false;
@@ -143,7 +147,7 @@
             toggle.addEventListener('click', () => {
                 // Cancel auto popup timer if user interacts
                 this.cancelAutoPopup();
-                
+
                 if (this.widget.classList.contains('open')) {
                     // Closing - check if we should show rating
                     if (this.hasMessages) {
@@ -159,7 +163,7 @@
             });
 
             this.initChat(this.widget);
-            
+
             // Initialize auto popup
             this.initAutoPopup();
         }
@@ -237,10 +241,10 @@
 
             // Get messages container and add the auto popup message
             const messagesContainer = this.widget.querySelector('.aiagent-messages');
-            
+
             // Check if user info is required
             this.checkUserInfo(this.widget, messagesContainer);
-            
+
             // Add the custom auto popup greeting if there's no welcome message yet
             // or add it as a follow-up message
             if (messagesContainer && this.autoPopupMessage) {
@@ -254,7 +258,7 @@
                     } else if (!hasWelcome) {
                         this.addMessage(messagesContainer, this.autoPopupMessage, 'ai');
                     }
-                    
+
                     // Play notification sound
                     this.playNotificationSound();
                 }, 100);
@@ -658,7 +662,9 @@
                     if (this.liveAgentEnabled && this.isNegativeResponse(data.message)) {
                         this.negativeResponseCount++;
                     }
-                    this.checkLiveAgentTrigger(messagesContainer.closest('.aiagent-widget, .aiagent-inline-chat'));
+                    this.checkLiveAgentTrigger(
+                        messagesContainer.closest('.aiagent-widget, .aiagent-inline-chat')
+                    );
 
                     // If it was a product query, search and display products
                     if (isProductQuery) {
@@ -1995,7 +2001,9 @@
          */
         initLiveAgent(container) {
             // Find the connect button (check both possible class names)
-            const connectBtn = container.querySelector('.aiagent-connect-agent-btn, .aiagent-connect-live-agent-btn');
+            const connectBtn = container.querySelector(
+                '.aiagent-connect-agent-btn, .aiagent-connect-live-agent-btn'
+            );
             if (connectBtn) {
                 connectBtn.addEventListener('click', () => {
                     this.handleLiveAgentConnect(container);
@@ -2095,7 +2103,9 @@
             // Show live agent banner after configured messages with at least 1 negative response
             // or after 5+ total messages regardless of response type
             const shouldShow =
-                (showOnNoResults && this.messageCount >= showAfterMessages && this.negativeResponseCount >= 1) ||
+                (showOnNoResults &&
+                    this.messageCount >= showAfterMessages &&
+                    this.negativeResponseCount >= 1) ||
                 this.messageCount >= 5;
 
             if (shouldShow && this.isAgentAvailable) {
@@ -2138,8 +2148,10 @@
          * @param {HTMLElement} container - The chat widget container
          */
         hideAllLiveAgentModals(container) {
-            const modals = container.querySelectorAll('.aiagent-live-waiting-modal, .aiagent-live-connected-modal, .aiagent-live-offline-modal');
-            modals.forEach(modal => {
+            const modals = container.querySelectorAll(
+                '.aiagent-live-waiting-modal, .aiagent-live-connected-modal, .aiagent-live-offline-modal'
+            );
+            modals.forEach((modal) => {
                 modal.classList.remove('visible');
                 modal.style.display = 'none';
             });
@@ -2215,14 +2227,14 @@
         startLiveChatSession(container) {
             this.hideAllLiveAgentModals(container);
             this.isLiveAgentMode = true;
-            
+
             // Show the live agent status bar
             const statusBar = container.querySelector('.aiagent-live-agent-status');
             if (statusBar) {
                 statusBar.classList.add('visible');
                 statusBar.style.display = 'block';
             }
-            
+
             // Hide the banner
             this.hideLiveAgentBanner(container);
         }
@@ -2341,7 +2353,11 @@
                         }
 
                         // Check if agent has joined (status changed to active)
-                        if (statusData.status === 'active' && !this.isLiveAgentMode && statusData.agent) {
+                        if (
+                            statusData.status === 'active' &&
+                            !this.isLiveAgentMode &&
+                            statusData.agent
+                        ) {
                             this.showConnectedModal(container, statusData.agent);
                         }
 
@@ -2365,7 +2381,11 @@
                             const msgData = await msgResponse.json();
 
                             // Display any new messages from the agent
-                            if (msgData.success && msgData.messages && msgData.messages.length > 0) {
+                            if (
+                                msgData.success &&
+                                msgData.messages &&
+                                msgData.messages.length > 0
+                            ) {
                                 msgData.messages.forEach((msg) => {
                                     // Only show agent messages (not user's own)
                                     if (msg.sender_type === 'agent') {
@@ -2439,7 +2459,8 @@
             const pendingDiv = container.querySelector('.aiagent-live-agent-pending');
             if (pendingDiv) {
                 const positionText = position > 0 ? ` You are #${position} in the queue.` : '';
-                pendingDiv.querySelector('span').textContent = `Waiting for a live agent to connect...${positionText}`;
+                pendingDiv.querySelector('span').textContent =
+                    `Waiting for a live agent to connect...${positionText}`;
             }
         }
 
@@ -2524,7 +2545,9 @@
                 liveAgentActions.style.display = 'none';
 
                 // Re-attach event listener
-                const connectBtn = liveAgentActions.querySelector('.aiagent-connect-live-agent-btn');
+                const connectBtn = liveAgentActions.querySelector(
+                    '.aiagent-connect-live-agent-btn'
+                );
                 if (connectBtn) {
                     connectBtn.addEventListener('click', () => {
                         this.handleLiveAgentConnect(container);

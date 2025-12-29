@@ -30,13 +30,16 @@ class AIAGENT_Chat_Widget {
 
 		// Get live agent settings.
 		$live_agent_settings = AIAGENT_Live_Agent_Manager::get_settings();
-		$settings = array_merge( $settings, array(
-			'live_agent_enabled'             => $live_agent_settings['enabled'],
-			'live_agent_connect_button_text' => $live_agent_settings['connect_button_text'],
-			'live_agent_waiting_message'     => $live_agent_settings['waiting_message'],
-			'live_agent_connected_message'   => $live_agent_settings['connected_message'],
-			'live_agent_offline_message'     => $live_agent_settings['offline_message'],
-		) );
+		$settings            = array_merge(
+			$settings,
+			array(
+				'live_agent_enabled'             => $live_agent_settings['enabled'],
+				'live_agent_connect_button_text' => $live_agent_settings['connect_button_text'],
+				'live_agent_waiting_message'     => $live_agent_settings['waiting_message'],
+				'live_agent_connected_message'   => $live_agent_settings['connected_message'],
+				'live_agent_offline_message'     => $live_agent_settings['offline_message'],
+			)
+		);
 
 		$ai_name           = esc_attr( $settings['ai_name'] ?? 'AI Assistant' );
 		$position          = esc_attr( $settings['widget_position'] ?? 'bottom-right' );

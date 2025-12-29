@@ -128,11 +128,11 @@ class AIAGENT_Live_Agent_Manager {
 			$status = get_transient( self::AGENT_STATUS_PREFIX . $user->ID );
 			if ( 'online' === $status || 'available' === $status ) {
 				$online_agents[] = array(
-					'id'          => $user->ID,
-					'name'        => $user->display_name,
-					'email'       => $user->user_email,
-					'avatar'      => get_avatar_url( $user->ID, array( 'size' => 64 ) ),
-					'status'      => $status,
+					'id'           => $user->ID,
+					'name'         => $user->display_name,
+					'email'        => $user->user_email,
+					'avatar'       => get_avatar_url( $user->ID, array( 'size' => 64 ) ),
+					'status'       => $status,
 					'active_chats' => self::get_agent_active_chat_count( $user->ID ),
 				);
 			}
@@ -164,13 +164,13 @@ class AIAGENT_Live_Agent_Manager {
 
 		if ( 'offline' === $status ) {
 			delete_transient( self::AGENT_STATUS_PREFIX . $user_id );
-			
+
 			// Also update user meta for persistence.
 			update_user_meta( $user_id, 'aiagent_agent_status', 'offline' );
 			update_user_meta( $user_id, 'aiagent_last_seen', current_time( 'mysql' ) );
 		} else {
 			set_transient( self::AGENT_STATUS_PREFIX . $user_id, $status, self::AGENT_TIMEOUT );
-			
+
 			// Also update user meta.
 			update_user_meta( $user_id, 'aiagent_agent_status', $status );
 			update_user_meta( $user_id, 'aiagent_last_heartbeat', current_time( 'mysql' ) );
@@ -198,11 +198,11 @@ class AIAGENT_Live_Agent_Manager {
 	 */
 	public static function agent_heartbeat( $user_id ) {
 		$current_status = self::get_agent_status( $user_id );
-		
+
 		if ( 'offline' === $current_status ) {
 			$current_status = 'available';
 		}
-		
+
 		return self::set_agent_status( $user_id, $current_status );
 	}
 
@@ -240,22 +240,23 @@ class AIAGENT_Live_Agent_Manager {
 		global $wpdb;
 
 		$sessions_table = $wpdb->prefix . 'aiagent_live_sessions';
-		
+
 		// Check if table exists.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $sessions_table ) );
-		
+
 		if ( ! $table_exists ) {
 			return 0;
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$count = $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT COUNT(*) FROM $sessions_table WHERE agent_id = %d AND status = 'active'",
 				$user_id
 			)
 		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		return (int) $count;
 	}
@@ -282,19 +283,20 @@ class AIAGENT_Live_Agent_Manager {
 		$sessions_table = $wpdb->prefix . 'aiagent_live_sessions';
 
 		// Check for existing active session.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$existing = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT * FROM $sessions_table WHERE session_id = %s AND status IN ('waiting', 'active')",
 				$session_id
 			)
 		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		if ( $existing ) {
 			return array(
-				'success'    => true,
-				'session'    => $existing,
-				'message'    => __( 'Session already exists.', 'ai-agent-for-website' ),
+				'success' => true,
+				'session' => $existing,
+				'message' => __( 'Session already exists.', 'ai-agent-for-website' ),
 			);
 		}
 
@@ -399,9 +401,9 @@ class AIAGENT_Live_Agent_Manager {
 			return null;
 		}
 
-		$settings           = self::get_settings();
-		$max_chats          = $settings['max_concurrent_chats'] ?? 5;
-		$available_agents   = array();
+		$settings         = self::get_settings();
+		$max_chats        = $settings['max_concurrent_chats'] ?? 5;
+		$available_agents = array();
 
 		foreach ( $online_agents as $agent ) {
 			if ( 'available' === $agent['status'] && $agent['active_chats'] < $max_chats ) {
@@ -435,13 +437,14 @@ class AIAGENT_Live_Agent_Manager {
 
 		$sessions_table = $wpdb->prefix . 'aiagent_live_sessions';
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$position = $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT COUNT(*) + 1 FROM $sessions_table WHERE status = 'waiting' AND id < %d",
 				$live_session_id
 			)
 		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		return (int) $position;
 	}
@@ -505,10 +508,11 @@ class AIAGENT_Live_Agent_Manager {
 		$sessions_table = $wpdb->prefix . 'aiagent_live_sessions';
 
 		// Get next waiting session.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$waiting_session = $wpdb->get_row(
 			"SELECT * FROM $sessions_table WHERE status = 'waiting' ORDER BY started_at ASC LIMIT 1"
 		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		if ( ! $waiting_session ) {
 			return;
@@ -567,10 +571,11 @@ class AIAGENT_Live_Agent_Manager {
 		$messages_table = $wpdb->prefix . 'aiagent_live_messages';
 
 		// Verify session exists and is active.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$session = $wpdb->get_row(
 			$wpdb->prepare( "SELECT * FROM $sessions_table WHERE id = %d", $live_session_id )
 		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		if ( ! $session ) {
 			return new WP_Error( 'not_found', __( 'Session not found.', 'ai-agent-for-website' ) );
@@ -614,7 +619,7 @@ class AIAGENT_Live_Agent_Manager {
 
 		$messages_table = $wpdb->prefix . 'aiagent_live_messages';
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$messages = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT * FROM $messages_table WHERE live_session_id = %d AND id > %d ORDER BY id ASC",
@@ -622,8 +627,9 @@ class AIAGENT_Live_Agent_Manager {
 				$after_id
 			)
 		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		return $messages ?: array();
+		return $messages ? $messages : array();
 	}
 
 	/**
@@ -637,17 +643,18 @@ class AIAGENT_Live_Agent_Manager {
 
 		$sessions_table = $wpdb->prefix . 'aiagent_live_sessions';
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$session = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT * FROM $sessions_table WHERE session_id = %s ORDER BY id DESC LIMIT 1",
 				$session_id
 			)
 		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		if ( ! $session ) {
 			return array(
-				'has_session'    => false,
+				'has_session'     => false,
 				'agent_available' => self::is_agent_available(),
 			);
 		}
@@ -740,7 +747,7 @@ class AIAGENT_Live_Agent_Manager {
 		$users_table    = $wpdb->prefix . 'aiagent_users';
 
 		// Get all waiting sessions (for any agent to accept) plus active sessions assigned to this agent.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$sessions = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT s.*, u.name as user_name, u.email as user_email 
@@ -752,8 +759,9 @@ class AIAGENT_Live_Agent_Manager {
 				$agent_id
 			)
 		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		return $sessions ?: array();
+		return $sessions ? $sessions : array();
 	}
 
 	/**
@@ -807,9 +815,9 @@ class AIAGENT_Live_Agent_Manager {
 						$new_agent ? $new_agent->display_name : 'Unknown'
 					),
 					array(
-						'live_session_id'  => $live_session_id,
-						'old_agent_id'     => $current_agent_id,
-						'new_agent_id'     => $new_agent_id,
+						'live_session_id' => $live_session_id,
+						'old_agent_id'    => $current_agent_id,
+						'new_agent_id'    => $new_agent_id,
 					)
 				);
 			}
@@ -891,19 +899,18 @@ class AIAGENT_Live_Agent_Manager {
 		$settings = self::get_settings();
 
 		return array(
-			'enabled'              => $settings['enabled'],
-			'show_on_no_results'   => $settings['show_on_no_results'],
-			'show_after_messages'  => $settings['show_after_messages'],
-			'connect_button_text'  => $settings['connect_button_text'],
-			'waiting_message'      => $settings['waiting_message'],
-			'connected_message'    => $settings['connected_message'],
-			'offline_message'      => $settings['offline_message'],
-			'typing_indicator'     => $settings['agent_typing_indicator'],
-			'sound_notifications'  => $settings['enable_sound_notifications'],
-			'show_agent_name'      => $settings['show_agent_name'],
-			'show_agent_avatar'    => $settings['show_agent_avatar'],
-			'agent_available'      => self::is_agent_available(),
+			'enabled'             => $settings['enabled'],
+			'show_on_no_results'  => $settings['show_on_no_results'],
+			'show_after_messages' => $settings['show_after_messages'],
+			'connect_button_text' => $settings['connect_button_text'],
+			'waiting_message'     => $settings['waiting_message'],
+			'connected_message'   => $settings['connected_message'],
+			'offline_message'     => $settings['offline_message'],
+			'typing_indicator'    => $settings['agent_typing_indicator'],
+			'sound_notifications' => $settings['enable_sound_notifications'],
+			'show_agent_name'     => $settings['show_agent_name'],
+			'show_agent_avatar'   => $settings['show_agent_avatar'],
+			'agent_available'     => self::is_agent_available(),
 		);
 	}
 }
-

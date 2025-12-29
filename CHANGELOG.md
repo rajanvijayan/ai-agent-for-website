@@ -7,9 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] - 2024-12-30
+
+### Added
+- **Live Agent Mode Integration**: Connect visitors with live human agents when AI cannot help
+  - Automatic trigger after configurable number of unsuccessful AI responses
+  - Real-time chat between visitors and agents
+  - Agent availability status (online/offline)
+  - Queue position display for waiting visitors
+  - Smooth transition between AI and live agent conversations
+  - Session management with proper UI state handling
+- **Live Agent Dashboard**: Backend interface for agents to manage and respond to chats
+  - View waiting and active chat sessions
+  - Accept incoming chat requests
+  - Real-time message polling
+  - Go online/offline status toggle
+  - End chat functionality
+- **Live Agent Admin Settings**: Configure live agent behavior
+  - Enable/disable live agent mode
+  - Select which user roles can act as live agents
+  - Customize connect button text and offline messages
+  - Set maximum concurrent chats per agent
+- **Auto Popup Feature**: Automatically open chat widget after visitor stays on page
+  - Configurable delay (1-300 seconds)
+  - Custom greeting message for auto-popup
+  - "Show only once" option using browser storage
+  - Attention animation when popup triggers
+- **Friendly Error Messages**: User-friendly error handling for API issues
+  - Rate limit, quota, timeout errors now show friendly message
+  - API errors logged to Activity Log for admin review
+  - Debug logging when WP_DEBUG is enabled
+
 ### Fixed
-- Fixed transparent background on "Schedule a Meeting?" calendar popup modal
-- Replaced undefined CSS variables with correct ones in chat widget styles
+- Fixed "Connected to Live Agent" status not resetting after session ends
+- Fixed live agent modals not hiding properly when session ends
+- Removed all console.log debug statements from production code
+
+### Changed
+- AI chatbot now strictly answers from knowledge base only
+- Irrelevant questions are redirected back to relevant topics
 
 ## [1.8.0] - 2024-12-29
 
@@ -273,7 +309,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sanitization of user inputs
 - Capability checks for admin operations
 
-[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.7.1...v1.8.0
 [1.7.1]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.6.0...v1.7.0
