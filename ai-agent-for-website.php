@@ -3,7 +3,7 @@
  * Plugin Name: AI Agent for Website
  * Plugin URI: https://github.com/rajanvijayan/ai-agent-for-website
  * Description: Add an AI-powered chat agent to your website using Groq API. Train it with your website content.
- * Version: 1.7.1
+ * Version: 1.8.0
  * Author: Rajan Vijayan
  * Author URI: https://rajanvijayan.com
  * License: GPL v2 or later
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'AIAGENT_VERSION', '1.7.1' );
+define( 'AIAGENT_VERSION', '1.8.0' );
 define( 'AIAGENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -76,6 +76,8 @@ class AI_Agent_For_Website {
 
 		// Load integrations.
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-google-drive-integration.php';
+		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-google-calendar-integration.php';
+		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-calendly-integration.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-confluence-integration.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-zapier-integration.php';
 		require_once AIAGENT_PLUGIN_DIR . 'includes/integrations/class-mailchimp-integration.php';
@@ -635,6 +637,8 @@ class AI_Agent_For_Website {
 				'wooMaxProducts'         => $woo_settings['max_products_display'] ?? 6,
 				'cartUrl'                => $woo_enabled ? wc_get_cart_url() : '',
 				'checkoutUrl'            => $woo_enabled ? wc_get_checkout_url() : '',
+				'gcalendarSettings'      => AIAGENT_Google_Calendar_Integration::get_frontend_settings(),
+				'calendlySettings'       => AIAGENT_Calendly_Integration::get_frontend_settings(),
 			]
 		);
 	}

@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed transparent background on "Schedule a Meeting?" calendar popup modal
+- Replaced undefined CSS variables with correct ones in chat widget styles
+
+## [1.8.0] - 2024-12-29
+
+### Added
+- **Google Calendar Integration**: Allow users to book meetings after chat conversations
+  - OAuth 2.0 authentication with Google Calendar API
+  - Automatic availability detection using Google Calendar free/busy API
+  - Configurable business hours and working days
+  - Buffer time between appointments
+  - Days ahead booking limit
+  - Google Meet link generation for scheduled meetings
+  - Calendar invites sent to user's email
+- New admin settings section "Scheduling" for calendar configuration
+- Calendar booking modal in chat widget with step-by-step flow:
+  - Prompt to schedule after conversation ends
+  - Date/time slot selection with navigation
+  - Meeting details form (title, description)
+  - Booking confirmation
+- REST API endpoints for calendar integration:
+  - `GET /gcalendar/auth-url` - OAuth authorization URL
+  - `POST /gcalendar/disconnect` - Disconnect account
+  - `GET /gcalendar/calendars` - List available calendars
+  - `GET /gcalendar/slots` - Get available time slots
+  - `POST /gcalendar/create-event` - Create calendar event
+  - `GET /gcalendar/status` - Check integration status
+  - `POST /settings/gcalendar` - Save calendar settings
+- Customizable prompt message for calendar booking suggestion
+- Event title and description templates with placeholder support
+- **Calendly Integration**: Easy scheduling via Calendly
+  - Support for popup widget, inline embed, and external link modes
+  - Customizable scheduling URL (user profile or specific event type)
+  - Pre-fill user info from chat session (name, email)
+  - Configurable prompt message and button text
+  - Widget appearance options (height, colors, hide event details/GDPR banner)
+  - Optional OAuth 2.0 connection for advanced features (event types)
+- New Calendly admin settings in "Scheduling" section
+- REST API endpoints for Calendly integration:
+  - `GET /calendly/auth-url` - OAuth authorization URL
+  - `POST /calendly/disconnect` - Disconnect account
+  - `GET /calendly/event-types` - List event types
+  - `GET /calendly/status` - Check integration status
+  - `POST /settings/calendly` - Save Calendly settings
+
+### Changed
+- Enhanced chat widget flow to include calendar booking after rating
+- Updated admin JavaScript with Google Calendar connection handlers
+
 ## [1.7.1] - 2024-12-29
 
 ### Fixed
@@ -223,7 +273,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sanitization of user inputs
 - Capability checks for admin operations
 
-[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.7.1...HEAD
+[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.7.1...v1.8.0
 [1.7.1]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.5.0...v1.6.0
