@@ -2480,6 +2480,22 @@
             this.liveSessionId = null;
             this.lastMessageId = 0;
 
+            // Hide all live agent modals (connected, waiting, offline)
+            this.hideAllLiveAgentModals(container);
+
+            // Hide the live agent status bar
+            const statusBar = container.querySelector('.aiagent-live-agent-status');
+            if (statusBar) {
+                statusBar.classList.remove('visible');
+                statusBar.style.display = '';
+            }
+
+            // Reset header if it was in live agent mode
+            const header = container.querySelector('.aiagent-header');
+            if (header) {
+                header.classList.remove('live-agent-mode');
+            }
+
             // Reset UI
             const messagesContainer = container.querySelector('.aiagent-messages');
             this.addMessage(
