@@ -66,22 +66,6 @@
             this.autoPopupTimer = null;
             this.autoPopupShown = false;
 
-            // Debug: Log current state
-            console.log('AI Agent Config:', {
-                requireUserInfo: aiagentConfig.requireUserInfo,
-                userId: this.userId,
-                userName: this.userName,
-                sessionId: this.sessionId,
-                soundEnabled: this.soundEnabled,
-                wooEnabled: this.wooEnabled,
-                gcalendarEnabled: this.gcalendarEnabled,
-                calendlyEnabled: this.calendlyEnabled,
-                liveAgentEnabled: this.liveAgentEnabled,
-                isAgentAvailable: this.isAgentAvailable,
-                autoPopupEnabled: this.autoPopupEnabled,
-                autoPopupDelay: this.autoPopupDelay,
-            });
-
             if (this.widget) {
                 this.initFloatingWidget();
             }
@@ -147,7 +131,7 @@
                     osc2.stop(ctx.currentTime + 0.35);
                 }, 150);
             } catch (e) {
-                console.log('Sound not available:', e);
+                // Sound not available
             }
         }
 
@@ -181,15 +165,8 @@
         }
 
         checkUserInfo(container, messagesContainer) {
-            console.log('checkUserInfo:', {
-                requireUserInfo: aiagentConfig.requireUserInfo,
-                userId: this.userId,
-                showForm: aiagentConfig.requireUserInfo && !this.userId,
-            });
-
             // If user info is required and we don't have it, show the form
             if (aiagentConfig.requireUserInfo && !this.userId) {
-                console.log('Showing user form');
                 container.classList.add('show-user-form');
             } else if (messagesContainer.children.length === 0) {
                 // Add welcome message if we have user info or don't need it
@@ -206,7 +183,6 @@
 
             // Check if we should only show once and if already shown
             if (this.autoPopupOnce && this.hasAutoPopupBeenShown()) {
-                console.log('Auto popup already shown to this visitor');
                 return;
             }
 
@@ -214,8 +190,6 @@
             if (this.widget.classList.contains('open')) {
                 return;
             }
-
-            console.log(`Auto popup will trigger in ${this.autoPopupDelay / 1000} seconds`);
 
             // Set timer to open the widget
             this.autoPopupTimer = setTimeout(() => {
@@ -227,7 +201,6 @@
             if (this.autoPopupTimer) {
                 clearTimeout(this.autoPopupTimer);
                 this.autoPopupTimer = null;
-                console.log('Auto popup cancelled (user interaction)');
             }
         }
 
@@ -252,7 +225,6 @@
             if (!this.widget) return;
             if (this.widget.classList.contains('open')) return;
 
-            console.log('Triggering auto popup');
             this.autoPopupShown = true;
 
             // Mark as shown if "show only once" is enabled
@@ -2064,11 +2036,6 @@
 
             // Hide live agent banner initially - will show based on conditions
             this.hideLiveAgentBanner(container);
-
-            console.log('Live Agent initialized:', {
-                enabled: this.liveAgentEnabled,
-                agentAvailable: this.isAgentAvailable
-            });
         }
 
         /**
@@ -2130,13 +2097,6 @@
             const shouldShow =
                 (showOnNoResults && this.messageCount >= showAfterMessages && this.negativeResponseCount >= 1) ||
                 this.messageCount >= 5;
-
-            console.log('Live Agent Trigger Check:', {
-                messageCount: this.messageCount,
-                negativeResponseCount: this.negativeResponseCount,
-                shouldShow,
-                isAgentAvailable: this.isAgentAvailable
-            });
 
             if (shouldShow && this.isAgentAvailable) {
                 this.showLiveAgentBanner(container);
