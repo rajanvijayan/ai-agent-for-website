@@ -1422,11 +1422,10 @@ class AIAGENT_REST_API {
 				home_url()
 			);
 
-			$ai->setSystemInstruction( $site_context . "\n\n" . $system_instruction );
-
 			// Load knowledge base if available.
 			$knowledge_manager = new AIAGENT_Knowledge_Manager();
 			$kb                = $knowledge_manager->get_knowledge_base();
+			$kb_restriction    = '';
 
 			if ( ! $kb->isEmpty() ) {
 				// Get the Groq provider and set knowledge base.
@@ -1434,7 +1433,17 @@ class AIAGENT_REST_API {
 				if ( method_exists( $provider, 'setKnowledgeBase' ) ) {
 					$provider->setKnowledgeBase( $kb );
 				}
+
+				// Add knowledge base restriction to system instruction.
+				$kb_restriction = "\n\nIMPORTANT INSTRUCTIONS:
+- You MUST ONLY answer questions based on the knowledge base provided to you.
+- If a question is outside the scope of the knowledge base or you don't have relevant information, politely say: \"I don't have information about that topic. Is there something else about our website or services I can help you with?\"
+- Do NOT make up information or provide general knowledge answers.
+- Stay focused on topics relevant to this website and its services.
+- If the user asks irrelevant questions (like general trivia, coding help unrelated to the website, etc.), redirect them back to topics you can help with.";
 			}
+
+			$ai->setSystemInstruction( $site_context . "\n\n" . $system_instruction . $kb_restriction );
 
 			// Restore conversation history.
 			$this->restore_conversation( $ai, $session_id );
