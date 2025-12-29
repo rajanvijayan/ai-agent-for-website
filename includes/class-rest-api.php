@@ -1476,7 +1476,13 @@ class AIAGENT_REST_API {
 
 			// Handle error response.
 			if ( is_array( $response ) && isset( $response['error'] ) ) {
-				return new WP_Error( 'ai_error', $response['error'], array( 'status' => 500 ) );
+				$error_message = $this->get_friendly_error_message( $response['error'] );
+				return rest_ensure_response(
+					array(
+						'success' => false,
+						'message' => $error_message,
+					)
+				);
 			}
 
 			// Save AI response to database.
@@ -1493,7 +1499,13 @@ class AIAGENT_REST_API {
 			);
 
 		} catch ( Exception $e ) {
-			return new WP_Error( 'exception', $e->getMessage(), array( 'status' => 500 ) );
+			$error_message = $this->get_friendly_error_message( $e->getMessage() );
+			return rest_ensure_response(
+				array(
+					'success' => false,
+					'message' => $error_message,
+				)
+			);
 		}
 	}
 
@@ -3587,5 +3599,46 @@ Do not include any explanation, just the JSON array.',
 				'message' => __( 'Chat accepted successfully.', 'ai-agent-for-website' ),
 			)
 		);
+	}
+
+	/**
+	 * Get a user-friendly error message from API errors.
+	 *
+	 * @param string $error_message The original error message.
+	 * @return string User-friendly error message.
+	 */
+	private function get_friendly_error_message( $error_message ) {
+		// Check for rate limit errors.
+		if ( stripos( $error_message, 'rate limit' ) !== false || stripos( $error_message, 'Rate limit' ) !== false ) {
+			return __( 'I\'m experiencing high demand right now. Please try again in a few moments.', 'ai-agent-for-website' );
+		}
+
+		// Check for quota exceeded errors.
+		if ( stripos( $error_message, 'quota' ) !== false || stripos( $error_message, 'Quota' ) !== false ) {
+			return __( 'I\'m temporarily unavailable. Please try again later.', 'ai-agent-for-website' );
+		}
+
+		// Check for authentication errors.
+		if ( stripos( $error_message, 'authentication' ) !== false || stripos( $error_message, 'api key' ) !== false || stripos( $error_message, 'unauthorized' ) !== false ) {
+			return __( 'I\'m having trouble connecting right now. Please try again later.', 'ai-agent-for-website' );
+		}
+
+		// Check for timeout errors.
+		if ( stripos( $error_message, 'timeout' ) !== false || stripos( $error_message, 'timed out' ) !== false ) {
+			return __( 'The request took too long. Please try again.', 'ai-agent-for-website' );
+		}
+
+		// Check for connection errors.
+		if ( stripos( $error_message, 'connection' ) !== false || stripos( $error_message, 'network' ) !== false ) {
+			return __( 'I\'m having trouble connecting. Please check your connection and try again.', 'ai-agent-for-website' );
+		}
+
+		// Check for server errors.
+		if ( stripos( $error_message, '500' ) !== false || stripos( $error_message, '502' ) !== false || stripos( $error_message, '503' ) !== false ) {
+			return __( 'I\'m temporarily unavailable. Please try again in a moment.', 'ai-agent-for-website' );
+		}
+
+		// Default friendly message for any other errors.
+		return __( 'Sorry, I encountered an issue processing your request. Please try again.', 'ai-agent-for-website' );
 	}
 }
