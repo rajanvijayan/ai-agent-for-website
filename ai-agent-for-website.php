@@ -92,6 +92,11 @@ class AI_Agent_For_Website {
 
 		// Load live agent manager.
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-live-agent-manager.php';
+
+		// Load live agent dashboard (admin only).
+		if ( is_admin() ) {
+			require_once AIAGENT_PLUGIN_DIR . 'includes/class-live-agent-dashboard.php';
+		}
 	}
 
 	/**

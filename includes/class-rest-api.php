@@ -1138,6 +1138,24 @@ class AIAGENT_REST_API {
 				'permission_callback' => array( $this, 'admin_permission_check' ),
 			)
 		);
+
+		// Accept a live agent chat session.
+		register_rest_route(
+			$this->namespace,
+			'/live-agent/accept',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_live_agent_accept' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+				'args'                => array(
+					'live_session_id' => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -3539,6 +3557,34 @@ Do not include any explanation, just the JSON array.',
 			array(
 				'success'  => true,
 				'sessions' => $sessions,
+			)
+		);
+	}
+
+	/**
+	 * Handle live agent accept session request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_live_agent_accept( $request ) {
+		$live_session_id = $request->get_param( 'live_session_id' );
+		$user_id         = get_current_user_id();
+
+		if ( ! $user_id ) {
+			return new WP_Error( 'not_logged_in', __( 'You must be logged in.', 'ai-agent-for-website' ), array( 'status' => 401 ) );
+		}
+
+		$result = AIAGENT_Live_Agent_Manager::accept_session( $live_session_id, $user_id );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => __( 'Chat accepted successfully.', 'ai-agent-for-website' ),
 			)
 		);
 	}

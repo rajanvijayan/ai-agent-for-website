@@ -739,14 +739,16 @@ class AIAGENT_Live_Agent_Manager {
 		$sessions_table = $wpdb->prefix . 'aiagent_live_sessions';
 		$users_table    = $wpdb->prefix . 'aiagent_users';
 
+		// Get all waiting sessions (for any agent to accept) plus active sessions assigned to this agent.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$sessions = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT s.*, u.name as user_name, u.email as user_email 
 				FROM $sessions_table s 
 				LEFT JOIN $users_table u ON s.user_id = u.id 
-				WHERE s.agent_id = %d AND s.status = 'active' 
-				ORDER BY s.started_at DESC",
+				WHERE (s.status = 'waiting') 
+				   OR (s.agent_id = %d AND s.status = 'active') 
+				ORDER BY s.status ASC, s.started_at DESC",
 				$agent_id
 			)
 		);
@@ -816,6 +818,68 @@ class AIAGENT_Live_Agent_Manager {
 		}
 
 		return new WP_Error( 'transfer_failed', __( 'Failed to transfer session.', 'ai-agent-for-website' ) );
+	}
+
+	/**
+	 * Accept a live agent session.
+	 *
+	 * @param int $live_session_id Live session ID.
+	 * @param int $agent_id        Agent user ID.
+	 * @return bool|WP_Error True on success or error.
+	 */
+	public static function accept_session( $live_session_id, $agent_id ) {
+		global $wpdb;
+
+		if ( ! self::can_user_be_agent( $agent_id ) && ! current_user_can( 'manage_options' ) ) {
+			return new WP_Error( 'not_authorized', __( 'You are not authorized to accept chats.', 'ai-agent-for-website' ) );
+		}
+
+		$sessions_table = $wpdb->prefix . 'aiagent_live_sessions';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$result = $wpdb->update(
+			$sessions_table,
+			array(
+				'agent_id' => $agent_id,
+				'status'   => 'active',
+			),
+			array(
+				'id'     => $live_session_id,
+				'status' => 'waiting',
+			)
+		);
+
+		if ( false === $result ) {
+			return new WP_Error( 'db_error', __( 'Failed to accept session.', 'ai-agent-for-website' ) );
+		}
+
+		if ( 0 === $result ) {
+			return new WP_Error( 'already_accepted', __( 'This chat has already been accepted.', 'ai-agent-for-website' ) );
+		}
+
+		// Log the acceptance.
+		if ( class_exists( 'AIAGENT_Activity_Log_Manager' ) ) {
+			$agent      = get_user_by( 'id', $agent_id );
+			$agent_name = $agent ? $agent->display_name : 'Unknown';
+
+			$log_manager = new AIAGENT_Activity_Log_Manager();
+			$log_manager->log(
+				'live_agent',
+				'session_accepted',
+				sprintf(
+					/* translators: 1: Session ID, 2: Agent name */
+					__( 'Session #%1$d accepted by %2$s', 'ai-agent-for-website' ),
+					$live_session_id,
+					$agent_name
+				),
+				array(
+					'live_session_id' => $live_session_id,
+					'agent_id'        => $agent_id,
+				)
+			);
+		}
+
+		return true;
 	}
 
 	/**
