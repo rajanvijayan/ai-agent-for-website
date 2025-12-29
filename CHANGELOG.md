@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.1] - 2024-12-29
+
+### Fixed
+- Chat widget container no longer blocks clicks on page elements when widget is closed
+- Added `pointer-events` CSS properties to ensure proper click behavior
+
 ## [1.7.0] - 2024-12-20
 
 ### Added
@@ -217,7 +223,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sanitization of user inputs
 - Capability checks for admin operations
 
-[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.7.1...HEAD
+[1.7.1]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/rajanvijayan/ai-agent-for-website/compare/v1.4.0...v1.5.0
