@@ -115,12 +115,15 @@ jobs:
       - name: Check for new/modified PHP files
         id: changed-files
         run: |
-          CHANGED_PHP=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'includes/*.php' '*.php' | grep -v 'tests/' || true)
+          # Get changed PHP files (convert to comma-separated for single-line output)
+          CHANGED_PHP=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'includes/*.php' '*.php' 2>/dev/null | grep -v 'tests/' | tr '\n' ',' | sed 's/,$//' || true)
           echo "changed_files=$CHANGED_PHP" >> $GITHUB_OUTPUT
           if [ -n "$CHANGED_PHP" ]; then
             echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changed PHP files: $CHANGED_PHP"
           else
             echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No PHP files changed"
           fi
 
       - name: Verify tests exist for modified files
