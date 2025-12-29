@@ -705,6 +705,54 @@
             });
         });
 
+        // Google Calendar connect handler
+        $('#aiagent-gcalendar-connect').on('click', function () {
+            const $btn = $(this);
+            $btn.prop('disabled', true);
+
+            $.ajax({
+                url: aiagentAdmin.restUrl + 'gcalendar/auth-url',
+                method: 'GET',
+                headers: {
+                    'X-WP-Nonce': aiagentAdmin.nonce,
+                },
+                success: function (response) {
+                    if (response.auth_url) {
+                        window.location.href = response.auth_url;
+                    }
+                },
+                error: function (xhr) {
+                    alert(xhr.responseJSON?.message || 'Failed to get auth URL');
+                    $btn.prop('disabled', false);
+                },
+            });
+        });
+
+        // Google Calendar disconnect handler
+        $('.aiagent-gcalendar-disconnect').on('click', function () {
+            if (!confirm('Are you sure you want to disconnect from Google Calendar?')) {
+                return;
+            }
+
+            $.ajax({
+                url: aiagentAdmin.restUrl + 'gcalendar/disconnect',
+                method: 'POST',
+                headers: {
+                    'X-WP-Nonce': aiagentAdmin.nonce,
+                },
+                success: function () {
+                    location.reload();
+                },
+            });
+        });
+
+        // Enable/disable connect button based on credentials
+        $('#gcalendar_client_id, #gcalendar_client_secret').on('input', function () {
+            const clientId = $('#gcalendar_client_id').val().trim();
+            const clientSecret = $('#gcalendar_client_secret').val().trim();
+            $('#aiagent-gcalendar-connect').prop('disabled', !clientId || !clientSecret);
+        });
+
         // Load Google Drive files
         function loadGDriveFiles(query = '') {
             const $container = $('#aiagent-gdrive-files');
@@ -1178,6 +1226,42 @@
                         kb_include_stock_status: $modal
                             .find('#woo_kb_include_stock_status')
                             .is(':checked'),
+                    };
+                    break;
+
+                case 'gcalendar':
+                    endpoint = 'settings/gcalendar';
+                    // Collect working days
+                    const workingDays = [];
+                    $modal
+                        .find('input[name="gcalendar_working_days[]"]:checked')
+                        .each(function () {
+                            workingDays.push(parseInt($(this).val()));
+                        });
+
+                    data = {
+                        enabled: $modal.find('#gcalendar_enabled').is(':checked'),
+                        client_id: $modal.find('#gcalendar_client_id').val() || '',
+                        client_secret: $modal.find('#gcalendar_client_secret').val() || '',
+                        prompt_after_chat: $modal
+                            .find('#gcalendar_prompt_after_chat')
+                            .is(':checked'),
+                        prompt_message: $modal.find('#gcalendar_prompt_message').val() || '',
+                        default_duration:
+                            parseInt($modal.find('#gcalendar_default_duration').val()) || 30,
+                        buffer_time:
+                            parseInt($modal.find('#gcalendar_buffer_time').val()) || 15,
+                        days_ahead:
+                            parseInt($modal.find('#gcalendar_days_ahead').val()) || 14,
+                        business_hours_start:
+                            $modal.find('#gcalendar_business_hours_start').val() || '09:00',
+                        business_hours_end:
+                            $modal.find('#gcalendar_business_hours_end').val() || '17:00',
+                        working_days: workingDays.length > 0 ? workingDays : [1, 2, 3, 4, 5],
+                        event_title_template:
+                            $modal.find('#gcalendar_event_title_template').val() || '',
+                        event_description_template:
+                            $modal.find('#gcalendar_event_description_template').val() || '',
                     };
                     break;
 

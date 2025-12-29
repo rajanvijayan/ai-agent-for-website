@@ -19,6 +19,16 @@
             this.compareProducts = [];
             this.wooEnabled = aiagentConfig.wooEnabled || false;
 
+            // Calendar booking state
+            this.calendarEnabled = aiagentConfig.gcalendarSettings?.enabled || false;
+            this.calendarPromptAfterChat = aiagentConfig.gcalendarSettings?.prompt_after_chat || false;
+            this.calendarPromptMessage =
+                aiagentConfig.gcalendarSettings?.prompt_message ||
+                'Would you like to schedule a meeting or follow-up?';
+            this.calendarSlots = [];
+            this.currentDateIndex = 0;
+            this.selectedSlot = null;
+
             // Debug: Log current state
             console.log('AI Agent Config:', {
                 requireUserInfo: aiagentConfig.requireUserInfo,
@@ -27,6 +37,7 @@
                 sessionId: this.sessionId,
                 soundEnabled: this.soundEnabled,
                 wooEnabled: this.wooEnabled,
+                calendarEnabled: this.calendarEnabled,
             });
 
             if (this.widget) {
@@ -167,6 +178,7 @@
             const closeChatBtn = container.querySelector('.aiagent-close-chat');
             const userInfoForm = container.querySelector('.aiagent-user-info-form');
             const ratingModal = container.querySelector('.aiagent-rating-modal');
+            const calendarModal = container.querySelector('.aiagent-calendar-modal');
 
             if (!form || !input || !messagesContainer) return;
 
@@ -211,6 +223,11 @@
                 this.initRating(container, ratingModal);
             }
 
+            // Handle calendar booking
+            if (calendarModal) {
+                this.initCalendar(container, calendarModal);
+            }
+
             // Add welcome message for inline chats
             if (container.classList.contains('aiagent-inline-chat')) {
                 this.checkUserInfo(container, messagesContainer);
@@ -252,13 +269,48 @@
             // Skip rating
             if (skipBtn) {
                 skipBtn.addEventListener('click', () => {
-                    this.closeChat(container);
+                    // Hide rating
+                    container.classList.remove('show-rating');
+
+                    // Show calendar prompt if enabled
+                    if (this.calendarEnabled && this.calendarPromptAfterChat) {
+                        this.showCalendarPrompt(container);
+                    } else {
+                        this.closeChat(container);
+                    }
                 });
             }
         }
 
         showRating(container) {
             container.classList.add('show-rating');
+        }
+
+        showCalendarPrompt(container) {
+            // Only show if calendar is enabled and user has messages
+            if (!this.calendarEnabled || !this.calendarPromptAfterChat || !this.hasMessages) {
+                return;
+            }
+
+            // Set the prompt text
+            const promptText = container.querySelector('.aiagent-calendar-prompt-text');
+            if (promptText) {
+                promptText.textContent = this.calendarPromptMessage;
+            }
+
+            container.classList.add('show-calendar');
+        }
+
+        hideCalendarPrompt(container) {
+            container.classList.remove('show-calendar');
+            // Reset to first step
+            const steps = container.querySelectorAll('.aiagent-calendar-step');
+            steps.forEach((step) => {
+                step.style.display = step.dataset.step === 'prompt' ? 'block' : 'none';
+            });
+            // Reset state
+            this.currentDateIndex = 0;
+            this.selectedSlot = null;
         }
 
         async submitRating(container, rating) {
@@ -278,11 +330,20 @@
                 console.error('AI Agent Error:', error);
             }
 
-            this.closeChat(container, true);
+            // Hide rating
+            container.classList.remove('show-rating');
+
+            // Show calendar prompt if enabled
+            if (this.calendarEnabled && this.calendarPromptAfterChat) {
+                this.showCalendarPrompt(container);
+            } else {
+                this.closeChat(container, true);
+            }
         }
 
         closeChat(container, endConversation = false) {
             container.classList.remove('show-rating');
+            container.classList.remove('show-calendar');
 
             if (container.id === 'aiagent-chat-widget') {
                 container.classList.remove('open');
@@ -294,6 +355,9 @@
             // Reset rating stars
             const stars = container.querySelectorAll('.aiagent-star');
             stars.forEach((s) => s.classList.remove('selected', 'active'));
+
+            // Reset calendar state
+            this.hideCalendarPrompt(container);
 
             // If ending conversation, clear messages and generate new session
             if (endConversation) {
@@ -1263,6 +1327,265 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        // Calendar Booking Methods
+        initCalendar(container, calendarModal) {
+            // Yes button - proceed to slot selection
+            const yesBtn = calendarModal.querySelector('.aiagent-calendar-yes');
+            if (yesBtn) {
+                yesBtn.addEventListener('click', () => {
+                    this.showCalendarStep(calendarModal, 'slots');
+                    this.loadAvailableSlots(calendarModal);
+                });
+            }
+
+            // No button - close calendar and chat
+            const noBtn = calendarModal.querySelector('.aiagent-calendar-no');
+            if (noBtn) {
+                noBtn.addEventListener('click', () => {
+                    this.closeChat(container, true);
+                });
+            }
+
+            // Back buttons
+            calendarModal.querySelectorAll('.aiagent-calendar-back').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const currentStep = btn.closest('.aiagent-calendar-step');
+                    const step = currentStep.dataset.step;
+
+                    if (step === 'slots') {
+                        this.showCalendarStep(calendarModal, 'prompt');
+                    } else if (step === 'details') {
+                        this.showCalendarStep(calendarModal, 'slots');
+                    }
+                });
+            });
+
+            // Date navigation
+            const prevBtn = calendarModal.querySelector('.aiagent-date-prev');
+            const nextBtn = calendarModal.querySelector('.aiagent-date-next');
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    if (this.currentDateIndex > 0) {
+                        this.currentDateIndex--;
+                        this.renderCurrentDateSlots(calendarModal);
+                    }
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    if (this.currentDateIndex < this.calendarSlots.length - 1) {
+                        this.currentDateIndex++;
+                        this.renderCurrentDateSlots(calendarModal);
+                    }
+                });
+            }
+
+            // Booking form
+            const bookingForm = calendarModal.querySelector('.aiagent-calendar-form');
+            if (bookingForm) {
+                bookingForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.submitBooking(container, calendarModal, bookingForm);
+                });
+            }
+
+            // Done button
+            const doneBtn = calendarModal.querySelector('.aiagent-calendar-done');
+            if (doneBtn) {
+                doneBtn.addEventListener('click', () => {
+                    this.closeChat(container, true);
+                });
+            }
+        }
+
+        showCalendarStep(calendarModal, step) {
+            const steps = calendarModal.querySelectorAll('.aiagent-calendar-step');
+            steps.forEach((s) => {
+                s.style.display = s.dataset.step === step ? 'block' : 'none';
+            });
+        }
+
+        async loadAvailableSlots(calendarModal) {
+            const loadingEl = calendarModal.querySelector('.aiagent-calendar-loading');
+            const slotsContainer = calendarModal.querySelector('.aiagent-calendar-slots-container');
+
+            // Show loading
+            if (loadingEl) loadingEl.style.display = 'flex';
+            if (slotsContainer) slotsContainer.style.display = 'none';
+
+            try {
+                const response = await fetch(aiagentConfig.restUrl + 'gcalendar/slots', {
+                    method: 'GET',
+                    headers: {
+                        'X-WP-Nonce': aiagentConfig.nonce,
+                    },
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.slots && data.slots.length > 0) {
+                    this.calendarSlots = data.slots;
+                    this.currentDateIndex = 0;
+                    this.renderCurrentDateSlots(calendarModal);
+
+                    // Hide loading, show slots
+                    if (loadingEl) loadingEl.style.display = 'none';
+                    if (slotsContainer) slotsContainer.style.display = 'block';
+                } else {
+                    // No slots available
+                    if (loadingEl) {
+                        loadingEl.innerHTML = `
+                            <p style="color: #666;">No available time slots found. Please try again later.</p>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load calendar slots:', error);
+                if (loadingEl) {
+                    loadingEl.innerHTML = `
+                        <p style="color: #e53935;">Failed to load available times. Please try again.</p>
+                    `;
+                }
+            }
+        }
+
+        renderCurrentDateSlots(calendarModal) {
+            if (!this.calendarSlots || this.calendarSlots.length === 0) return;
+
+            const dateData = this.calendarSlots[this.currentDateIndex];
+            const dateLabel = calendarModal.querySelector('.aiagent-date-label');
+            const slotsGrid = calendarModal.querySelector('.aiagent-slots-grid');
+            const noSlots = calendarModal.querySelector('.aiagent-no-slots');
+            const prevBtn = calendarModal.querySelector('.aiagent-date-prev');
+            const nextBtn = calendarModal.querySelector('.aiagent-date-next');
+
+            // Update date label
+            if (dateLabel) {
+                dateLabel.textContent = `${dateData.day_name}, ${dateData.date_label}`;
+            }
+
+            // Update nav buttons
+            if (prevBtn) prevBtn.disabled = this.currentDateIndex === 0;
+            if (nextBtn) nextBtn.disabled = this.currentDateIndex >= this.calendarSlots.length - 1;
+
+            // Render slots
+            if (slotsGrid) {
+                if (dateData.slots && dateData.slots.length > 0) {
+                    slotsGrid.innerHTML = dateData.slots
+                        .map(
+                            (slot) => `
+                        <button type="button" class="aiagent-slot-btn" 
+                            data-start="${slot.start_iso}" 
+                            data-end="${slot.end_iso}" 
+                            data-label="${slot.label}"
+                            data-date="${dateData.date_label}">
+                            ${slot.label}
+                        </button>
+                    `
+                        )
+                        .join('');
+
+                    // Bind slot click events
+                    slotsGrid.querySelectorAll('.aiagent-slot-btn').forEach((btn) => {
+                        btn.addEventListener('click', () => {
+                            this.selectSlot(calendarModal, btn);
+                        });
+                    });
+
+                    if (noSlots) noSlots.style.display = 'none';
+                    slotsGrid.style.display = 'grid';
+                } else {
+                    slotsGrid.style.display = 'none';
+                    if (noSlots) noSlots.style.display = 'block';
+                }
+            }
+        }
+
+        selectSlot(calendarModal, btn) {
+            // Store selected slot
+            this.selectedSlot = {
+                start: btn.dataset.start,
+                end: btn.dataset.end,
+                label: btn.dataset.label,
+                date: btn.dataset.date,
+            };
+
+            // Update selected time display
+            const selectedTimeText = calendarModal.querySelector('.aiagent-selected-time-text');
+            if (selectedTimeText) {
+                selectedTimeText.textContent = `${this.selectedSlot.date} at ${this.selectedSlot.label}`;
+            }
+
+            // Show details step
+            this.showCalendarStep(calendarModal, 'details');
+        }
+
+        async submitBooking(container, calendarModal, form) {
+            if (!this.selectedSlot) return;
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+
+            // Disable form
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="aiagent-spinner"></span> Booking...';
+
+            const title = form.querySelector('input[name="event_title"]').value.trim();
+            const description = form.querySelector('textarea[name="event_description"]')?.value.trim() || '';
+
+            // Get user email from localStorage
+            let userEmail = '';
+            let userName = '';
+            try {
+                userEmail = localStorage.getItem('aiagent_user_email') || '';
+                userName = localStorage.getItem('aiagent_user_name') || '';
+            } catch (e) {
+                // Storage not available
+            }
+
+            try {
+                const response = await fetch(aiagentConfig.restUrl + 'gcalendar/create-event', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': aiagentConfig.nonce,
+                    },
+                    body: JSON.stringify({
+                        title: title || 'Meeting',
+                        description: description,
+                        start: this.selectedSlot.start,
+                        end: this.selectedSlot.end,
+                        attendee_email: userEmail,
+                        attendee_name: userName,
+                        add_meet: true, // Add Google Meet link
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show confirmation
+                    const bookingTitle = calendarModal.querySelector('.aiagent-booking-title');
+                    const bookingTime = calendarModal.querySelector('.aiagent-booking-time');
+
+                    if (bookingTitle) bookingTitle.textContent = data.summary || title;
+                    if (bookingTime)
+                        bookingTime.textContent = `${this.selectedSlot.date} at ${this.selectedSlot.label}`;
+
+                    this.showCalendarStep(calendarModal, 'confirmation');
+                } else {
+                    throw new Error(data.message || 'Failed to create event');
+                }
+            } catch (error) {
+                console.error('Booking error:', error);
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                alert('Failed to book appointment: ' + (error.message || 'Please try again.'));
+            }
         }
 
         // Search products through chat

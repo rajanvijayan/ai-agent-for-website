@@ -38,6 +38,12 @@ class AIAGENT_Admin_Settings {
 			$this->handle_gdrive_callback();
 		}
 
+		// Handle Google Calendar OAuth callback.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth state verified in callback handler.
+		if ( isset( $_GET['gcalendar_callback'] ) && isset( $_GET['code'] ) ) {
+			$this->handle_gcalendar_callback();
+		}
+
 		// Get current tab from URL parameter.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just reading tab parameter for display.
 		$this->active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'general';
@@ -228,6 +234,9 @@ class AIAGENT_Admin_Settings {
 		$gdrive_settings      = AIAGENT_Google_Drive_Integration::get_settings();
 		$gdrive_connected     = AIAGENT_Google_Drive_Integration::is_connected();
 		$gdrive_user          = AIAGENT_Google_Drive_Integration::get_connected_user();
+		$gcalendar_settings   = AIAGENT_Google_Calendar_Integration::get_settings();
+		$gcalendar_connected  = AIAGENT_Google_Calendar_Integration::is_connected();
+		$gcalendar_user       = AIAGENT_Google_Calendar_Integration::get_connected_user();
 		$confluence_settings  = AIAGENT_Confluence_Integration::get_settings();
 		$confluence_connected = AIAGENT_Confluence_Integration::is_connected();
 		$integration_settings = get_option( 'aiagent_integrations', [] );
@@ -492,8 +501,43 @@ class AIAGENT_Admin_Settings {
 			</div>
 		</div>
 
+		<!-- Scheduling Section -->
+		<div class="aiagent-integration-section">
+			<div class="aiagent-section-header">
+				<span class="dashicons dashicons-calendar-alt"></span>
+				<h2><?php esc_html_e( 'Scheduling', 'ai-agent-for-website' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Let users book meetings and appointments at the end of conversations.', 'ai-agent-for-website' ); ?></p>
+			</div>
+
+			<div class="aiagent-integration-grid">
+				<!-- Google Calendar -->
+				<div class="aiagent-integration-box" data-integration="gcalendar">
+					<div class="aiagent-integration-box-header">
+						<div class="aiagent-integration-box-icon" style="background: linear-gradient(135deg, #4285f4 0%, #0d47a1 100%);">
+							<svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+								<path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
+							</svg>
+						</div>
+						<div class="aiagent-integration-box-title">
+							<h3><?php esc_html_e( 'Google Calendar', 'ai-agent-for-website' ); ?></h3>
+							<span class="aiagent-integration-box-desc"><?php esc_html_e( 'Book meetings after chat', 'ai-agent-for-website' ); ?></span>
+						</div>
+						<?php if ( $gcalendar_connected ) : ?>
+							<span class="aiagent-badge aiagent-badge-connected"><?php esc_html_e( 'Connected', 'ai-agent-for-website' ); ?></span>
+						<?php endif; ?>
+					</div>
+					<div class="aiagent-integration-box-footer">
+						<button type="button" class="button aiagent-integration-configure-btn" data-modal="gcalendar-modal">
+							<span class="dashicons dashicons-admin-generic"></span>
+							<?php esc_html_e( 'Configure', 'ai-agent-for-website' ); ?>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Integration Configuration Modals -->
-		<?php $this->render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected, $woo_active, $woo_enabled, $woo_settings ); ?>
+		<?php $this->render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected, $woo_active, $woo_enabled, $woo_settings, $gcalendar_settings, $gcalendar_connected, $gcalendar_user ); ?>
 		<?php
 	}
 
@@ -514,8 +558,11 @@ class AIAGENT_Admin_Settings {
 	 * @param bool   $woo_active           Whether WooCommerce is active.
 	 * @param bool   $woo_enabled          Whether WooCommerce integration is enabled.
 	 * @param array  $woo_settings         WooCommerce integration settings.
+	 * @param array  $gcalendar_settings   Google Calendar settings.
+	 * @param bool   $gcalendar_connected  Whether Google Calendar is connected.
+	 * @param array  $gcalendar_user       Connected Google Calendar user.
 	 */
-	private function render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected, $woo_active = false, $woo_enabled = false, $woo_settings = [] ) {
+	private function render_integration_modals( $settings, $gdrive_settings, $gdrive_connected, $gdrive_user, $confluence_settings, $confluence_connected, $zapier_enabled, $zapier_url, $mailchimp_settings, $mailchimp_enabled, $mailchimp_connected, $woo_active = false, $woo_enabled = false, $woo_settings = [], $gcalendar_settings = [], $gcalendar_connected = false, $gcalendar_user = null ) {
 		?>
 		<!-- Groq Modal -->
 		<div id="groq-modal" class="aiagent-integration-modal" style="display: none;">
@@ -1057,6 +1104,243 @@ class AIAGENT_Admin_Settings {
 			</div>
 		</div>
 		<?php endif; ?>
+
+		<!-- Google Calendar Modal -->
+		<div id="gcalendar-modal" class="aiagent-integration-modal" style="display: none;">
+			<div class="aiagent-modal-overlay"></div>
+			<div class="aiagent-modal-content aiagent-modal-content-large">
+				<div class="aiagent-modal-header">
+					<div class="aiagent-modal-header-icon" style="background: linear-gradient(135deg, #4285f4 0%, #0d47a1 100%);">
+						<svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+							<path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
+						</svg>
+					</div>
+					<h3><?php esc_html_e( 'Configure Google Calendar', 'ai-agent-for-website' ); ?></h3>
+					<button type="button" class="aiagent-modal-close">&times;</button>
+				</div>
+				<div class="aiagent-modal-body">
+					<?php if ( $gcalendar_connected && $gcalendar_user ) : ?>
+						<div class="aiagent-integration-status aiagent-status-connected">
+							<span class="dashicons dashicons-yes-alt"></span>
+							<?php
+							/* translators: %s: User email */
+							printf( esc_html__( 'Connected as %s', 'ai-agent-for-website' ), esc_html( $gcalendar_user['email'] ) );
+							?>
+						</div>
+
+						<!-- Enable/Disable Toggle -->
+						<table class="form-table">
+							<tr>
+								<th scope="row"><label for="gcalendar_enabled"><?php esc_html_e( 'Enable Calendar Booking', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<label class="aiagent-switch">
+										<input type="checkbox" id="gcalendar_enabled" name="gcalendar_enabled" value="1" <?php checked( $gcalendar_settings['enabled'] ?? false ); ?>>
+										<span class="slider"></span>
+									</label>
+									<p class="description"><?php esc_html_e( 'Allow users to book meetings after conversations', 'ai-agent-for-website' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="gcalendar_prompt_after_chat"><?php esc_html_e( 'Prompt After Chat', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<label class="aiagent-switch">
+										<input type="checkbox" id="gcalendar_prompt_after_chat" name="gcalendar_prompt_after_chat" value="1" <?php checked( $gcalendar_settings['prompt_after_chat'] ?? true ); ?>>
+										<span class="slider"></span>
+									</label>
+									<p class="description"><?php esc_html_e( 'Ask users if they want to schedule a meeting when conversation ends', 'ai-agent-for-website' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="gcalendar_prompt_message"><?php esc_html_e( 'Prompt Message', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<input type="text" id="gcalendar_prompt_message" name="gcalendar_prompt_message" 
+										value="<?php echo esc_attr( $gcalendar_settings['prompt_message'] ?? 'Would you like to schedule a meeting or follow-up?' ); ?>" 
+										class="large-text">
+								</td>
+							</tr>
+						</table>
+
+						<h4 style="margin: 20px 0 10px; border-top: 1px solid #ddd; padding-top: 20px;">
+							<span class="dashicons dashicons-clock" style="margin-right: 5px;"></span>
+							<?php esc_html_e( 'Scheduling Settings', 'ai-agent-for-website' ); ?>
+						</h4>
+
+						<table class="form-table">
+							<tr>
+								<th scope="row"><label for="gcalendar_default_duration"><?php esc_html_e( 'Default Duration', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<select id="gcalendar_default_duration" name="gcalendar_default_duration">
+										<option value="15" <?php selected( $gcalendar_settings['default_duration'] ?? 30, 15 ); ?>><?php esc_html_e( '15 minutes', 'ai-agent-for-website' ); ?></option>
+										<option value="30" <?php selected( $gcalendar_settings['default_duration'] ?? 30, 30 ); ?>><?php esc_html_e( '30 minutes', 'ai-agent-for-website' ); ?></option>
+										<option value="45" <?php selected( $gcalendar_settings['default_duration'] ?? 30, 45 ); ?>><?php esc_html_e( '45 minutes', 'ai-agent-for-website' ); ?></option>
+										<option value="60" <?php selected( $gcalendar_settings['default_duration'] ?? 30, 60 ); ?>><?php esc_html_e( '1 hour', 'ai-agent-for-website' ); ?></option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="gcalendar_buffer_time"><?php esc_html_e( 'Buffer Time', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<select id="gcalendar_buffer_time" name="gcalendar_buffer_time">
+										<option value="0" <?php selected( $gcalendar_settings['buffer_time'] ?? 15, 0 ); ?>><?php esc_html_e( 'No buffer', 'ai-agent-for-website' ); ?></option>
+										<option value="5" <?php selected( $gcalendar_settings['buffer_time'] ?? 15, 5 ); ?>><?php esc_html_e( '5 minutes', 'ai-agent-for-website' ); ?></option>
+										<option value="10" <?php selected( $gcalendar_settings['buffer_time'] ?? 15, 10 ); ?>><?php esc_html_e( '10 minutes', 'ai-agent-for-website' ); ?></option>
+										<option value="15" <?php selected( $gcalendar_settings['buffer_time'] ?? 15, 15 ); ?>><?php esc_html_e( '15 minutes', 'ai-agent-for-website' ); ?></option>
+										<option value="30" <?php selected( $gcalendar_settings['buffer_time'] ?? 15, 30 ); ?>><?php esc_html_e( '30 minutes', 'ai-agent-for-website' ); ?></option>
+									</select>
+									<p class="description"><?php esc_html_e( 'Minimum time between appointments', 'ai-agent-for-website' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="gcalendar_days_ahead"><?php esc_html_e( 'Days Ahead', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<input type="number" id="gcalendar_days_ahead" name="gcalendar_days_ahead" 
+										value="<?php echo esc_attr( $gcalendar_settings['days_ahead'] ?? 14 ); ?>" 
+										min="1" max="60" style="width: 80px;">
+									<p class="description"><?php esc_html_e( 'How many days in advance users can book', 'ai-agent-for-website' ); ?></p>
+								</td>
+							</tr>
+						</table>
+
+						<h4 style="margin: 20px 0 10px; border-top: 1px solid #ddd; padding-top: 20px;">
+							<span class="dashicons dashicons-businessman" style="margin-right: 5px;"></span>
+							<?php esc_html_e( 'Business Hours', 'ai-agent-for-website' ); ?>
+						</h4>
+
+						<table class="form-table">
+							<tr>
+								<th scope="row"><label><?php esc_html_e( 'Available Hours', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<input type="time" id="gcalendar_business_hours_start" name="gcalendar_business_hours_start" 
+										value="<?php echo esc_attr( $gcalendar_settings['business_hours_start'] ?? '09:00' ); ?>">
+									<span style="margin: 0 10px;"><?php esc_html_e( 'to', 'ai-agent-for-website' ); ?></span>
+									<input type="time" id="gcalendar_business_hours_end" name="gcalendar_business_hours_end" 
+										value="<?php echo esc_attr( $gcalendar_settings['business_hours_end'] ?? '17:00' ); ?>">
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label><?php esc_html_e( 'Working Days', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<?php
+									$working_days = $gcalendar_settings['working_days'] ?? [ 1, 2, 3, 4, 5 ];
+									$days         = [
+										1 => __( 'Monday', 'ai-agent-for-website' ),
+										2 => __( 'Tuesday', 'ai-agent-for-website' ),
+										3 => __( 'Wednesday', 'ai-agent-for-website' ),
+										4 => __( 'Thursday', 'ai-agent-for-website' ),
+										5 => __( 'Friday', 'ai-agent-for-website' ),
+										6 => __( 'Saturday', 'ai-agent-for-website' ),
+										7 => __( 'Sunday', 'ai-agent-for-website' ),
+									];
+									foreach ( $days as $num => $label ) :
+										?>
+										<label style="display: inline-block; margin-right: 15px; margin-bottom: 5px;">
+											<input type="checkbox" name="gcalendar_working_days[]" value="<?php echo esc_attr( $num ); ?>" <?php checked( in_array( $num, $working_days, true ) ); ?>>
+											<?php echo esc_html( $label ); ?>
+										</label>
+									<?php endforeach; ?>
+								</td>
+							</tr>
+						</table>
+
+						<h4 style="margin: 20px 0 10px; border-top: 1px solid #ddd; padding-top: 20px;">
+							<span class="dashicons dashicons-edit" style="margin-right: 5px;"></span>
+							<?php esc_html_e( 'Event Defaults', 'ai-agent-for-website' ); ?>
+						</h4>
+
+						<table class="form-table">
+							<tr>
+								<th scope="row"><label for="gcalendar_event_title_template"><?php esc_html_e( 'Event Title Template', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<input type="text" id="gcalendar_event_title_template" name="gcalendar_event_title_template" 
+										value="<?php echo esc_attr( $gcalendar_settings['event_title_template'] ?? 'Meeting with {user_name}' ); ?>" 
+										class="large-text">
+									<p class="description"><?php esc_html_e( 'Use {user_name} and {user_email} as placeholders', 'ai-agent-for-website' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="gcalendar_event_description_template"><?php esc_html_e( 'Event Description', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<textarea id="gcalendar_event_description_template" name="gcalendar_event_description_template" 
+										rows="2" class="large-text"><?php echo esc_textarea( $gcalendar_settings['event_description_template'] ?? 'Scheduled via AI Agent chat widget.' ); ?></textarea>
+								</td>
+							</tr>
+						</table>
+
+						<div class="aiagent-modal-actions" style="margin-top: 20px;">
+							<button type="button" class="button button-link-delete aiagent-gcalendar-disconnect">
+								<?php esc_html_e( 'Disconnect', 'ai-agent-for-website' ); ?>
+							</button>
+						</div>
+
+					<?php else : ?>
+						<p class="description">
+							<?php esc_html_e( 'Connect your Google Calendar to let users book meetings after conversations.', 'ai-agent-for-website' ); ?>
+							<a href="https://console.cloud.google.com/apis/credentials" target="_blank"><?php esc_html_e( 'Create OAuth credentials →', 'ai-agent-for-website' ); ?></a>
+						</p>
+						<table class="form-table">
+							<tr>
+								<th scope="row"><label for="gcalendar_client_id"><?php esc_html_e( 'Client ID', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<input type="text" id="gcalendar_client_id" name="gcalendar_client_id" 
+										value="<?php echo esc_attr( $gcalendar_settings['client_id'] ?? '' ); ?>" 
+										class="large-text" placeholder="xxxxxx.apps.googleusercontent.com">
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="gcalendar_client_secret"><?php esc_html_e( 'Client Secret', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<div class="aiagent-api-key-wrapper">
+										<input type="password" id="gcalendar_client_secret" name="gcalendar_client_secret" 
+											value="<?php echo esc_attr( $gcalendar_settings['client_secret'] ?? '' ); ?>" 
+											class="large-text" autocomplete="off">
+										<button type="button" class="button aiagent-toggle-password">
+											<span class="dashicons dashicons-visibility"></span>
+										</button>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label><?php esc_html_e( 'Redirect URI', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<code class="aiagent-copy-text" id="gcalendar-redirect-uri"><?php echo esc_html( admin_url( 'admin.php?page=ai-agent-settings&tab=integrations&gcalendar_callback=1' ) ); ?></code>
+									<button type="button" class="button button-small aiagent-copy-btn" data-target="gcalendar-redirect-uri">
+										<span class="dashicons dashicons-clipboard"></span>
+									</button>
+									<p class="description"><?php esc_html_e( 'Add this URL to your OAuth consent screen.', 'ai-agent-for-website' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label><?php esc_html_e( 'Required Scopes', 'ai-agent-for-website' ); ?></label></th>
+								<td>
+									<code style="display: block; font-size: 11px;">https://www.googleapis.com/auth/calendar.events</code>
+									<code style="display: block; font-size: 11px; margin-top: 5px;">https://www.googleapis.com/auth/calendar.readonly</code>
+									<p class="description"><?php esc_html_e( 'Enable Google Calendar API in your project.', 'ai-agent-for-website' ); ?></p>
+								</td>
+							</tr>
+						</table>
+						<div class="aiagent-modal-actions">
+							<button type="button" id="aiagent-gcalendar-connect" class="button button-primary" <?php disabled( empty( $gcalendar_settings['client_id'] ) || empty( $gcalendar_settings['client_secret'] ) ); ?>>
+								<span class="dashicons dashicons-admin-links"></span>
+								<?php esc_html_e( 'Connect Google Calendar', 'ai-agent-for-website' ); ?>
+							</button>
+							<span class="aiagent-gcalendar-status"></span>
+						</div>
+					<?php endif; ?>
+				</div>
+				<div class="aiagent-modal-footer">
+					<button type="button" class="button aiagent-modal-cancel"><?php esc_html_e( 'Cancel', 'ai-agent-for-website' ); ?></button>
+					<?php if ( $gcalendar_connected ) : ?>
+						<button type="button" class="button button-primary aiagent-modal-save" data-integration="gcalendar">
+							<?php esc_html_e( 'Save', 'ai-agent-for-website' ); ?>
+						</button>
+					<?php else : ?>
+						<button type="button" class="button button-primary aiagent-modal-save" data-integration="gcalendar">
+							<?php esc_html_e( 'Save Credentials', 'ai-agent-for-website' ); ?>
+						</button>
+					<?php endif; ?>
+				</div>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -2075,6 +2359,47 @@ class AIAGENT_Admin_Settings {
 				'aiagent_messages',
 				'gdrive_success',
 				__( 'Successfully connected to Google Drive!', 'ai-agent-for-website' ),
+				'updated'
+			);
+		}
+	}
+
+	/**
+	 * Handle Google Calendar OAuth callback.
+	 */
+	private function handle_gcalendar_callback() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- OAuth state verified in integration class.
+		$code  = isset( $_GET['code'] ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : '';
+		$state = isset( $_GET['state'] ) ? sanitize_text_field( wp_unslash( $_GET['state'] ) ) : '';
+		$error = isset( $_GET['error'] ) ? sanitize_text_field( wp_unslash( $_GET['error'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( $error ) {
+			add_settings_error(
+				'aiagent_messages',
+				'gcalendar_error',
+				/* translators: %s: Error message */
+				sprintf( __( 'Google Calendar authorization failed: %s', 'ai-agent-for-website' ), $error ),
+				'error'
+			);
+			return;
+		}
+
+		$gcalendar = new AIAGENT_Google_Calendar_Integration();
+		$result    = $gcalendar->handle_callback( $code, $state );
+
+		if ( is_wp_error( $result ) ) {
+			add_settings_error(
+				'aiagent_messages',
+				'gcalendar_error',
+				$result->get_error_message(),
+				'error'
+			);
+		} else {
+			add_settings_error(
+				'aiagent_messages',
+				'gcalendar_success',
+				__( 'Successfully connected to Google Calendar!', 'ai-agent-for-website' ),
 				'updated'
 			);
 		}

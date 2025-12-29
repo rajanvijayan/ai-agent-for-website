@@ -187,6 +187,125 @@ class AIAGENT_Chat_Widget {
 					</div>
 				</div>
 
+				<!-- Calendar Booking Modal -->
+				<div class="aiagent-calendar-modal">
+					<div class="aiagent-calendar-inner">
+						<!-- Step 1: Prompt -->
+						<div class="aiagent-calendar-step" data-step="prompt">
+							<div class="aiagent-calendar-icon">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="48" height="48">
+									<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+									<line x1="16" y1="2" x2="16" y2="6"></line>
+									<line x1="8" y1="2" x2="8" y2="6"></line>
+									<line x1="3" y1="10" x2="21" y2="10"></line>
+								</svg>
+							</div>
+							<h3><?php esc_html_e( 'Schedule a Meeting?', 'ai-agent-for-website' ); ?></h3>
+							<p class="aiagent-calendar-prompt-text"></p>
+							<div class="aiagent-calendar-prompt-actions">
+								<button type="button" class="aiagent-btn aiagent-btn-primary aiagent-calendar-yes">
+									<?php esc_html_e( 'Yes, book a time', 'ai-agent-for-website' ); ?>
+								</button>
+								<button type="button" class="aiagent-btn aiagent-btn-secondary aiagent-calendar-no">
+									<?php esc_html_e( 'No, thanks', 'ai-agent-for-website' ); ?>
+								</button>
+							</div>
+						</div>
+
+						<!-- Step 2: Select Date & Time -->
+						<div class="aiagent-calendar-step" data-step="slots" style="display: none;">
+							<div class="aiagent-calendar-header">
+								<button type="button" class="aiagent-calendar-back">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+										<polyline points="15 18 9 12 15 6"></polyline>
+									</svg>
+								</button>
+								<h3><?php esc_html_e( 'Select a Time', 'ai-agent-for-website' ); ?></h3>
+							</div>
+							<div class="aiagent-calendar-loading">
+								<div class="aiagent-spinner"></div>
+								<p><?php esc_html_e( 'Loading available times...', 'ai-agent-for-website' ); ?></p>
+							</div>
+							<div class="aiagent-calendar-slots-container">
+								<div class="aiagent-calendar-date-nav">
+									<button type="button" class="aiagent-date-prev" disabled>
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+											<polyline points="15 18 9 12 15 6"></polyline>
+										</svg>
+									</button>
+									<span class="aiagent-date-label"></span>
+									<button type="button" class="aiagent-date-next">
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+											<polyline points="9 18 15 12 9 6"></polyline>
+										</svg>
+									</button>
+								</div>
+								<div class="aiagent-slots-grid">
+									<!-- Slots will be inserted here -->
+								</div>
+								<div class="aiagent-no-slots" style="display: none;">
+									<p><?php esc_html_e( 'No available times on this day.', 'ai-agent-for-website' ); ?></p>
+								</div>
+							</div>
+						</div>
+
+						<!-- Step 3: Event Details -->
+						<div class="aiagent-calendar-step" data-step="details" style="display: none;">
+							<div class="aiagent-calendar-header">
+								<button type="button" class="aiagent-calendar-back">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+										<polyline points="15 18 9 12 15 6"></polyline>
+									</svg>
+								</button>
+								<h3><?php esc_html_e( 'Meeting Details', 'ai-agent-for-website' ); ?></h3>
+							</div>
+							<div class="aiagent-selected-time">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+									<circle cx="12" cy="12" r="10"></circle>
+									<polyline points="12 6 12 12 16 14"></polyline>
+								</svg>
+								<span class="aiagent-selected-time-text"></span>
+							</div>
+							<form class="aiagent-calendar-form">
+								<div class="aiagent-form-group">
+									<label for="aiagent-event-title"><?php esc_html_e( 'Meeting Topic', 'ai-agent-for-website' ); ?></label>
+									<input type="text" id="aiagent-event-title" name="event_title" 
+										placeholder="<?php esc_attr_e( 'e.g., Follow-up discussion', 'ai-agent-for-website' ); ?>" required>
+								</div>
+								<div class="aiagent-form-group">
+									<label for="aiagent-event-description"><?php esc_html_e( 'Notes (optional)', 'ai-agent-for-website' ); ?></label>
+									<textarea id="aiagent-event-description" name="event_description" rows="2" 
+										placeholder="<?php esc_attr_e( 'Any additional details...', 'ai-agent-for-website' ); ?>"></textarea>
+								</div>
+								<button type="submit" class="aiagent-btn aiagent-btn-primary aiagent-btn-full">
+									<?php esc_html_e( 'Confirm Booking', 'ai-agent-for-website' ); ?>
+								</button>
+							</form>
+						</div>
+
+						<!-- Step 4: Confirmation -->
+						<div class="aiagent-calendar-step" data-step="confirmation" style="display: none;">
+							<div class="aiagent-calendar-success-icon">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="48" height="48">
+									<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+									<polyline points="22 4 12 14.01 9 11.01"></polyline>
+								</svg>
+							</div>
+							<h3><?php esc_html_e( 'Booking Confirmed!', 'ai-agent-for-website' ); ?></h3>
+							<div class="aiagent-booking-details">
+								<p class="aiagent-booking-title"></p>
+								<p class="aiagent-booking-time"></p>
+							</div>
+							<p class="aiagent-booking-invite-sent">
+								<?php esc_html_e( 'A calendar invite has been sent to your email.', 'ai-agent-for-website' ); ?>
+							</p>
+							<button type="button" class="aiagent-btn aiagent-btn-secondary aiagent-calendar-done">
+								<?php esc_html_e( 'Done', 'ai-agent-for-website' ); ?>
+							</button>
+						</div>
+					</div>
+				</div>
+
 				<div class="aiagent-messages">
 					<!-- Messages will be inserted here -->
 				</div>
@@ -369,6 +488,125 @@ class AIAGENT_Chat_Widget {
 					</div>
 					<div class="aiagent-rating-actions">
 						<button type="button" class="aiagent-skip-rating"><?php esc_html_e( 'Skip', 'ai-agent-for-website' ); ?></button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Calendar Booking Modal -->
+			<div class="aiagent-calendar-modal">
+				<div class="aiagent-calendar-inner">
+					<!-- Step 1: Prompt -->
+					<div class="aiagent-calendar-step" data-step="prompt">
+						<div class="aiagent-calendar-icon">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="48" height="48">
+								<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+								<line x1="16" y1="2" x2="16" y2="6"></line>
+								<line x1="8" y1="2" x2="8" y2="6"></line>
+								<line x1="3" y1="10" x2="21" y2="10"></line>
+							</svg>
+						</div>
+						<h3><?php esc_html_e( 'Schedule a Meeting?', 'ai-agent-for-website' ); ?></h3>
+						<p class="aiagent-calendar-prompt-text"></p>
+						<div class="aiagent-calendar-prompt-actions">
+							<button type="button" class="aiagent-btn aiagent-btn-primary aiagent-calendar-yes">
+								<?php esc_html_e( 'Yes, book a time', 'ai-agent-for-website' ); ?>
+							</button>
+							<button type="button" class="aiagent-btn aiagent-btn-secondary aiagent-calendar-no">
+								<?php esc_html_e( 'No, thanks', 'ai-agent-for-website' ); ?>
+							</button>
+						</div>
+					</div>
+
+					<!-- Step 2: Select Date & Time -->
+					<div class="aiagent-calendar-step" data-step="slots" style="display: none;">
+						<div class="aiagent-calendar-header">
+							<button type="button" class="aiagent-calendar-back">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+									<polyline points="15 18 9 12 15 6"></polyline>
+								</svg>
+							</button>
+							<h3><?php esc_html_e( 'Select a Time', 'ai-agent-for-website' ); ?></h3>
+						</div>
+						<div class="aiagent-calendar-loading">
+							<div class="aiagent-spinner"></div>
+							<p><?php esc_html_e( 'Loading available times...', 'ai-agent-for-website' ); ?></p>
+						</div>
+						<div class="aiagent-calendar-slots-container">
+							<div class="aiagent-calendar-date-nav">
+								<button type="button" class="aiagent-date-prev" disabled>
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+										<polyline points="15 18 9 12 15 6"></polyline>
+									</svg>
+								</button>
+								<span class="aiagent-date-label"></span>
+								<button type="button" class="aiagent-date-next">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+										<polyline points="9 18 15 12 9 6"></polyline>
+									</svg>
+								</button>
+							</div>
+							<div class="aiagent-slots-grid">
+								<!-- Slots will be inserted here -->
+							</div>
+							<div class="aiagent-no-slots" style="display: none;">
+								<p><?php esc_html_e( 'No available times on this day.', 'ai-agent-for-website' ); ?></p>
+							</div>
+						</div>
+					</div>
+
+					<!-- Step 3: Event Details -->
+					<div class="aiagent-calendar-step" data-step="details" style="display: none;">
+						<div class="aiagent-calendar-header">
+							<button type="button" class="aiagent-calendar-back">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+									<polyline points="15 18 9 12 15 6"></polyline>
+								</svg>
+							</button>
+							<h3><?php esc_html_e( 'Meeting Details', 'ai-agent-for-website' ); ?></h3>
+						</div>
+						<div class="aiagent-selected-time">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+								<circle cx="12" cy="12" r="10"></circle>
+								<polyline points="12 6 12 12 16 14"></polyline>
+							</svg>
+							<span class="aiagent-selected-time-text"></span>
+						</div>
+						<form class="aiagent-calendar-form">
+							<div class="aiagent-form-group">
+								<label for="aiagent-event-title-inline"><?php esc_html_e( 'Meeting Topic', 'ai-agent-for-website' ); ?></label>
+								<input type="text" id="aiagent-event-title-inline" name="event_title" 
+									placeholder="<?php esc_attr_e( 'e.g., Follow-up discussion', 'ai-agent-for-website' ); ?>" required>
+							</div>
+							<div class="aiagent-form-group">
+								<label for="aiagent-event-description-inline"><?php esc_html_e( 'Notes (optional)', 'ai-agent-for-website' ); ?></label>
+								<textarea id="aiagent-event-description-inline" name="event_description" rows="2" 
+									placeholder="<?php esc_attr_e( 'Any additional details...', 'ai-agent-for-website' ); ?>"></textarea>
+							</div>
+							<button type="submit" class="aiagent-btn aiagent-btn-primary aiagent-btn-full">
+								<?php esc_html_e( 'Confirm Booking', 'ai-agent-for-website' ); ?>
+							</button>
+						</form>
+					</div>
+
+					<!-- Step 4: Confirmation -->
+					<div class="aiagent-calendar-step" data-step="confirmation" style="display: none;">
+						<div class="aiagent-calendar-success-icon">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="48" height="48">
+								<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+								<polyline points="22 4 12 14.01 9 11.01"></polyline>
+							</svg>
+						</div>
+						<h3><?php esc_html_e( 'Booking Confirmed!', 'ai-agent-for-website' ); ?></h3>
+						<div class="aiagent-booking-details">
+							<p class="aiagent-booking-title"></p>
+							<p class="aiagent-booking-time"></p>
+						</div>
+						<p class="aiagent-booking-invite-sent">
+							<?php esc_html_e( 'A calendar invite has been sent to your email.', 'ai-agent-for-website' ); ?>
+						</p>
+						<button type="button" class="aiagent-btn aiagent-btn-secondary aiagent-calendar-done">
+							<?php esc_html_e( 'Done', 'ai-agent-for-website' ); ?>
+						</button>
 					</div>
 				</div>
 			</div>

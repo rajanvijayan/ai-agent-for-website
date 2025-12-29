@@ -797,6 +797,126 @@ class AIAGENT_REST_API {
 				'permission_callback' => [ $this, 'admin_permission_check' ],
 			]
 		);
+
+		// Google Calendar integration endpoints.
+		register_rest_route(
+			$this->namespace,
+			'/gcalendar/auth-url',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_gcalendar_auth_url' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/gcalendar/disconnect',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_gcalendar_disconnect' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/gcalendar/calendars',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_gcalendar_list_calendars' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/gcalendar/slots',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_gcalendar_slots' ],
+				'permission_callback' => '__return_true', // Public endpoint for chat widget.
+				'args'                => [
+					'start_date' => [
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+					'days_ahead' => [
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/gcalendar/create-event',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_gcalendar_create_event' ],
+				'permission_callback' => '__return_true', // Public endpoint for chat widget.
+				'args'                => [
+					'title'          => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+					'start'          => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+					'end'            => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+					'description'    => [
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_textarea_field',
+					],
+					'attendee_email' => [
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_email',
+					],
+					'attendee_name'  => [
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+					'add_meet'       => [
+						'required'          => false,
+						'type'              => 'boolean',
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/gcalendar/status',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'handle_gcalendar_status' ],
+				'permission_callback' => '__return_true', // Public to check if booking is available.
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/settings/gcalendar',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'handle_save_gcalendar_settings' ],
+				'permission_callback' => [ $this, 'admin_permission_check' ],
+			]
+		);
 	}
 
 	/**
@@ -2658,5 +2778,195 @@ Do not include any explanation, just the JSON array.',
 		} else {
 			return new WP_Error( 'sync_failed', $result['message'], [ 'status' => 400 ] );
 		}
+	}
+
+	/**
+	 * Handle Google Calendar auth URL request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_gcalendar_auth_url( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$gcalendar = new AIAGENT_Google_Calendar_Integration();
+		$auth_url  = $gcalendar->get_auth_url();
+
+		if ( is_wp_error( $auth_url ) ) {
+			return $auth_url;
+		}
+
+		return rest_ensure_response(
+			[
+				'success'  => true,
+				'auth_url' => $auth_url,
+			]
+		);
+	}
+
+	/**
+	 * Handle Google Calendar disconnect request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_gcalendar_disconnect( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		AIAGENT_Google_Calendar_Integration::delete_tokens();
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'message' => __( 'Disconnected from Google Calendar.', 'ai-agent-for-website' ),
+			]
+		);
+	}
+
+	/**
+	 * Handle Google Calendar list calendars request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_gcalendar_list_calendars( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$gcalendar = new AIAGENT_Google_Calendar_Integration();
+		$calendars = $gcalendar->list_calendars();
+
+		if ( is_wp_error( $calendars ) ) {
+			return $calendars;
+		}
+
+		return rest_ensure_response(
+			[
+				'success'   => true,
+				'calendars' => $calendars,
+			]
+		);
+	}
+
+	/**
+	 * Handle Google Calendar available slots request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_gcalendar_slots( $request ) {
+		// Check if calendar is enabled.
+		if ( ! AIAGENT_Google_Calendar_Integration::is_enabled() ) {
+			return new WP_Error( 'calendar_disabled', __( 'Google Calendar integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$start_date = $request->get_param( 'start_date' );
+		$days_ahead = $request->get_param( 'days_ahead' );
+
+		$gcalendar = new AIAGENT_Google_Calendar_Integration();
+		$slots     = $gcalendar->get_available_slots( $start_date, $days_ahead );
+
+		if ( is_wp_error( $slots ) ) {
+			return $slots;
+		}
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'slots'   => $slots,
+			]
+		);
+	}
+
+	/**
+	 * Handle Google Calendar create event request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_gcalendar_create_event( $request ) {
+		// Check if calendar is enabled.
+		if ( ! AIAGENT_Google_Calendar_Integration::is_enabled() ) {
+			return new WP_Error( 'calendar_disabled', __( 'Google Calendar integration is not enabled.', 'ai-agent-for-website' ), [ 'status' => 400 ] );
+		}
+
+		$event_data = [
+			'title'          => $request->get_param( 'title' ),
+			'description'    => $request->get_param( 'description' ) ?? '',
+			'start'          => $request->get_param( 'start' ),
+			'end'            => $request->get_param( 'end' ),
+			'attendee_email' => $request->get_param( 'attendee_email' ),
+			'attendee_name'  => $request->get_param( 'attendee_name' ),
+			'add_meet'       => $request->get_param( 'add_meet' ) ?? false,
+		];
+
+		$gcalendar = new AIAGENT_Google_Calendar_Integration();
+		$result    = $gcalendar->create_event( $event_data );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle Google Calendar status request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_gcalendar_status( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$is_connected = AIAGENT_Google_Calendar_Integration::is_connected();
+		$is_enabled   = AIAGENT_Google_Calendar_Integration::is_enabled();
+		$settings     = AIAGENT_Google_Calendar_Integration::get_frontend_settings();
+
+		return rest_ensure_response(
+			[
+				'success'      => true,
+				'connected'    => $is_connected,
+				'enabled'      => $is_enabled,
+				'settings'     => $settings,
+			]
+		);
+	}
+
+	/**
+	 * Handle save Google Calendar settings request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_save_gcalendar_settings( $request ) {
+		$settings = [
+			'enabled'                    => rest_sanitize_boolean( $request->get_param( 'enabled' ) ),
+			'client_id'                  => sanitize_text_field( $request->get_param( 'client_id' ) ?? '' ),
+			'client_secret'              => sanitize_text_field( $request->get_param( 'client_secret' ) ?? '' ),
+			'default_calendar_id'        => sanitize_text_field( $request->get_param( 'default_calendar_id' ) ?? 'primary' ),
+			'default_duration'           => absint( $request->get_param( 'default_duration' ) ) > 0 ? absint( $request->get_param( 'default_duration' ) ) : 30,
+			'buffer_time'                => absint( $request->get_param( 'buffer_time' ) ),
+			'days_ahead'                 => absint( $request->get_param( 'days_ahead' ) ) > 0 ? absint( $request->get_param( 'days_ahead' ) ) : 14,
+			'business_hours_start'       => sanitize_text_field( $request->get_param( 'business_hours_start' ) ?? '09:00' ),
+			'business_hours_end'         => sanitize_text_field( $request->get_param( 'business_hours_end' ) ?? '17:00' ),
+			'working_days'               => $request->get_param( 'working_days' ) ?? [ 1, 2, 3, 4, 5 ],
+			'prompt_after_chat'          => rest_sanitize_boolean( $request->get_param( 'prompt_after_chat' ) ),
+			'prompt_message'             => sanitize_text_field( $request->get_param( 'prompt_message' ) ?? '' ),
+			'event_title_template'       => sanitize_text_field( $request->get_param( 'event_title_template' ) ?? '' ),
+			'event_description_template' => sanitize_textarea_field( $request->get_param( 'event_description_template' ) ?? '' ),
+		];
+
+		AIAGENT_Google_Calendar_Integration::update_settings( $settings );
+
+		return rest_ensure_response(
+			[
+				'success' => true,
+				'message' => __( 'Google Calendar settings saved successfully.', 'ai-agent-for-website' ),
+			]
+		);
 	}
 }
