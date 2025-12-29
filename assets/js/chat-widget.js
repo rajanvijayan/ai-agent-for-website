@@ -508,11 +508,11 @@
             // If in live agent mode, send to live agent instead of AI
             if (this.isLiveAgentMode && this.liveSessionId) {
                 try {
-                    await fetch(`${this.restUrl}live-agent/message`, {
+                    await fetch(`${aiagentConfig.restUrl}live-agent/message`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-WP-Nonce': this.nonce,
+                            'X-WP-Nonce': aiagentConfig.nonce,
                         },
                         body: JSON.stringify({
                             live_session_id: this.liveSessionId,
@@ -2170,11 +2170,11 @@
             this.showWaitingModal(container);
 
             try {
-                const response = await fetch(`${this.restUrl}live-agent/connect`, {
+                const response = await fetch(`${aiagentConfig.restUrl}live-agent/connect`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-WP-Nonce': this.nonce,
+                        'X-WP-Nonce': aiagentConfig.nonce,
                     },
                     body: JSON.stringify({
                         session_id: this.sessionId,
@@ -2250,10 +2250,10 @@
                 try {
                     // First check session status
                     const statusResponse = await fetch(
-                        `${this.restUrl}live-agent/session-status?session_id=${this.sessionId}`,
+                        `${aiagentConfig.restUrl}live-agent/session-status?session_id=${this.sessionId}`,
                         {
                             headers: {
-                                'X-WP-Nonce': this.nonce,
+                                'X-WP-Nonce': aiagentConfig.nonce,
                             },
                         }
                     );
@@ -2281,10 +2281,10 @@
                         // If we have an active session, get new messages
                         if (this.liveSessionId && statusData.status === 'active') {
                             const msgResponse = await fetch(
-                                `${this.restUrl}live-agent/messages?live_session_id=${this.liveSessionId}&after_id=${this.lastMessageId}`,
+                                `${aiagentConfig.restUrl}live-agent/messages?live_session_id=${this.liveSessionId}&after_id=${this.lastMessageId}`,
                                 {
                                     headers: {
-                                        'X-WP-Nonce': this.nonce,
+                                        'X-WP-Nonce': aiagentConfig.nonce,
                                     },
                                 }
                             );
@@ -2387,11 +2387,11 @@
             // Notify server of session end if requested
             if (notifyServer && this.liveSessionId) {
                 try {
-                    await fetch(`${this.restUrl}live-agent/end`, {
+                    await fetch(`${aiagentConfig.restUrl}live-agent/end`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-WP-Nonce': this.nonce,
+                            'X-WP-Nonce': aiagentConfig.nonce,
                         },
                         body: JSON.stringify({
                             live_session_id: this.liveSessionId,
