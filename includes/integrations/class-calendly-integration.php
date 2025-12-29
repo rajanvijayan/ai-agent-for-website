@@ -49,7 +49,7 @@ class AIAGENT_Calendly_Integration {
 			self::OPTION_NAME,
 			array(
 				'enabled'            => false,
-				'integration_type'   => 'embed', // 'embed', 'popup', 'link', or 'api'.
+				'integration_type'   => 'embed', // Options: embed, popup, link, or api.
 				'scheduling_url'     => '',
 				'client_id'          => '',
 				'client_secret'      => '',
@@ -500,12 +500,14 @@ class AIAGENT_Calendly_Integration {
 			$embed_url .= ( false === strpos( $url, '?' ) ? '?' : '&' ) . http_build_query( $params );
 		}
 
+		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- Third-party Calendly widget script loaded via embed HTML.
 		return sprintf(
 			'<div class="calendly-inline-widget" data-url="%s" style="min-width:320px;height:%spx;"></div>
 			<script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>',
 			esc_url( $embed_url ),
 			esc_attr( $height )
 		);
+		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	}
 
 	/**
@@ -526,6 +528,7 @@ class AIAGENT_Calendly_Integration {
 			$button_style = sprintf( 'background-color: %s;', esc_attr( $primary_color ) );
 		}
 
+		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet, WordPress.WP.EnqueuedResources.NonEnqueuedScript -- Third-party Calendly widget assets loaded via popup HTML.
 		return sprintf(
 			'<link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
 			<script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
@@ -534,6 +537,7 @@ class AIAGENT_Calendly_Integration {
 			esc_url( $url ),
 			esc_html( $button_text )
 		);
+		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet, WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	}
 
 	/**

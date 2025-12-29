@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed transparent background on "Schedule a Meeting?" calendar popup modal
+- Replaced undefined CSS variables with correct ones in chat widget styles
+
 ## [1.8.0] - 2024-12-29
 
 ### Added
