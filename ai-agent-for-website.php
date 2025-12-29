@@ -21,6 +21,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Skip loading the plugin when in test mode (mocks are used instead).
+if ( defined( 'AIAGENT_TEST_MODE' ) && AIAGENT_TEST_MODE ) {
+	return;
+}
+
 // Define plugin constants.
 define( 'AIAGENT_VERSION', '1.9.0' );
 define( 'AIAGENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );

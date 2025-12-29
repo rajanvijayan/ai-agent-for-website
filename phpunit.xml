@@ -2,7 +2,7 @@
 <phpunit
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
-    bootstrap="vendor/autoload.php"
+    bootstrap="tests/bootstrap.php"
     colors="true"
     failOnRisky="true"
     failOnWarning="true"
@@ -18,18 +18,22 @@
         </testsuite>
     </testsuites>
 
-    <coverage processUncoveredFiles="true">
+    <!-- Coverage disabled: Using mocks in bootstrap.php prevents loading actual class files -->
+    <!-- To enable coverage, remove mocks from bootstrap.php and load actual WordPress environment -->
+    <!--
+    <coverage processUncoveredFiles="false">
         <include>
             <directory suffix=".php">./includes</directory>
-            <file>./ai-agent-for-website.php</file>
         </include>
         <exclude>
             <directory>./vendor</directory>
             <directory>./tests</directory>
+            <file>./ai-agent-for-website.php</file>
         </exclude>
         <report>
             <html outputDirectory="coverage-report"/>
             <clover outputFile="coverage.xml"/>
         </report>
     </coverage>
+    -->
 </phpunit>

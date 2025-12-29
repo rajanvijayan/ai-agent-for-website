@@ -278,7 +278,7 @@ class AIAGENT_File_Processor {
 		$headers = null;
 
 		// phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition -- Standard pattern for reading CSV rows.
-		while ( ( $row = fgetcsv( $handle ) ) !== false ) {
+		while ( ( $row = fgetcsv( $handle, 0, ',', '"', '\\' ) ) !== false ) {
 			if ( null === $headers ) {
 				$headers = $row;
 				continue;

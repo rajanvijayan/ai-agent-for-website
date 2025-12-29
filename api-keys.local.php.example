@@ -1,0 +1,69 @@
+<?php
+/**
+ * API Keys Configuration File - Example
+ *
+ * Copy this file to api-keys.local.php and update with your actual keys.
+ * The api-keys.local.php file is ignored by git and will not be committed.
+ *
+ * @package AI_Agent_For_Website
+ */
+
+// Prevent direct access.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * AI/LLM API Keys
+ * Get your Groq API key from: https://console.groq.com/
+ * Get your OpenAI API key from: https://platform.openai.com/api-keys
+ * Get your Anthropic API key from: https://console.anthropic.com/
+ */
+
+// Groq API Key (Primary AI provider).
+define( 'AIAGENT_GROQ_API_KEY', 'your-groq-api-key-here' );
+
+// OpenAI API Key (Optional - Alternative AI provider).
+define( 'AIAGENT_OPENAI_API_KEY', 'your-openai-api-key-here' );
+
+// Anthropic API Key (Optional - Alternative AI provider).
+define( 'AIAGENT_ANTHROPIC_API_KEY', 'your-anthropic-api-key-here' );
+
+/**
+ * Integration API Keys
+ */
+
+// Google OAuth Credentials.
+// Get from: https://console.cloud.google.com/apis/credentials
+define( 'AIAGENT_GOOGLE_CLIENT_ID', 'your-google-client-id.apps.googleusercontent.com' );
+define( 'AIAGENT_GOOGLE_CLIENT_SECRET', 'your-google-client-secret' );
+
+// Calendly OAuth Credentials.
+// Get from: https://developer.calendly.com/
+define( 'AIAGENT_CALENDLY_CLIENT_ID', 'your-calendly-client-id' );
+define( 'AIAGENT_CALENDLY_CLIENT_SECRET', 'your-calendly-client-secret' );
+
+// Confluence API Token.
+// Get from: https://id.atlassian.com/manage/api-tokens
+define( 'AIAGENT_CONFLUENCE_API_TOKEN', 'your-confluence-api-token' );
+
+// Mailchimp API Key.
+// Get from: https://mailchimp.com/help/about-api-keys/
+define( 'AIAGENT_MAILCHIMP_API_KEY', 'your-mailchimp-api-key-us1' );
+
+// Zapier Webhook URL.
+// Get from your Zapier Zap configuration
+define( 'AIAGENT_ZAPIER_WEBHOOK_URL', 'https://hooks.zapier.com/hooks/catch/xxxxx/xxxxx/' );
+
+/**
+ * Test Mode Configuration
+ * Set to true for running tests with mock responses
+ */
+define( 'AIAGENT_TEST_MODE', false );
+
+/**
+ * Debug Mode Configuration
+ * Set to true to enable additional debug logging
+ */
+define( 'AIAGENT_DEBUG_MODE', true );
+

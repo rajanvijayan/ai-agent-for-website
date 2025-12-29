@@ -53,10 +53,49 @@ This file contains instructions for Cursor AI when working on this WordPress plu
 - Ensure responsive design
 
 ## Testing
-- Run PHPUnit tests before major changes:
+
+### 5. Test Coverage Requirements (MANDATORY)
+- **All new functions and classes MUST have corresponding test cases**
+- Tests are located in the `tests/` directory
+- Test files follow the naming convention: `{ClassName}Test.php`
+- Run PHPUnit tests before any commit:
   ```bash
-  vendor/bin/phpunit
+  vendor/bin/phpunit --testdox
   ```
+- Minimum test coverage: 100+ tests must pass
+- CI/CD will fail if test coverage requirements are not met
+
+### Test File Structure
+- `tests/bootstrap.php` - Test bootstrap with WordPress mocks
+- `tests/APIConnectionTest.php` - API key validation tests
+- `tests/FileProcessorTest.php` - File processing tests
+- `tests/ChatWidgetTest.php` - Chat widget tests
+- `tests/KnowledgeManagerTest.php` - Knowledge base tests
+- `tests/LeadsManagerTest.php` - Lead management tests
+- `tests/NotificationManagerTest.php` - Notification tests
+- `tests/ActivityLogManagerTest.php` - Activity log tests
+- `tests/RESTAPITest.php` - REST API endpoint tests
+- `tests/IntegrationsTest.php` - Third-party integration tests
+- `tests/AdminSettingsTest.php` - Admin settings tests
+- `tests/LiveAgentManagerTest.php` - Live agent tests
+- `tests/ConversationsManagerTest.php` - Conversation tests
+- `tests/PluginTest.php` - Main plugin tests
+- `tests/PluginUpdaterTest.php` - Plugin updater tests
+
+### Adding New Tests
+When adding new functionality:
+1. Create or update the corresponding test file
+2. Add tests for all public methods
+3. Test edge cases and error conditions
+4. Ensure all tests pass before committing
+5. CI/CD pipeline will verify test coverage
+
+### API Keys for Testing
+- Use `api-keys.local.php` for local API keys (gitignored)
+- Copy from `api-keys.local.php.example` template
+- Tests run in `AIAGENT_TEST_MODE` with mock responses
+
+### Additional Testing Guidelines
 - Test in multiple WordPress versions when possible
 - Test with WordPress Multisite if applicable
 

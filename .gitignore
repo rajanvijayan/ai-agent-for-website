@@ -33,6 +33,10 @@ npm-debug.log*
 .env.local
 .env.*.local
 
+# API Keys Configuration (local overrides)
+api-keys.local.php
+api-keys.php
+
 # Package lock (keep composer.lock for reproducible builds)
 package-lock.json
 
