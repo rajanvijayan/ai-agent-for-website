@@ -22,6 +22,7 @@
         "Helvetica Neue", sans-serif;
     font-size: 14px;
     line-height: 1.5;
+    pointer-events: none; /* Allow clicks to pass through when widget is not active */
 }
 
 .aiagent-position-bottom-right {
@@ -52,6 +53,7 @@
     position: absolute;
     bottom: 0;
     right: 0;
+    pointer-events: auto; /* Ensure toggle button is always clickable */
 }
 
 .aiagent-position-bottom-left .aiagent-toggle {
@@ -119,6 +121,7 @@
     opacity: 1;
     visibility: visible;
     transform: translateY(0) scale(1);
+    pointer-events: auto; /* Enable clicks on chat window when open */
 }
 
 /* Header */
