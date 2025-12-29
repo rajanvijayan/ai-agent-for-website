@@ -1736,3 +1736,250 @@
 .aiagent-calendly-popup-btn:hover {
     background: #0052cc;
 }
+
+/* =====================================================
+   Live Agent Styles
+   ===================================================== */
+
+/* Live Agent Status Indicator in Header */
+.aiagent-live-agent-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--aiagent-bg-light);
+    border-radius: 12px;
+    font-size: 11px;
+    color: var(--aiagent-text-light);
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+.aiagent-status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #9ca3af;
+    transition: background-color 0.3s ease;
+}
+
+.aiagent-status-indicator.online {
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    animation: pulse-green 2s infinite;
+}
+
+.aiagent-status-indicator.offline {
+    background: #9ca3af;
+}
+
+@keyframes pulse-green {
+    0%, 100% {
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    }
+}
+
+/* Live Agent Actions Container */
+.aiagent-live-agent-actions {
+    display: none;
+    padding: 12px 16px;
+    background: linear-gradient(to bottom, transparent, var(--aiagent-bg-light));
+    border-top: 1px solid var(--aiagent-border);
+    animation: slideUp 0.3s ease-out;
+}
+
+.aiagent-live-agent-actions.visible {
+    display: block;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Connect to Live Agent Button */
+.aiagent-connect-live-agent-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+.aiagent-connect-live-agent-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+.aiagent-connect-live-agent-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.aiagent-connect-live-agent-btn svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* Live Agent Pending State */
+.aiagent-live-agent-pending {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--aiagent-bg);
+    border-radius: 10px;
+    color: var(--aiagent-text);
+    font-size: 14px;
+}
+
+.aiagent-live-agent-pending .aiagent-spinner {
+    color: var(--aiagent-primary);
+}
+
+/* Live Agent Connected State */
+.aiagent-live-agent-connected {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border-radius: 10px;
+    border: 1px solid #a7f3d0;
+}
+
+.aiagent-agent-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #047857;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.aiagent-agent-badge svg {
+    width: 16px;
+    height: 16px;
+}
+
+.aiagent-end-live-agent-btn {
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid #047857;
+    border-radius: 6px;
+    color: #047857;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.aiagent-end-live-agent-btn:hover {
+    background: #047857;
+    color: white;
+}
+
+/* Spinner Animation */
+.aiagent-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* System Message (for live agent notifications) */
+.aiagent-message-system {
+    text-align: center;
+    padding: 8px 16px;
+    margin: 8px 0;
+    background: var(--aiagent-bg-light);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--aiagent-text-light);
+    font-style: italic;
+}
+
+/* Agent Message Styling (distinct from AI) */
+.aiagent-message-agent {
+    background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+    border: 1px solid #bfdbfe;
+    margin-right: 15%;
+    margin-left: 0;
+    border-radius: 4px 16px 16px 16px;
+}
+
+.aiagent-message-agent::before {
+    content: '';
+    display: block;
+    font-size: 10px;
+    color: #3b82f6;
+    font-weight: 600;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aiagent-message-agent[data-agent-name]::before {
+    content: attr(data-agent-name);
+}
+
+/* Live Agent Mode Indicator in Header */
+.aiagent-header.live-agent-mode {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+.aiagent-header.live-agent-mode .aiagent-live-agent-status {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* Button variations */
+.aiagent-btn-secondary {
+    background: var(--aiagent-bg);
+    color: var(--aiagent-primary);
+    border: 1px solid var(--aiagent-primary);
+}
+
+.aiagent-btn-secondary:hover {
+    background: var(--aiagent-primary);
+    color: white;
+}
+
+.aiagent-btn-text {
+    background: transparent;
+    border: none;
+    color: var(--aiagent-primary);
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.aiagent-btn-text:hover {
+    text-decoration: underline;
+}

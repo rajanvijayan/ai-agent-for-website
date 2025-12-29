@@ -968,6 +968,176 @@ class AIAGENT_REST_API {
 				'permission_callback' => array( $this, 'admin_permission_check' ),
 			)
 		);
+
+		// Live Agent endpoints.
+		register_rest_route(
+			$this->namespace,
+			'/live-agent/status',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'handle_live_agent_status' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/live-agent/connect',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_live_agent_connect' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'session_id'      => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'user_id'         => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+					'conversation_id' => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/live-agent/message',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_live_agent_message' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'live_session_id' => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+					'message'         => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_textarea_field',
+					),
+					'sender_type'     => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'sender_id'       => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/live-agent/messages',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'handle_live_agent_get_messages' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'live_session_id' => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+					'after_id'        => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 0,
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/live-agent/end',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_live_agent_end' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'live_session_id' => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+					'ended_by'        => array(
+						'required'          => false,
+						'type'              => 'string',
+						'default'           => 'user',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/live-agent/session-status',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'handle_live_agent_session_status' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'session_id' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/live-agent/heartbeat',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_live_agent_heartbeat' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/live-agent/set-status',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_live_agent_set_status' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+				'args'                => array(
+					'status' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/live-agent/sessions',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'handle_live_agent_get_sessions' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
+		);
 	}
 
 	/**
@@ -3145,6 +3315,217 @@ Do not include any explanation, just the JSON array.',
 			array(
 				'success' => true,
 				'message' => __( 'Calendly settings saved successfully.', 'ai-agent-for-website' ),
+			)
+		);
+	}
+
+	/**
+	 * Handle live agent status request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_live_agent_status( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$is_enabled   = AIAGENT_Live_Agent_Manager::is_enabled();
+		$is_available = AIAGENT_Live_Agent_Manager::is_agent_available();
+		$settings     = AIAGENT_Live_Agent_Manager::get_frontend_settings();
+
+		return rest_ensure_response(
+			array(
+				'success'   => true,
+				'enabled'   => $is_enabled,
+				'available' => $is_available,
+				'settings'  => $settings,
+			)
+		);
+	}
+
+	/**
+	 * Handle live agent connect request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_live_agent_connect( $request ) {
+		$session_id      = $request->get_param( 'session_id' );
+		$user_id         = $request->get_param( 'user_id' );
+		$conversation_id = $request->get_param( 'conversation_id' );
+
+		$result = AIAGENT_Live_Agent_Manager::create_session( $conversation_id, $user_id, $session_id );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle live agent message request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_live_agent_message( $request ) {
+		$live_session_id = $request->get_param( 'live_session_id' );
+		$message         = $request->get_param( 'message' );
+		$sender_type     = $request->get_param( 'sender_type' );
+		$sender_id       = $request->get_param( 'sender_id' );
+
+		$result = AIAGENT_Live_Agent_Manager::send_message( $live_session_id, $message, $sender_type, $sender_id );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle live agent get messages request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_live_agent_get_messages( $request ) {
+		$live_session_id = $request->get_param( 'live_session_id' );
+		$after_id        = $request->get_param( 'after_id' ) ?? 0;
+
+		$messages = AIAGENT_Live_Agent_Manager::get_messages( $live_session_id, $after_id );
+
+		return rest_ensure_response(
+			array(
+				'success'  => true,
+				'messages' => $messages,
+			)
+		);
+	}
+
+	/**
+	 * Handle live agent end session request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_live_agent_end( $request ) {
+		$live_session_id = $request->get_param( 'live_session_id' );
+		$ended_by        = $request->get_param( 'ended_by' ) ?? 'user';
+
+		$result = AIAGENT_Live_Agent_Manager::end_session( $live_session_id, $ended_by );
+
+		return rest_ensure_response(
+			array(
+				'success' => $result,
+				'message' => $result ? __( 'Session ended.', 'ai-agent-for-website' ) : __( 'Failed to end session.', 'ai-agent-for-website' ),
+			)
+		);
+	}
+
+	/**
+	 * Handle live agent session status request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_live_agent_session_status( $request ) {
+		$session_id = $request->get_param( 'session_id' );
+
+		$status = AIAGENT_Live_Agent_Manager::get_session_status( $session_id );
+
+		return rest_ensure_response(
+			array_merge( array( 'success' => true ), $status )
+		);
+	}
+
+	/**
+	 * Handle live agent heartbeat request (for agents to stay online).
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function handle_live_agent_heartbeat( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$user_id = get_current_user_id();
+
+		if ( ! $user_id ) {
+			return new WP_Error( 'not_logged_in', __( 'You must be logged in.', 'ai-agent-for-website' ), array( 'status' => 401 ) );
+		}
+
+		$result = AIAGENT_Live_Agent_Manager::agent_heartbeat( $user_id );
+
+		// Get active sessions for this agent.
+		$sessions = AIAGENT_Live_Agent_Manager::get_agent_sessions( $user_id );
+
+		return rest_ensure_response(
+			array(
+				'success'  => $result,
+				'sessions' => $sessions,
+			)
+		);
+	}
+
+	/**
+	 * Handle live agent set status request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_live_agent_set_status( $request ) {
+		$status  = $request->get_param( 'status' );
+		$user_id = get_current_user_id();
+
+		if ( ! $user_id ) {
+			return new WP_Error( 'not_logged_in', __( 'You must be logged in.', 'ai-agent-for-website' ), array( 'status' => 401 ) );
+		}
+
+		if ( ! AIAGENT_Live_Agent_Manager::can_user_be_agent( $user_id ) ) {
+			return new WP_Error( 'not_authorized', __( 'You are not authorized to be a live agent.', 'ai-agent-for-website' ), array( 'status' => 403 ) );
+		}
+
+		$result = AIAGENT_Live_Agent_Manager::set_agent_status( $user_id, $status );
+
+		return rest_ensure_response(
+			array(
+				'success' => $result,
+				'status'  => $status,
+				'message' => $result
+					? sprintf(
+						/* translators: %s: Status */
+						__( 'Status set to %s.', 'ai-agent-for-website' ),
+						$status
+					)
+					: __( 'Failed to set status.', 'ai-agent-for-website' ),
+			)
+		);
+	}
+
+	/**
+	 * Handle get live agent sessions request.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_live_agent_get_sessions( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$user_id = get_current_user_id();
+
+		if ( ! $user_id ) {
+			return new WP_Error( 'not_logged_in', __( 'You must be logged in.', 'ai-agent-for-website' ), array( 'status' => 401 ) );
+		}
+
+		$sessions = AIAGENT_Live_Agent_Manager::get_agent_sessions( $user_id );
+
+		return rest_ensure_response(
+			array(
+				'success'  => true,
+				'sessions' => $sessions,
 			)
 		);
 	}

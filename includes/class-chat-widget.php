@@ -28,6 +28,16 @@ class AIAGENT_Chat_Widget {
 			return '';
 		}
 
+		// Get live agent settings.
+		$live_agent_settings = AIAGENT_Live_Agent_Manager::get_settings();
+		$settings = array_merge( $settings, array(
+			'live_agent_enabled'             => $live_agent_settings['enabled'],
+			'live_agent_connect_button_text' => $live_agent_settings['connect_button_text'],
+			'live_agent_waiting_message'     => $live_agent_settings['waiting_message'],
+			'live_agent_connected_message'   => $live_agent_settings['connected_message'],
+			'live_agent_offline_message'     => $live_agent_settings['offline_message'],
+		) );
+
 		$ai_name           = esc_attr( $settings['ai_name'] ?? 'AI Assistant' );
 		$position          = esc_attr( $settings['widget_position'] ?? 'bottom-right' );
 		$color             = esc_attr( $settings['primary_color'] ?? '#0073aa' );
@@ -308,6 +318,100 @@ class AIAGENT_Chat_Widget {
 
 				<div class="aiagent-messages">
 					<!-- Messages will be inserted here -->
+				</div>
+
+				<!-- Live Agent Connect Banner -->
+				<div class="aiagent-live-agent-banner" style="display: none;">
+					<div class="aiagent-live-agent-banner-content">
+						<span class="aiagent-live-agent-icon">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+								<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+								<circle cx="12" cy="7" r="4"></circle>
+							</svg>
+						</span>
+						<span class="aiagent-live-agent-text"><?php esc_html_e( 'Need more help?', 'ai-agent-for-website' ); ?></span>
+						<button type="button" class="aiagent-connect-agent-btn">
+							<?php echo esc_html( $settings['live_agent_connect_button_text'] ?? __( 'Connect to Live Agent', 'ai-agent-for-website' ) ); ?>
+						</button>
+					</div>
+				</div>
+
+				<!-- Live Agent Status Bar -->
+				<div class="aiagent-live-agent-status" style="display: none;">
+					<div class="aiagent-live-agent-status-content">
+						<div class="aiagent-live-agent-indicator">
+							<span class="aiagent-pulse-dot"></span>
+							<span class="aiagent-live-status-text"><?php esc_html_e( 'Connected to Live Agent', 'ai-agent-for-website' ); ?></span>
+						</div>
+						<button type="button" class="aiagent-end-live-chat" title="<?php esc_attr_e( 'End live chat', 'ai-agent-for-website' ); ?>">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+								<line x1="18" y1="6" x2="6" y2="18"></line>
+								<line x1="6" y1="6" x2="18" y2="18"></line>
+							</svg>
+						</button>
+					</div>
+				</div>
+
+				<!-- Live Agent Waiting Modal -->
+				<div class="aiagent-live-waiting-modal">
+					<div class="aiagent-live-waiting-inner">
+						<div class="aiagent-live-waiting-icon">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="48" height="48">
+								<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+								<circle cx="12" cy="7" r="4"></circle>
+							</svg>
+						</div>
+						<h3><?php esc_html_e( 'Connecting to Agent...', 'ai-agent-for-website' ); ?></h3>
+						<p class="aiagent-live-waiting-message"><?php echo esc_html( $settings['live_agent_waiting_message'] ?? __( 'Please wait while we connect you to a live agent...', 'ai-agent-for-website' ) ); ?></p>
+						<div class="aiagent-live-queue-info" style="display: none;">
+							<span class="aiagent-queue-position"></span>
+						</div>
+						<div class="aiagent-live-waiting-spinner">
+							<div class="aiagent-spinner"></div>
+						</div>
+						<button type="button" class="aiagent-btn aiagent-btn-secondary aiagent-cancel-live-connect">
+							<?php esc_html_e( 'Cancel', 'ai-agent-for-website' ); ?>
+						</button>
+					</div>
+				</div>
+
+				<!-- Live Agent Connected Modal -->
+				<div class="aiagent-live-connected-modal">
+					<div class="aiagent-live-connected-inner">
+						<div class="aiagent-live-connected-icon">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="48" height="48">
+								<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+								<polyline points="22 4 12 14.01 9 11.01"></polyline>
+							</svg>
+						</div>
+						<h3><?php esc_html_e( 'Connected!', 'ai-agent-for-website' ); ?></h3>
+						<div class="aiagent-agent-info">
+							<div class="aiagent-agent-avatar"></div>
+							<span class="aiagent-agent-name"></span>
+						</div>
+						<p class="aiagent-live-connected-message"><?php echo esc_html( $settings['live_agent_connected_message'] ?? __( 'You are now connected with a live agent.', 'ai-agent-for-website' ) ); ?></p>
+						<button type="button" class="aiagent-btn aiagent-btn-primary aiagent-start-live-chat">
+							<?php esc_html_e( 'Start Chatting', 'ai-agent-for-website' ); ?>
+						</button>
+					</div>
+				</div>
+
+				<!-- Live Agent Offline Modal -->
+				<div class="aiagent-live-offline-modal">
+					<div class="aiagent-live-offline-inner">
+						<div class="aiagent-live-offline-icon">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="48" height="48">
+								<circle cx="12" cy="12" r="10"></circle>
+								<line x1="12" y1="8" x2="12" y2="12"></line>
+								<line x1="12" y1="16" x2="12.01" y2="16"></line>
+							</svg>
+						</div>
+						<h3><?php esc_html_e( 'Agents Unavailable', 'ai-agent-for-website' ); ?></h3>
+						<p class="aiagent-live-offline-message"><?php echo esc_html( $settings['live_agent_offline_message'] ?? __( 'Our agents are currently offline. Please try again later or leave a message.', 'ai-agent-for-website' ) ); ?></p>
+						<button type="button" class="aiagent-btn aiagent-btn-secondary aiagent-close-offline-modal">
+							<?php esc_html_e( 'Continue with AI', 'ai-agent-for-website' ); ?>
+						</button>
+					</div>
 				</div>
 
 				<div class="aiagent-input-area">
