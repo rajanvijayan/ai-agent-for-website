@@ -47,8 +47,10 @@
 
             // Live Agent state
             this.liveAgentEnabled = aiagentConfig.liveAgentSettings?.enabled || false;
-            this.liveAgentAvailable = aiagentConfig.liveAgentSettings?.agent_available || false;
+            this.isAgentAvailable = aiagentConfig.liveAgentSettings?.agent_available || false;
             this.liveAgentSettings = aiagentConfig.liveAgentSettings || {};
+            this.liveAgentConnectButtonText = aiagentConfig.liveAgentSettings?.connect_button_text || 'Connect to Live Agent';
+            this.liveAgentNoAgentMessage = aiagentConfig.liveAgentSettings?.offline_message || 'No agents are currently available.';
             this.isLiveAgentMode = false;
             this.liveSessionId = null;
             this.liveAgentPollInterval = null;
@@ -67,7 +69,7 @@
                 gcalendarEnabled: this.gcalendarEnabled,
                 calendlyEnabled: this.calendlyEnabled,
                 liveAgentEnabled: this.liveAgentEnabled,
-                liveAgentAvailable: this.liveAgentAvailable,
+                isAgentAvailable: this.isAgentAvailable,
             });
 
             if (this.widget) {
