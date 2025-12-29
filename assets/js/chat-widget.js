@@ -1909,19 +1909,53 @@
          * @param {HTMLElement} container - The chat widget container
          */
         initLiveAgent(container) {
-            // Find the connect button
-            const connectBtn = container.querySelector('.aiagent-connect-live-agent-btn');
+            // Find the connect button (check both possible class names)
+            const connectBtn = container.querySelector('.aiagent-connect-agent-btn, .aiagent-connect-live-agent-btn');
             if (connectBtn) {
                 connectBtn.addEventListener('click', () => {
                     this.handleLiveAgentConnect(container);
                 });
             }
 
-            // Update agent status indicator
-            this.updateAgentStatus(container);
+            // Find cancel button in waiting modal
+            const cancelBtn = container.querySelector('.aiagent-cancel-live-connect');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', () => {
+                    this.cancelLiveAgentConnect(container);
+                });
+            }
 
-            // Hide live agent button initially - will show based on conditions
-            this.hideLiveAgentButton(container);
+            // Find start chatting button in connected modal
+            const startChatBtn = container.querySelector('.aiagent-start-live-chat');
+            if (startChatBtn) {
+                startChatBtn.addEventListener('click', () => {
+                    this.startLiveChatSession(container);
+                });
+            }
+
+            // Find close offline modal button
+            const closeOfflineBtn = container.querySelector('.aiagent-close-offline-modal');
+            if (closeOfflineBtn) {
+                closeOfflineBtn.addEventListener('click', () => {
+                    this.hideAllLiveAgentModals(container);
+                });
+            }
+
+            // Find end live chat button
+            const endLiveChatBtn = container.querySelector('.aiagent-end-live-chat');
+            if (endLiveChatBtn) {
+                endLiveChatBtn.addEventListener('click', () => {
+                    this.endLiveAgentSession(container);
+                });
+            }
+
+            // Hide live agent banner initially - will show based on conditions
+            this.hideLiveAgentBanner(container);
+
+            console.log('Live Agent initialized:', {
+                enabled: this.liveAgentEnabled,
+                agentAvailable: this.isAgentAvailable
+            });
         }
 
         /**
@@ -1974,27 +2008,39 @@
         checkLiveAgentTrigger(container) {
             if (!this.liveAgentEnabled || !container) return;
 
-            // Show live agent button after 3+ messages with at least 1 negative response
+            // Get settings for trigger conditions
+            const showAfterMessages = this.liveAgentSettings?.show_after_messages || 3;
+            const showOnNoResults = this.liveAgentSettings?.show_on_no_results !== false;
+
+            // Show live agent banner after configured messages with at least 1 negative response
             // or after 5+ total messages regardless of response type
             const shouldShow =
-                (this.messageCount >= 3 && this.negativeResponseCount >= 1) || this.messageCount >= 5;
+                (showOnNoResults && this.messageCount >= showAfterMessages && this.negativeResponseCount >= 1) ||
+                this.messageCount >= 5;
+
+            console.log('Live Agent Trigger Check:', {
+                messageCount: this.messageCount,
+                negativeResponseCount: this.negativeResponseCount,
+                shouldShow,
+                isAgentAvailable: this.isAgentAvailable
+            });
 
             if (shouldShow && this.isAgentAvailable) {
-                this.showLiveAgentButton(container);
+                this.showLiveAgentBanner(container);
             }
         }
 
         /**
-         * Show the live agent connect button
+         * Show the live agent connect banner
          * @param {HTMLElement} container - The chat widget container
          */
-        showLiveAgentButton(container) {
-            const liveAgentActions = container.querySelector('.aiagent-live-agent-actions');
-            if (liveAgentActions) {
-                liveAgentActions.classList.add('visible');
-                liveAgentActions.style.display = 'block';
+        showLiveAgentBanner(container) {
+            const banner = container.querySelector('.aiagent-live-agent-banner');
+            if (banner) {
+                banner.classList.add('visible');
+                banner.style.display = 'block';
 
-                // Scroll to show the button
+                // Scroll to show the banner
                 const messagesContainer = container.querySelector('.aiagent-messages');
                 if (messagesContainer) {
                     messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -2003,15 +2049,109 @@
         }
 
         /**
-         * Hide the live agent connect button
+         * Hide the live agent connect banner
          * @param {HTMLElement} container - The chat widget container
          */
-        hideLiveAgentButton(container) {
-            const liveAgentActions = container.querySelector('.aiagent-live-agent-actions');
-            if (liveAgentActions) {
-                liveAgentActions.classList.remove('visible');
-                liveAgentActions.style.display = 'none';
+        hideLiveAgentBanner(container) {
+            const banner = container.querySelector('.aiagent-live-agent-banner');
+            if (banner) {
+                banner.classList.remove('visible');
+                banner.style.display = 'none';
             }
+        }
+
+        /**
+         * Hide all live agent modals
+         * @param {HTMLElement} container - The chat widget container
+         */
+        hideAllLiveAgentModals(container) {
+            const modals = container.querySelectorAll('.aiagent-live-waiting-modal, .aiagent-live-connected-modal, .aiagent-live-offline-modal');
+            modals.forEach(modal => {
+                modal.classList.remove('visible');
+                modal.style.display = 'none';
+            });
+        }
+
+        /**
+         * Show waiting modal
+         * @param {HTMLElement} container - The chat widget container
+         */
+        showWaitingModal(container) {
+            this.hideAllLiveAgentModals(container);
+            const modal = container.querySelector('.aiagent-live-waiting-modal');
+            if (modal) {
+                modal.classList.add('visible');
+                modal.style.display = 'flex';
+            }
+        }
+
+        /**
+         * Show connected modal
+         * @param {HTMLElement} container - The chat widget container
+         * @param {Object} agent - Agent info
+         */
+        showConnectedModal(container, agent) {
+            this.hideAllLiveAgentModals(container);
+            const modal = container.querySelector('.aiagent-live-connected-modal');
+            if (modal) {
+                // Update agent info if available
+                if (agent) {
+                    const nameEl = modal.querySelector('.aiagent-agent-name');
+                    const avatarEl = modal.querySelector('.aiagent-agent-avatar');
+                    if (nameEl) nameEl.textContent = agent.name || 'Agent';
+                    if (avatarEl && agent.avatar) {
+                        avatarEl.innerHTML = `<img src="${agent.avatar}" alt="${agent.name || 'Agent'}">`;
+                    }
+                }
+                modal.classList.add('visible');
+                modal.style.display = 'flex';
+            }
+        }
+
+        /**
+         * Show offline modal
+         * @param {HTMLElement} container - The chat widget container
+         */
+        showOfflineModal(container) {
+            this.hideAllLiveAgentModals(container);
+            const modal = container.querySelector('.aiagent-live-offline-modal');
+            if (modal) {
+                modal.classList.add('visible');
+                modal.style.display = 'flex';
+            }
+        }
+
+        /**
+         * Cancel live agent connection
+         * @param {HTMLElement} container - The chat widget container
+         */
+        cancelLiveAgentConnect(container) {
+            // Stop polling
+            if (this.agentPollInterval) {
+                clearInterval(this.agentPollInterval);
+                this.agentPollInterval = null;
+            }
+            this.hideAllLiveAgentModals(container);
+            this.showLiveAgentBanner(container);
+        }
+
+        /**
+         * Start live chat session (after clicking Start Chatting)
+         * @param {HTMLElement} container - The chat widget container
+         */
+        startLiveChatSession(container) {
+            this.hideAllLiveAgentModals(container);
+            this.isLiveAgentMode = true;
+            
+            // Show the live agent status bar
+            const statusBar = container.querySelector('.aiagent-live-agent-status');
+            if (statusBar) {
+                statusBar.classList.add('visible');
+                statusBar.style.display = 'block';
+            }
+            
+            // Hide the banner
+            this.hideLiveAgentBanner(container);
         }
 
         /**
@@ -2019,27 +2159,15 @@
          * @param {HTMLElement} container - The chat widget container
          */
         async handleLiveAgentConnect(container) {
-            const messagesContainer = container.querySelector('.aiagent-messages');
-            const connectBtn = container.querySelector('.aiagent-connect-live-agent-btn');
-
             // Check if agent is available
             if (!this.isAgentAvailable) {
-                this.addMessage(messagesContainer, this.liveAgentNoAgentMessage, 'system');
+                this.showOfflineModal(container);
                 return;
             }
 
-            // Disable button while connecting
-            if (connectBtn) {
-                connectBtn.disabled = true;
-                connectBtn.innerHTML = `
-                    <svg class="aiagent-spinner" viewBox="0 0 24 24" width="18" height="18">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="31.4" stroke-dashoffset="10">
-                            <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
-                        </circle>
-                    </svg>
-                    Connecting...
-                `;
-            }
+            // Hide banner and show waiting modal
+            this.hideLiveAgentBanner(container);
+            this.showWaitingModal(container);
 
             try {
                 const response = await fetch(`${this.restUrl}live-agent/connect`, {
@@ -2061,59 +2189,30 @@
                     // Store the live session ID for messaging
                     this.liveSessionId = data.session_id || data.live_session_id;
 
-                    // Show connecting message
-                    this.addMessage(messagesContainer, data.message, 'system');
-
                     // Check if already connected to an agent
                     if (data.status === 'active' && data.agent) {
-                        this.isLiveAgentMode = true;
-                        this.hideLiveAgentButton(container);
-                        this.showLiveAgentConnectedState(container, data.agent.name);
-                    } else {
-                        // Update UI to show pending state
-                        this.hideLiveAgentButton(container);
-                        this.showLiveAgentPendingState(container);
+                        this.showConnectedModal(container, data.agent);
+                    } else if (data.status === 'waiting') {
+                        // Update queue position if available
+                        if (data.queue_position) {
+                            const queueInfo = container.querySelector('.aiagent-live-queue-info');
+                            const queuePos = container.querySelector('.aiagent-queue-position');
+                            if (queueInfo && queuePos) {
+                                queuePos.textContent = `Position in queue: ${data.queue_position}`;
+                                queueInfo.style.display = 'block';
+                            }
+                        }
                     }
 
                     // Start polling for agent response/messages
                     this.startAgentPolling(container);
                 } else {
-                    const errorMsg = data.message || this.liveAgentNoAgentMessage;
-                    this.addMessage(messagesContainer, errorMsg, 'system');
-
-                    // Re-enable button
-                    if (connectBtn) {
-                        connectBtn.disabled = false;
-                        connectBtn.innerHTML = `
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                            ${this.liveAgentConnectButtonText}
-                        `;
-                    }
+                    // Show offline modal on error
+                    this.showOfflineModal(container);
                 }
             } catch (error) {
                 console.error('Live agent connect error:', error);
-                this.addMessage(
-                    messagesContainer,
-                    'An error occurred while connecting to a live agent. Please try again.',
-                    'system'
-                );
-
-                // Re-enable button
-                if (connectBtn) {
-                    connectBtn.disabled = false;
-                    connectBtn.innerHTML = `
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                        ${this.liveAgentConnectButtonText}
-                    `;
-                }
+                this.showOfflineModal(container);
             }
         }
 
@@ -2170,8 +2269,7 @@
 
                         // Check if agent has joined (status changed to active)
                         if (statusData.status === 'active' && !this.isLiveAgentMode && statusData.agent) {
-                            this.isLiveAgentMode = true;
-                            this.showLiveAgentConnectedState(container, statusData.agent.name);
+                            this.showConnectedModal(container, statusData.agent);
                         }
 
                         // Check if session ended
