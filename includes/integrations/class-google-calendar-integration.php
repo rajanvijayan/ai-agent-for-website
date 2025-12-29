@@ -35,10 +35,10 @@ class AIAGENT_Google_Calendar_Integration {
 	/**
 	 * Google OAuth URLs.
 	 */
-	const OAUTH_AUTH_URL  = 'https://accounts.google.com/o/oauth2/v2/auth';
-	const OAUTH_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+	const OAUTH_AUTH_URL   = 'https://accounts.google.com/o/oauth2/v2/auth';
+	const OAUTH_TOKEN_URL  = 'https://oauth2.googleapis.com/token';
 	const CALENDAR_API_URL = 'https://www.googleapis.com/calendar/v3';
-	const USERINFO_URL    = 'https://www.googleapis.com/oauth2/v2/userinfo';
+	const USERINFO_URL     = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
 	/**
 	 * Required OAuth scopes.
@@ -61,19 +61,19 @@ class AIAGENT_Google_Calendar_Integration {
 		return get_option(
 			self::OPTION_NAME,
 			[
-				'enabled'                => false,
-				'client_id'              => '',
-				'client_secret'          => '',
-				'default_calendar_id'    => 'primary',
-				'default_duration'       => 30,
-				'buffer_time'            => 15,
-				'days_ahead'             => 14,
-				'business_hours_start'   => '09:00',
-				'business_hours_end'     => '17:00',
-				'working_days'           => [ 1, 2, 3, 4, 5 ], // Monday to Friday.
-				'prompt_after_chat'      => true,
-				'prompt_message'         => 'Would you like to schedule a meeting or follow-up?',
-				'event_title_template'   => 'Meeting with {user_name}',
+				'enabled'                    => false,
+				'client_id'                  => '',
+				'client_secret'              => '',
+				'default_calendar_id'        => 'primary',
+				'default_duration'           => 30,
+				'buffer_time'                => 15,
+				'days_ahead'                 => 14,
+				'business_hours_start'       => '09:00',
+				'business_hours_end'         => '17:00',
+				'working_days'               => [ 1, 2, 3, 4, 5 ], // Monday to Friday.
+				'prompt_after_chat'          => true,
+				'prompt_message'             => 'Would you like to schedule a meeting or follow-up?',
+				'event_title_template'       => 'Meeting with {user_name}',
 				'event_description_template' => 'Scheduled via AI Agent chat widget.',
 			]
 		);
@@ -447,7 +447,7 @@ class AIAGENT_Google_Calendar_Integration {
 		}
 
 		$settings    = self::get_settings();
-		$calendar_id = $settings['default_calendar_id'] ?: 'primary';
+		$calendar_id = ! empty( $settings['default_calendar_id'] ) ? $settings['default_calendar_id'] : 'primary';
 
 		// Get timezone.
 		$timezone = wp_timezone_string();
@@ -455,10 +455,10 @@ class AIAGENT_Google_Calendar_Integration {
 		$url = self::CALENDAR_API_URL . '/freeBusy';
 
 		$body = [
-			'timeMin' => gmdate( 'Y-m-d\TH:i:s\Z', strtotime( $start_date . ' 00:00:00' ) ),
-			'timeMax' => gmdate( 'Y-m-d\TH:i:s\Z', strtotime( $end_date . ' 23:59:59' ) ),
+			'timeMin'  => gmdate( 'Y-m-d\TH:i:s\Z', strtotime( $start_date . ' 00:00:00' ) ),
+			'timeMax'  => gmdate( 'Y-m-d\TH:i:s\Z', strtotime( $end_date . ' 23:59:59' ) ),
 			'timeZone' => $timezone,
-			'items'   => [
+			'items'    => [
 				[ 'id' => $calendar_id ],
 			],
 		];
@@ -502,7 +502,8 @@ class AIAGENT_Google_Calendar_Integration {
 		}
 
 		if ( null === $days_ahead ) {
-			$days_ahead = intval( $settings['days_ahead'] ) ?: 14;
+			$days_ahead_setting = intval( $settings['days_ahead'] );
+			$days_ahead         = $days_ahead_setting > 0 ? $days_ahead_setting : 14;
 		}
 
 		$end_date = gmdate( 'Y-m-d', strtotime( $start_date . ' + ' . $days_ahead . ' days' ) );
@@ -514,7 +515,7 @@ class AIAGENT_Google_Calendar_Integration {
 			return $freebusy;
 		}
 
-		$calendar_id = $settings['default_calendar_id'] ?: 'primary';
+		$calendar_id = ! empty( $settings['default_calendar_id'] ) ? $settings['default_calendar_id'] : 'primary';
 		$busy_times  = [];
 
 		if ( isset( $freebusy['calendars'][ $calendar_id ]['busy'] ) ) {
@@ -537,16 +538,18 @@ class AIAGENT_Google_Calendar_Integration {
 	 * @return array Available slots grouped by date.
 	 */
 	private function generate_available_slots( $start_date, $end_date, $busy_times, $settings ) {
-		$duration       = intval( $settings['default_duration'] ) ?: 30;
-		$buffer         = intval( $settings['buffer_time'] ) ?: 15;
-		$hours_start    = $settings['business_hours_start'] ?: '09:00';
-		$hours_end      = $settings['business_hours_end'] ?: '17:00';
-		$working_days   = $settings['working_days'] ?? [ 1, 2, 3, 4, 5 ];
-		$timezone       = wp_timezone();
+		$duration_setting = intval( $settings['default_duration'] );
+		$buffer_setting   = intval( $settings['buffer_time'] );
+		$duration         = $duration_setting > 0 ? $duration_setting : 30;
+		$buffer           = $buffer_setting >= 0 ? $buffer_setting : 15;
+		$hours_start      = ! empty( $settings['business_hours_start'] ) ? $settings['business_hours_start'] : '09:00';
+		$hours_end        = ! empty( $settings['business_hours_end'] ) ? $settings['business_hours_end'] : '17:00';
+		$working_days     = isset( $settings['working_days'] ) ? $settings['working_days'] : [ 1, 2, 3, 4, 5 ];
+		$timezone         = wp_timezone();
 
-		$slots = [];
+		$slots        = [];
 		$current_date = new DateTime( $start_date, $timezone );
-		$end = new DateTime( $end_date, $timezone );
+		$end          = new DateTime( $end_date, $timezone );
 
 		// Don't show slots in the past.
 		$now = new DateTime( 'now', $timezone );
@@ -559,17 +562,17 @@ class AIAGENT_Google_Calendar_Integration {
 
 			// Check if it's a working day.
 			if ( in_array( $day_of_week, $working_days, true ) ) {
-				$date_str    = $current_date->format( 'Y-m-d' );
-				$day_start   = new DateTime( $date_str . ' ' . $hours_start, $timezone );
-				$day_end     = new DateTime( $date_str . ' ' . $hours_end, $timezone );
+				$date_str  = $current_date->format( 'Y-m-d' );
+				$day_start = new DateTime( $date_str . ' ' . $hours_start, $timezone );
+				$day_end   = new DateTime( $date_str . ' ' . $hours_end, $timezone );
 
 				// If today, start from current time + buffer.
 				if ( $date_str === $now->format( 'Y-m-d' ) ) {
 					$earliest = clone $now;
 					$earliest->modify( '+' . $buffer . ' minutes' );
 					// Round to next slot boundary.
-					$minutes = intval( $earliest->format( 'i' ) );
-					$round_to = $duration;
+					$minutes   = intval( $earliest->format( 'i' ) );
+					$round_to  = $duration;
 					$remainder = $minutes % $round_to;
 					if ( $remainder > 0 ) {
 						$earliest->modify( '+' . ( $round_to - $remainder ) . ' minutes' );
@@ -618,11 +621,11 @@ class AIAGENT_Google_Calendar_Integration {
 						}
 
 						$slots[ $date_str ]['slots'][] = [
-							'start'       => $slot_start->format( 'H:i' ),
-							'end'         => $slot_end->format( 'H:i' ),
-							'start_iso'   => $slot_start->format( 'c' ),
-							'end_iso'     => $slot_end->format( 'c' ),
-							'label'       => $slot_start->format( 'g:i A' ) . ' - ' . $slot_end->format( 'g:i A' ),
+							'start'     => $slot_start->format( 'H:i' ),
+							'end'       => $slot_end->format( 'H:i' ),
+							'start_iso' => $slot_start->format( 'c' ),
+							'end_iso'   => $slot_end->format( 'c' ),
+							'label'     => $slot_start->format( 'g:i A' ) . ' - ' . $slot_end->format( 'g:i A' ),
 						];
 					}
 
@@ -651,7 +654,7 @@ class AIAGENT_Google_Calendar_Integration {
 		}
 
 		$settings    = self::get_settings();
-		$calendar_id = $settings['default_calendar_id'] ?: 'primary';
+		$calendar_id = ! empty( $settings['default_calendar_id'] ) ? $settings['default_calendar_id'] : 'primary';
 		$timezone    = wp_timezone_string();
 
 		// Prepare event body.
@@ -670,9 +673,9 @@ class AIAGENT_Google_Calendar_Integration {
 
 		// Add attendee if email provided.
 		if ( ! empty( $event_data['attendee_email'] ) ) {
-			$event['attendees'] = [
+			$event['attendees']   = [
 				[
-					'email' => $event_data['attendee_email'],
+					'email'       => $event_data['attendee_email'],
 					'displayName' => $event_data['attendee_name'] ?? '',
 				],
 			];
@@ -740,13 +743,13 @@ class AIAGENT_Google_Calendar_Integration {
 		}
 
 		return [
-			'success'    => true,
-			'event_id'   => $result['id'],
-			'html_link'  => $result['htmlLink'] ?? '',
-			'meet_link'  => $result['hangoutLink'] ?? '',
-			'summary'    => $result['summary'],
-			'start'      => $result['start'],
-			'end'        => $result['end'],
+			'success'   => true,
+			'event_id'  => $result['id'],
+			'html_link' => $result['htmlLink'] ?? '',
+			'meet_link' => $result['hangoutLink'] ?? '',
+			'summary'   => $result['summary'],
+			'start'     => $result['start'],
+			'end'       => $result['end'],
 		];
 	}
 
@@ -764,7 +767,7 @@ class AIAGENT_Google_Calendar_Integration {
 		}
 
 		$settings    = self::get_settings();
-		$calendar_id = $settings['default_calendar_id'] ?: 'primary';
+		$calendar_id = ! empty( $settings['default_calendar_id'] ) ? $settings['default_calendar_id'] : 'primary';
 
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.urlencode_urlencode -- Required for API URL encoding.
 		$url = self::CALENDAR_API_URL . '/calendars/' . urlencode( $calendar_id ) . '/events/' . urlencode( $event_id );
@@ -805,7 +808,7 @@ class AIAGENT_Google_Calendar_Integration {
 		}
 
 		$settings    = self::get_settings();
-		$calendar_id = $settings['default_calendar_id'] ?: 'primary';
+		$calendar_id = ! empty( $settings['default_calendar_id'] ) ? $settings['default_calendar_id'] : 'primary';
 
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.urlencode_urlencode -- Required for API URL encoding.
 		$url = self::CALENDAR_API_URL . '/calendars/' . urlencode( $calendar_id ) . '/events/' . urlencode( $event_id );
@@ -826,7 +829,7 @@ class AIAGENT_Google_Calendar_Integration {
 
 		$status_code = wp_remote_retrieve_response_code( $response );
 
-		if ( $status_code !== 204 && $status_code !== 200 ) {
+		if ( 204 !== $status_code && 200 !== $status_code ) {
 			$body = json_decode( wp_remote_retrieve_body( $response ), true );
 			return new WP_Error( 'delete_error', $body['error']['message'] ?? 'Failed to cancel event' );
 		}
@@ -842,12 +845,13 @@ class AIAGENT_Google_Calendar_Integration {
 	public static function get_frontend_settings() {
 		$settings = self::get_settings();
 
+		$duration_setting = intval( $settings['default_duration'] );
+
 		return [
 			'enabled'           => self::is_enabled(),
 			'prompt_after_chat' => ! empty( $settings['prompt_after_chat'] ),
-			'prompt_message'    => $settings['prompt_message'] ?? 'Would you like to schedule a meeting or follow-up?',
-			'default_duration'  => intval( $settings['default_duration'] ) ?: 30,
+			'prompt_message'    => isset( $settings['prompt_message'] ) ? $settings['prompt_message'] : 'Would you like to schedule a meeting or follow-up?',
+			'default_duration'  => $duration_setting > 0 ? $duration_setting : 30,
 		];
 	}
 }
-

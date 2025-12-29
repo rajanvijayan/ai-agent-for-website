@@ -2928,10 +2928,10 @@ Do not include any explanation, just the JSON array.',
 
 		return rest_ensure_response(
 			[
-				'success'      => true,
-				'connected'    => $is_connected,
-				'enabled'      => $is_enabled,
-				'settings'     => $settings,
+				'success'   => true,
+				'connected' => $is_connected,
+				'enabled'   => $is_enabled,
+				'settings'  => $settings,
 			]
 		);
 	}
