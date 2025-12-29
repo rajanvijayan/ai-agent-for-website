@@ -3483,7 +3483,11 @@ Do not include any explanation, just the JSON array.',
 			return new WP_Error( 'not_logged_in', __( 'You must be logged in.', 'ai-agent-for-website' ), array( 'status' => 401 ) );
 		}
 
-		if ( ! AIAGENT_Live_Agent_Manager::can_user_be_agent( $user_id ) ) {
+		// Allow administrators to always set their status (for testing purposes).
+		$can_be_agent = AIAGENT_Live_Agent_Manager::can_user_be_agent( $user_id );
+		$is_admin     = current_user_can( 'manage_options' );
+
+		if ( ! $can_be_agent && ! $is_admin ) {
 			return new WP_Error( 'not_authorized', __( 'You are not authorized to be a live agent.', 'ai-agent-for-website' ), array( 'status' => 403 ) );
 		}
 

@@ -149,7 +149,16 @@ class AIAGENT_Live_Agent_Manager {
 	 * @return bool True if status was set.
 	 */
 	public static function set_agent_status( $user_id, $status = 'online' ) {
-		if ( ! self::can_user_be_agent( $user_id ) ) {
+		// Allow admins to set status for testing, even if not in allowed roles.
+		$user = get_user_by( 'id', $user_id );
+		if ( ! $user ) {
+			return false;
+		}
+
+		$can_be_agent = self::can_user_be_agent( $user_id );
+		$is_admin     = in_array( 'administrator', $user->roles, true );
+
+		if ( ! $can_be_agent && ! $is_admin ) {
 			return false;
 		}
 

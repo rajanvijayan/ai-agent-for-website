@@ -1985,7 +1985,8 @@ class AIAGENT_Admin_Settings {
 		$online_agents   = AIAGENT_Live_Agent_Manager::get_online_agents();
 		$current_user_id = get_current_user_id();
 		$my_status       = AIAGENT_Live_Agent_Manager::get_agent_status( $current_user_id );
-		$can_be_agent    = AIAGENT_Live_Agent_Manager::can_user_be_agent( $current_user_id );
+		// Allow admins to always be agents for testing purposes.
+		$can_be_agent    = AIAGENT_Live_Agent_Manager::can_user_be_agent( $current_user_id ) || current_user_can( 'manage_options' );
 		?>
 
 		<!-- Agent Status Card - For Testing -->
