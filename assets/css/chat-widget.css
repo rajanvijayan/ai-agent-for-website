@@ -1289,7 +1289,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--aiagent-bg-primary);
+    background: var(--aiagent-bg);
     z-index: 100;
     overflow-y: auto;
 }
@@ -1337,12 +1337,12 @@
     margin: 0 0 10px 0;
     font-size: 18px;
     font-weight: 600;
-    color: var(--aiagent-text-primary);
+    color: var(--aiagent-text);
 }
 
 .aiagent-calendar-prompt-text {
     margin: 0 0 24px 0;
-    color: var(--aiagent-text-secondary);
+    color: var(--aiagent-text-light);
     font-size: 14px;
     line-height: 1.5;
 }
@@ -1382,13 +1382,13 @@
 
 .aiagent-btn-secondary {
     background: transparent;
-    color: var(--aiagent-text-secondary);
+    color: var(--aiagent-text-light);
     border: 1px solid var(--aiagent-border);
 }
 
 .aiagent-btn-secondary:hover {
-    background: var(--aiagent-bg-secondary);
-    color: var(--aiagent-text-primary);
+    background: var(--aiagent-bg-light);
+    color: var(--aiagent-text);
 }
 
 .aiagent-btn-full {
@@ -1410,7 +1410,7 @@
     height: 36px;
     border-radius: 50%;
     border: none;
-    background: var(--aiagent-bg-secondary);
+    background: var(--aiagent-bg-light);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -1419,7 +1419,7 @@
 }
 
 .aiagent-calendar-back:hover {
-    background: var(--aiagent-bg-light);
+    background: var(--aiagent-border);
 }
 
 .aiagent-calendar-header h3 {
@@ -1447,7 +1447,7 @@
 
 .aiagent-calendar-loading p {
     margin: 0;
-    color: var(--aiagent-text-secondary);
+    color: var(--aiagent-text-light);
 }
 
 /* Date Navigation */
@@ -1457,7 +1457,7 @@
     justify-content: space-between;
     margin-bottom: 16px;
     padding: 12px;
-    background: var(--aiagent-bg-secondary);
+    background: var(--aiagent-bg-light);
     border-radius: 10px;
 }
 
@@ -1496,7 +1496,7 @@
 .aiagent-date-label {
     font-weight: 600;
     font-size: 14px;
-    color: var(--aiagent-text-primary);
+    color: var(--aiagent-text);
 }
 
 /* Time Slots Grid */
@@ -1515,7 +1515,7 @@
     background: white;
     cursor: pointer;
     transition: all 0.2s ease;
-    color: var(--aiagent-text-primary);
+    color: var(--aiagent-text);
 }
 
 .aiagent-slot-btn:hover {
@@ -1532,7 +1532,7 @@
 .aiagent-no-slots {
     text-align: center;
     padding: 30px 20px;
-    color: var(--aiagent-text-secondary);
+    color: var(--aiagent-text-light);
 }
 
 /* Selected Time Display */
@@ -1555,7 +1555,7 @@
 .aiagent-selected-time-text {
     font-weight: 600;
     font-size: 14px;
-    color: var(--aiagent-text-primary);
+    color: var(--aiagent-text);
 }
 
 /* Calendar Form */
@@ -1568,7 +1568,7 @@
     font-size: 13px;
     font-weight: 600;
     margin-bottom: 6px;
-    color: var(--aiagent-text-primary);
+    color: var(--aiagent-text);
 }
 
 .aiagent-calendar-form input,
@@ -1636,14 +1636,14 @@
 .aiagent-booking-details {
     margin: 16px 0;
     padding: 16px;
-    background: var(--aiagent-bg-secondary);
+    background: var(--aiagent-bg-light);
     border-radius: 10px;
 }
 
 .aiagent-booking-details p {
     margin: 0;
     font-size: 14px;
-    color: var(--aiagent-text-primary);
+    color: var(--aiagent-text);
 }
 
 .aiagent-booking-title {
@@ -1652,12 +1652,12 @@
 }
 
 .aiagent-booking-time {
-    color: var(--aiagent-text-secondary) !important;
+    color: var(--aiagent-text-light) !important;
 }
 
 .aiagent-booking-invite-sent {
     font-size: 13px;
-    color: var(--aiagent-text-secondary);
+    color: var(--aiagent-text-light);
     margin: 0 0 20px 0;
 }
 
@@ -1711,7 +1711,7 @@
 }
 
 .aiagent-calendly-embed .aiagent-calendar-back:hover {
-    background: var(--aiagent-surface, #f3f4f6);
+    background: var(--aiagent-bg-light);
     color: var(--aiagent-text);
 }
 
