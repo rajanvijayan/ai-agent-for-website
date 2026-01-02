@@ -2565,6 +2565,21 @@ class AIAGENT_Admin_Settings {
 						</p>
 					</td>
 				</tr>
+				<tr>
+					<th scope="row">
+						<label><?php esc_html_e( 'Test Email', 'ai-agent-for-website' ); ?></label>
+					</th>
+					<td>
+						<button type="button" id="aiagent-test-email-btn" class="button button-secondary">
+							<span class="dashicons dashicons-email-alt" style="margin-top: 3px;"></span>
+							<?php esc_html_e( 'Send Test Email', 'ai-agent-for-website' ); ?>
+						</button>
+						<span id="aiagent-test-email-status" class="aiagent-status-message"></span>
+						<p class="description">
+							<?php esc_html_e( 'Send a test email to verify your email notification settings are working correctly.', 'ai-agent-for-website' ); ?>
+						</p>
+					</td>
+				</tr>
 			</table>
 
 			<h3><?php esc_html_e( 'Notification Events', 'ai-agent-for-website' ); ?></h3>

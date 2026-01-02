@@ -547,6 +547,17 @@ class AIAGENT_REST_API {
 			)
 		);
 
+		// Test email endpoint (admin only).
+		register_rest_route(
+			$this->namespace,
+			'/test-email',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_test_email' ),
+				'permission_callback' => array( $this, 'admin_permission_check' ),
+			)
+		);
+
 		// WooCommerce integration endpoints.
 		register_rest_route(
 			$this->namespace,
@@ -2617,6 +2628,79 @@ Do not include any explanation, just the JSON array.',
 				'success' => true,
 				'message' => __( 'Mailchimp settings saved successfully.', 'ai-agent-for-website' ),
 			)
+		);
+	}
+
+	/**
+	 * Handle test email request.
+	 *
+	 * Sends a test email to verify email notification settings are working.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error Response object or error.
+	 */
+	public function handle_test_email( $request ) {
+		// Unused parameter kept for REST API callback signature.
+		unset( $request );
+
+		$notification_settings = AIAGENT_Notification_Manager::get_settings();
+		$recipients            = $notification_settings['email_recipients'];
+
+		if ( empty( $recipients ) ) {
+			$recipients = get_option( 'admin_email' );
+		}
+
+		if ( empty( $recipients ) ) {
+			return new WP_Error(
+				'no_recipients',
+				__( 'No email recipients configured. Please add email addresses in the notification settings.', 'ai-agent-for-website' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$site_name = get_bloginfo( 'name' );
+		/* translators: %s: Site name */
+		$subject = sprintf( __( '[%s] AI Agent - Test Email', 'ai-agent-for-website' ), $site_name );
+
+		$message = sprintf(
+			/* translators: 1: Site name, 2: Current date/time */
+			__( "This is a test email from AI Agent for Website.\n\nSite: %1\$s\nSent at: %2\$s\n\nIf you received this email, your email notification settings are working correctly.\n\nView settings: %3\$s", 'ai-agent-for-website' ),
+			$site_name,
+			current_time( 'mysql' ),
+			admin_url( 'admin.php?page=ai-agent-settings&tab=notifications' )
+		);
+
+		$result = wp_mail( $recipients, $subject, $message );
+
+		if ( $result ) {
+			// Log the test email.
+			if ( class_exists( 'AIAGENT_Activity_Log_Manager' ) ) {
+				$log_manager = new AIAGENT_Activity_Log_Manager();
+				$log_manager->log(
+					'system',
+					'test_email_sent',
+					__( 'Test email sent successfully', 'ai-agent-for-website' ),
+					array( 'recipients' => $recipients )
+				);
+			}
+
+			return rest_ensure_response(
+				array(
+					'success'    => true,
+					'message'    => sprintf(
+						/* translators: %s: Email recipients */
+						__( 'Test email sent successfully to %s', 'ai-agent-for-website' ),
+						$recipients
+					),
+					'recipients' => $recipients,
+				)
+			);
+		}
+
+		return new WP_Error(
+			'email_failed',
+			__( 'Failed to send test email. Please check your server\'s email configuration.', 'ai-agent-for-website' ),
+			array( 'status' => 500 )
 		);
 	}
 

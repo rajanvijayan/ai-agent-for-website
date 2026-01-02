@@ -1357,6 +1357,49 @@
                 },
             });
         });
+
+        // ===============================
+        // Test Email Button Handler
+        // ===============================
+        $('#aiagent-test-email-btn').on('click', function () {
+            const $btn = $(this);
+            const $status = $('#aiagent-test-email-status');
+            const originalHtml = $btn.html();
+
+            $btn.prop('disabled', true).html(
+                '<span class="dashicons dashicons-update spin" style="margin-top: 3px;"></span> Sending...'
+            );
+            $status.removeClass('success error').text('');
+
+            $.ajax({
+                url: aiagentAdmin.restUrl + 'test-email',
+                method: 'POST',
+                headers: {
+                    'X-WP-Nonce': aiagentAdmin.nonce,
+                },
+                success: function (response) {
+                    $btn.html(
+                        '<span class="dashicons dashicons-yes-alt" style="margin-top: 3px; color: #46b450;"></span> Sent!'
+                    );
+                    $status.addClass('success').text('✓ ' + response.message);
+
+                    setTimeout(function () {
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }, 3000);
+                },
+                error: function (xhr) {
+                    const error = xhr.responseJSON?.message || 'Failed to send test email';
+                    $btn.html(
+                        '<span class="dashicons dashicons-warning" style="margin-top: 3px; color: #dc3232;"></span> Failed'
+                    );
+                    $status.addClass('error').text('✗ ' + error);
+
+                    setTimeout(function () {
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }, 3000);
+                },
+            });
+        });
     });
 
     // Add spinning animation for loading state
