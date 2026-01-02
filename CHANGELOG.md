@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Email Notification Enhancements**
+  - Added "Send Test Email" button in Notifications settings tab
+  - REST API endpoint `/test-email` for testing email configuration
+  - Admins can now verify email notifications are working correctly
+  - Test email logs activity for tracking purposes
 - Added `.cursorrules` file for Cursor AI coding assistant instructions
   - Mandatory checks for CI/CD, PHPCS, and WordPress coding standards
   - Changelog and version update requirements

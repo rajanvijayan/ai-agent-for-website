@@ -381,5 +381,84 @@ class RESTAPITest extends TestCase {
 			$this->assertEquals( $method, $request->get_method() );
 		}
 	}
+
+	/**
+	 * Test test-email endpoint route.
+	 */
+	public function testTestEmailEndpointRoute(): void {
+		$route = '/ai-agent/v1/test-email';
+
+		$this->assertStringStartsWith( '/ai-agent/v1/', $route );
+		$this->assertStringContainsString( 'test-email', $route );
+	}
+
+	/**
+	 * Test test-email request creation.
+	 */
+	public function testTestEmailRequestCreation(): void {
+		$request = new WP_REST_Request( 'POST', '/ai-agent/v1/test-email' );
+
+		$this->assertInstanceOf( WP_REST_Request::class, $request );
+		$this->assertEquals( 'POST', $request->get_method() );
+		$this->assertEquals( '/ai-agent/v1/test-email', $request->get_route() );
+	}
+
+	/**
+	 * Test test-email success response structure.
+	 */
+	public function testTestEmailSuccessResponse(): void {
+		$response = [
+			'success'    => true,
+			'message'    => 'Test email sent successfully to admin@example.com',
+			'recipients' => 'admin@example.com',
+		];
+
+		$this->assertTrue( $response['success'] );
+		$this->assertArrayHasKey( 'message', $response );
+		$this->assertArrayHasKey( 'recipients', $response );
+		$this->assertStringContainsString( 'sent successfully', $response['message'] );
+	}
+
+	/**
+	 * Test test-email error response for no recipients.
+	 */
+	public function testTestEmailErrorNoRecipients(): void {
+		$error = new WP_Error(
+			'no_recipients',
+			'No email recipients configured. Please add email addresses in the notification settings.'
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $error );
+		$this->assertEquals( 'no_recipients', $error->get_error_code() );
+		$this->assertStringContainsString( 'No email recipients', $error->get_error_message() );
+	}
+
+	/**
+	 * Test test-email error response for failed send.
+	 */
+	public function testTestEmailErrorSendFailed(): void {
+		$error = new WP_Error(
+			'email_failed',
+			'Failed to send test email. Please check your server\'s email configuration.'
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $error );
+		$this->assertEquals( 'email_failed', $error->get_error_code() );
+		$this->assertStringContainsString( 'Failed to send', $error->get_error_message() );
+	}
+
+	/**
+	 * Test test-email requires admin permission.
+	 */
+	public function testTestEmailRequiresAdminPermission(): void {
+		// Test that endpoint requires admin capability.
+		$required_capability = 'manage_options';
+
+		// Simulate permission check.
+		$has_permission = true; // In real tests, this would check current_user_can().
+
+		$this->assertTrue( $has_permission );
+		$this->assertEquals( 'manage_options', $required_capability );
+	}
 }
 

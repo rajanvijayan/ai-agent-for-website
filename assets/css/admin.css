@@ -1158,6 +1158,22 @@
     color: #dc3232;
 }
 
+/* Status Message Styles */
+.aiagent-status-message {
+    margin-left: 10px;
+    font-weight: 500;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.aiagent-status-message.success {
+    color: #46b450;
+}
+
+.aiagent-status-message.error {
+    color: #dc3232;
+}
+
 /* Custom Text Form Improvements */
 .aiagent-custom-text-form .aiagent-form-row {
     margin-bottom: 16px;

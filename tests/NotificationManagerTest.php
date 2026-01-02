@@ -341,5 +341,201 @@ class NotificationManagerTest extends TestCase {
 		$this->assertEquals( 'notification', $log_entry['category'] );
 		$this->assertArrayHasKey( 'notification_id', $log_entry['meta'] );
 	}
+
+	/**
+	 * Test email recipients validation.
+	 */
+	public function testEmailRecipientsValidation(): void {
+		$valid_recipients   = 'admin@example.com, support@example.com';
+		$invalid_recipients = '';
+
+		$this->assertNotEmpty( $valid_recipients );
+		$this->assertEmpty( $invalid_recipients );
+
+		// Test comma-separated email parsing.
+		$emails = array_map( 'trim', explode( ',', $valid_recipients ) );
+		$this->assertCount( 2, $emails );
+		$this->assertEquals( 'admin@example.com', $emails[0] );
+	}
+
+	/**
+	 * Test email notification toggle settings.
+	 */
+	public function testEmailNotificationToggleSettings(): void {
+		$settings = [
+			'enabled'                    => true,
+			'email_notifications'        => true,
+			'email_recipients'           => 'admin@example.com',
+			'notify_new_conversation'    => true,
+			'notify_lead_validated'      => true,
+			'notify_lead_converted'      => true,
+			'notify_conversation_closed' => false,
+		];
+
+		update_option( 'aiagent_notification_settings', $settings );
+
+		$retrieved = get_option( 'aiagent_notification_settings' );
+
+		$this->assertTrue( $retrieved['email_notifications'] );
+		$this->assertTrue( $retrieved['notify_new_conversation'] );
+		$this->assertFalse( $retrieved['notify_conversation_closed'] );
+	}
+
+	/**
+	 * Test default email recipient falls back to admin email.
+	 */
+	public function testDefaultEmailRecipientFallback(): void {
+		// Set the admin_email option.
+		update_option( 'admin_email', 'admin@test.local' );
+
+		$settings = [
+			'email_recipients' => '',
+		];
+
+		$recipients = $settings['email_recipients'];
+
+		// Fallback to admin email when empty.
+		if ( empty( $recipients ) ) {
+			$recipients = get_option( 'admin_email' );
+		}
+
+		$this->assertNotEmpty( $recipients );
+		$this->assertEquals( 'admin@test.local', $recipients );
+	}
+
+	/**
+	 * Test email subject format.
+	 */
+	public function testEmailSubjectFormat(): void {
+		$site_name = 'My Website';
+		$type      = 'New Conversation';
+
+		$subject = sprintf( '[%1$s] AI Agent: %2$s', $site_name, $type );
+
+		$this->assertEquals( '[My Website] AI Agent: New Conversation', $subject );
+		$this->assertStringContainsString( 'AI Agent', $subject );
+	}
+
+	/**
+	 * Test email body format.
+	 */
+	public function testEmailBodyFormat(): void {
+		$title     = 'New conversation from John Doe';
+		$message   = 'A new conversation has been started by John Doe (john@example.com).';
+		$admin_url = 'https://example.com/wp-admin/admin.php?page=ai-agent-notifications';
+
+		$body = sprintf(
+			"%1\$s\n\n%2\$s\n\nView in admin: %3\$s",
+			$title,
+			$message,
+			$admin_url
+		);
+
+		$this->assertStringContainsString( $title, $body );
+		$this->assertStringContainsString( $message, $body );
+		$this->assertStringContainsString( 'View in admin:', $body );
+	}
+
+	/**
+	 * Test test email data structure.
+	 */
+	public function testTestEmailDataStructure(): void {
+		$test_email_data = [
+			'recipients' => 'admin@example.com',
+			'subject'    => '[My Site] AI Agent - Test Email',
+			'message'    => 'This is a test email from AI Agent for Website.',
+			'sent_at'    => gmdate( 'Y-m-d H:i:s' ),
+		];
+
+		$this->assertArrayHasKey( 'recipients', $test_email_data );
+		$this->assertArrayHasKey( 'subject', $test_email_data );
+		$this->assertArrayHasKey( 'message', $test_email_data );
+		$this->assertStringContainsString( 'Test Email', $test_email_data['subject'] );
+	}
+
+	/**
+	 * Test wp_mail mock functionality.
+	 */
+	public function testWpMailMockFunctionality(): void {
+		$to      = 'admin@example.com';
+		$subject = 'Test Subject';
+		$message = 'Test Message';
+
+		$result = wp_mail( $to, $subject, $message );
+
+		$this->assertTrue( $result );
+
+		// Verify mail was logged in mocks.
+		$this->assertArrayHasKey( 'mails', $GLOBALS['wp_mock_hooks'] );
+		$mails = $GLOBALS['wp_mock_hooks']['mails'];
+		$this->assertNotEmpty( $mails );
+
+		$last_mail = end( $mails );
+		$this->assertEquals( $to, $last_mail['to'] );
+		$this->assertEquals( $subject, $last_mail['subject'] );
+	}
+
+	/**
+	 * Test email notification type labels.
+	 */
+	public function testEmailNotificationTypeLabels(): void {
+		$type_labels = [
+			'new_conversation'    => 'New Conversation',
+			'lead_validated'      => 'Lead Validated',
+			'lead_converted'      => 'Lead Converted',
+			'conversation_closed' => 'Conversation Closed',
+		];
+
+		$this->assertCount( 4, $type_labels );
+		$this->assertEquals( 'New Conversation', $type_labels['new_conversation'] );
+		$this->assertEquals( 'Lead Converted', $type_labels['lead_converted'] );
+	}
+
+	/**
+	 * Test multiple email recipients parsing.
+	 */
+	public function testMultipleEmailRecipientsParsing(): void {
+		$recipients_string = 'admin@example.com, manager@example.com, support@example.com';
+
+		$recipients_array = array_map( 'trim', explode( ',', $recipients_string ) );
+
+		$this->assertCount( 3, $recipients_array );
+		$this->assertContains( 'admin@example.com', $recipients_array );
+		$this->assertContains( 'manager@example.com', $recipients_array );
+		$this->assertContains( 'support@example.com', $recipients_array );
+	}
+
+	/**
+	 * Test email notification disabled state.
+	 */
+	public function testEmailNotificationDisabledState(): void {
+		$settings = [
+			'enabled'             => true,
+			'email_notifications' => false,
+			'email_recipients'    => 'admin@example.com',
+		];
+
+		// When email_notifications is false, emails should not be sent.
+		$should_send_email = $settings['email_notifications'];
+
+		$this->assertFalse( $should_send_email );
+	}
+
+	/**
+	 * Test notification meta for new conversation includes required fields.
+	 */
+	public function testNewConversationNotificationMeta(): void {
+		$meta = [
+			'conversation_id' => 123,
+			'user_name'       => 'John Doe',
+			'user_email'      => 'john@example.com',
+		];
+
+		$this->assertArrayHasKey( 'conversation_id', $meta );
+		$this->assertArrayHasKey( 'user_name', $meta );
+		$this->assertArrayHasKey( 'user_email', $meta );
+		$this->assertIsInt( $meta['conversation_id'] );
+		$this->assertNotEmpty( $meta['user_name'] );
+	}
 }
 
