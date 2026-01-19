@@ -5,9 +5,23 @@ All notable changes to the AI Agent for Website plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.10.0] - 2026-01-19
 
 ### Added
+- **AI-Powered Spam Protection**: Comprehensive spam detection and user blocking system
+  - AI validation of chat messages using Groq API to detect spam content
+  - Automatic detection of spam patterns: promotional content, malicious links, adult content, cryptocurrency/NFT spam, money scams, and abuse
+  - User blocking after configurable spam threshold (default: 3 attempts)
+  - Configurable block duration (default: 24 hours)
+  - Admin dashboard for managing blocked users with unblock/delete options
+  - Spam logs with message previews and detection reasons
+  - Statistics dashboard showing blocked users, spam attempts, and flagged users
+  - Settings page for configuring spam protection behavior
+  - IP-based blocking to prevent circumvention via new sessions
+  - Activity log integration for spam events
+  - Notification system integration for admin alerts on user blocks
+  - Fallback to pattern-based detection when AI is unavailable
+  - 65+ unit tests for spam detection functionality
 - **Email Notification Enhancements**
   - Added "Send Test Email" button in Notifications settings tab
   - REST API endpoint `/test-email` for testing email configuration

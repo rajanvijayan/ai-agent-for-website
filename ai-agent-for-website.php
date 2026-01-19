@@ -3,7 +3,7 @@
  * Plugin Name: AI Agent for Website
  * Plugin URI: https://github.com/rajanvijayan/ai-agent-for-website
  * Description: Add an AI-powered chat agent to your website using Groq API. Train it with your website content.
- * Version: 1.9.0
+ * Version: 1.10.0
  * Author: Rajan Vijayan
  * Author URI: https://rajanvijayan.com
  * License: GPL v2 or later
@@ -27,7 +27,7 @@ if ( defined( 'AIAGENT_TEST_MODE' ) && AIAGENT_TEST_MODE ) {
 }
 
 // Define plugin constants.
-define( 'AIAGENT_VERSION', '1.9.0' );
+define( 'AIAGENT_VERSION', '1.10.0' );
 define( 'AIAGENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AIAGENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -98,6 +98,9 @@ class AI_Agent_For_Website {
 		// Load live agent manager.
 		require_once AIAGENT_PLUGIN_DIR . 'includes/class-live-agent-manager.php';
 
+		// Load spam manager.
+		require_once AIAGENT_PLUGIN_DIR . 'includes/class-spam-manager.php';
+
 		// Load live agent dashboard (admin only).
 		if ( is_admin() ) {
 			require_once AIAGENT_PLUGIN_DIR . 'includes/class-live-agent-dashboard.php';
@@ -149,7 +152,7 @@ class AI_Agent_For_Website {
 		$db_version = get_option( 'aiagent_db_version', '0' );
 
 		// Check if we need to create/update tables.
-		if ( version_compare( $db_version, '1.6.0', '<' ) ) {
+		if ( version_compare( $db_version, '1.7.0', '<' ) ) {
 			$this->create_tables();
 		}
 
@@ -415,6 +418,42 @@ class AI_Agent_For_Website {
             KEY sender_type (sender_type)
         ) $charset_collate;";
 
+		// Spam blocks table.
+		$spam_blocks_table = $wpdb->prefix . 'aiagent_spam_blocks';
+		$spam_blocks_sql   = "CREATE TABLE $spam_blocks_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            session_id varchar(100) NOT NULL,
+            user_id bigint(20) unsigned DEFAULT NULL,
+            ip_address varchar(45) DEFAULT NULL,
+            spam_count int DEFAULT 0,
+            reason text DEFAULT NULL,
+            last_reason text DEFAULT NULL,
+            blocked_until datetime DEFAULT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY session_id (session_id),
+            KEY user_id (user_id),
+            KEY ip_address (ip_address),
+            KEY blocked_until (blocked_until)
+        ) $charset_collate;";
+
+		// Spam logs table.
+		$spam_logs_table = $wpdb->prefix . 'aiagent_spam_logs';
+		$spam_logs_sql   = "CREATE TABLE $spam_logs_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            session_id varchar(100) NOT NULL,
+            user_id bigint(20) unsigned DEFAULT NULL,
+            ip_address varchar(45) DEFAULT NULL,
+            message text DEFAULT NULL,
+            reason varchar(255) DEFAULT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY session_id (session_id),
+            KEY user_id (user_id),
+            KEY created_at (created_at)
+        ) $charset_collate;";
+
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $users_sql );
 		dbDelta( $conversations_sql );
@@ -427,9 +466,11 @@ class AI_Agent_For_Website {
 		dbDelta( $logs_sql );
 		dbDelta( $live_sessions_sql );
 		dbDelta( $live_messages_sql );
+		dbDelta( $spam_blocks_sql );
+		dbDelta( $spam_logs_sql );
 
 		// Store DB version.
-		update_option( 'aiagent_db_version', '1.6.0' );
+		update_option( 'aiagent_db_version', '1.7.0' );
 	}
 
 	/**
@@ -525,6 +566,23 @@ class AI_Agent_For_Website {
 			'ai-agent-logs',
 			[ $this, 'render_logs_page' ]
 		);
+
+		// Add Spam Protection menu with blocked count badge.
+		$spam_stats    = AIAGENT_Spam_Manager::get_statistics();
+		$blocked_count = $spam_stats['total_blocked'];
+		$spam_title    = __( 'Spam Protection', 'ai-agent-for-website' );
+		if ( $blocked_count > 0 ) {
+			$spam_title .= sprintf( ' <span class="awaiting-mod">%d</span>', $blocked_count );
+		}
+
+		add_submenu_page(
+			'ai-agent-settings',
+			__( 'Spam Protection', 'ai-agent-for-website' ),
+			$spam_title,
+			'manage_options',
+			'ai-agent-spam',
+			[ $this, 'render_spam_page' ]
+		);
 	}
 
 	/**
@@ -548,6 +606,14 @@ class AI_Agent_For_Website {
 	 */
 	public function render_logs_page() {
 		$manager = new AIAGENT_Activity_Log_Manager();
+		$manager->render_admin_page();
+	}
+
+	/**
+	 * Render spam protection page.
+	 */
+	public function render_spam_page() {
+		$manager = new AIAGENT_Spam_Manager();
 		$manager->render_admin_page();
 	}
 
