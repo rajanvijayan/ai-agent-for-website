@@ -1433,6 +1433,67 @@ class AIAGENT_REST_API {
 			return new WP_Error( 'no_api_key', __( 'AI is not configured.', 'ai-agent-for-website' ), array( 'status' => 500 ) );
 		}
 
+		// Check spam protection (wrapped in try-catch to prevent crashes).
+		// Allow disabling spam check via constant for debugging.
+		if ( ! defined( 'AIAGENT_DISABLE_SPAM_CHECK' ) || ! AIAGENT_DISABLE_SPAM_CHECK ) {
+			try {
+				$spam_settings = AIAGENT_Spam_Manager::get_settings();
+				if ( ! empty( $spam_settings['enabled'] ) ) {
+					// Check if user is blocked.
+					$ip_address   = $this->get_client_ip();
+					$block_status = AIAGENT_Spam_Manager::is_user_blocked( $session_id, $user_id, $ip_address );
+
+					if ( $block_status && ! empty( $block_status['blocked'] ) ) {
+						return new WP_Error(
+							'user_blocked',
+							__( 'You have been temporarily blocked from sending messages. Please try again later.', 'ai-agent-for-website' ),
+							array( 'status' => 403 )
+						);
+					}
+
+					// Validate message for spam using AI.
+					$spam_check = AIAGENT_Spam_Manager::validate_message_with_ai(
+						$message,
+						array(
+							'user_id'    => $user_id,
+							'session_id' => $session_id,
+						)
+					);
+
+					if ( ! empty( $spam_check['is_spam'] ) && isset( $spam_check['confidence'] ) && $spam_check['confidence'] >= 0.6 ) {
+						// Record spam attempt.
+						$spam_count = AIAGENT_Spam_Manager::record_spam_attempt(
+							$session_id,
+							$user_id,
+							$message,
+							isset( $spam_check['reason'] ) ? $spam_check['reason'] : '',
+							$ip_address
+						);
+
+						// Check if now blocked (spam_count can be false if table doesn't exist).
+						if ( false !== $spam_count && $spam_count >= $spam_settings['spam_threshold'] ) {
+							return new WP_Error(
+								'user_blocked',
+								__( 'You have been blocked due to suspicious activity. Please try again later.', 'ai-agent-for-website' ),
+								array( 'status' => 403 )
+							);
+						}
+
+						// Return a gentle warning without blocking.
+						return new WP_Error(
+							'spam_detected',
+							__( 'Your message appears to contain inappropriate content. Please rephrase and try again.', 'ai-agent-for-website' ),
+							array( 'status' => 400 )
+						);
+					}
+				}
+			} catch ( Exception $e ) {
+				// Spam check failed, but don't block the user - just log and continue.
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional error logging.
+				error_log( 'AI Agent Spam Check Error: ' . $e->getMessage() );
+			}
+		}
+
 		// Get or create conversation.
 		$conversation_id = $this->get_or_create_conversation( $user_id, $session_id );
 

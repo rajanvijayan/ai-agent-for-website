@@ -14,6 +14,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 }
 
+// Define WordPress OBJECT constant.
+if ( ! defined( 'OBJECT' ) ) {
+	define( 'OBJECT', 'OBJECT' );
+}
+
 if ( ! defined( 'AIAGENT_PLUGIN_DIR' ) ) {
 	define( 'AIAGENT_PLUGIN_DIR', dirname( __DIR__ ) . '/' );
 }
@@ -27,7 +32,7 @@ if ( ! defined( 'AIAGENT_PLUGIN_BASENAME' ) ) {
 }
 
 if ( ! defined( 'AIAGENT_VERSION' ) ) {
-	define( 'AIAGENT_VERSION', '1.9.0' );
+	define( 'AIAGENT_VERSION', '1.10.0' );
 }
 
 // Define test mode BEFORE loading any config files to ensure it takes precedence.
@@ -294,6 +299,33 @@ if ( ! function_exists( 'sanitize_file_name' ) ) {
 if ( ! function_exists( 'sanitize_text_field' ) ) {
 	function sanitize_text_field( $str ) {
 		return trim( strip_tags( $str ) );
+	}
+}
+
+/**
+ * Mock wp_unslash function.
+ *
+ * @param string|array $value Value to unslash.
+ * @return string|array Unslashed value.
+ */
+if ( ! function_exists( 'wp_unslash' ) ) {
+	function wp_unslash( $value ) {
+		return stripslashes_deep( $value );
+	}
+}
+
+/**
+ * Mock stripslashes_deep function.
+ *
+ * @param string|array $value Value to stripslash.
+ * @return string|array Stripped value.
+ */
+if ( ! function_exists( 'stripslashes_deep' ) ) {
+	function stripslashes_deep( $value ) {
+		if ( is_array( $value ) ) {
+			return array_map( 'stripslashes_deep', $value );
+		}
+		return stripslashes( $value );
 	}
 }
 
@@ -1338,6 +1370,32 @@ if ( ! class_exists( 'AIAGENT_Calendly_Integration' ) ) {
 }
 
 /**
+ * Mock AIAGENT_Activity_Log_Manager class for testing.
+ */
+if ( ! class_exists( 'AIAGENT_Activity_Log_Manager' ) ) {
+	class AIAGENT_Activity_Log_Manager {
+		public static function log( $category, $action, $message, $meta = [], $user_id = null, $ip_address = null ) {
+			return true;
+		}
+	}
+}
+
+/**
+ * Mock AIAGENT_Notification_Manager class for testing.
+ */
+if ( ! class_exists( 'AIAGENT_Notification_Manager' ) ) {
+	class AIAGENT_Notification_Manager {
+		public function create( $type, $title, $message, $meta = [] ) {
+			return 1;
+		}
+
+		public function get_unread_count() {
+			return 0;
+		}
+	}
+}
+
+/**
  * Mock wc_get_cart_url function.
  */
 if ( ! function_exists( 'wc_get_cart_url' ) ) {
@@ -1357,4 +1415,7 @@ if ( ! function_exists( 'wc_get_checkout_url' ) ) {
 
 // Load Composer autoloader.
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
+
+// Load AIAGENT_Spam_Manager class for testing.
+require_once dirname( __DIR__ ) . '/includes/class-spam-manager.php';
 
